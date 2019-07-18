@@ -1,0 +1,16 @@
+@()
+
+@defining(play.core.PlayVersion.current) { version =>
+<!DOCTYPE html>
+    <html lang="en">
+        <head>
+            @views.html.header.render()
+        </head>
+        <body>
+            <div id="wrapper" class="panel">
+                <a class="govuk-link" href="/bankDetailsValidation">Validate Bank Details</a><br/>
+                <a class="govuk-link" href="/metadataLookup">Metadata Lookup</a><br/>
+            </div>
+        </body>
+    </html>
+}
