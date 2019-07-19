@@ -1,107 +1,82 @@
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
-import play.routes.compiler.StaticRoutesGenerator
-import play.sbt.PlayImport.PlayKeys
-import play.sbt.routes.RoutesKeys.routesGenerator
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
-import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import com.typesafe.sbt.web.Import._
+import net.ground5hark.sbt.concat.Import._
+import com.typesafe.sbt.uglify.Import._
+import com.typesafe.sbt.digest.Import._
+import play.sbt.routes.RoutesKeys
 
 trait MicroService {
 
   import uk.gov.hmrc._
   import DefaultBuildSettings._
-  import uk.gov.hmrc.{SbtBuildInfo, ShellPrompt}
-  import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-
-  import TestPhases._
+  import uk.gov.hmrc.{SbtAutoBuildPlugin, SbtArtifactory}
+  import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+  import uk.gov.hmrc.versioning.SbtGitVersioning
+  import play.sbt.routes.RoutesKeys.routesGenerator
+  import play.sbt.routes.RoutesKeys
+  import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
   val appName: String
 
   lazy val appDependencies : Seq[ModuleID] = ???
-  lazy val appOverrides: Set[ModuleID] = ???
-  lazy val plugins : Seq[Plugins] = Seq(
-    play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory
-  )
+  lazy val plugins : Seq[Plugins] = Seq.empty
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
-  def unitFilter(name: String): Boolean = !funFilter(name) && !smokeFilter(name)
-  def funFilter(name: String): Boolean = name startsWith "features"
-  def smokeFilter(name: String): Boolean = name startsWith "smoke"
+  lazy val scoverageSettings: Seq[Def.Setting[_]] = {
+
+    import scoverage._
+
+    Seq(
+      ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*filters.*;.*handlers.*;.*components.*;.*models.*;" +
+        ".*BuildInfo.*;.*javascript.*;.*FrontendAuditConnector.*;.*Routes.*;.*GuiceInjector;.*DataCacheConnector;" +
+        ".*ControllerConfiguration;.*LanguageSwitchController;.*repositories.*",
+      ScoverageKeys.coverageMinimum := 90,
+      ScoverageKeys.coverageFailOnMinimum := true,
+      ScoverageKeys.coverageHighlighting := true
+    )
+  }
 
   lazy val microservice = Project(appName, file("."))
-    .enablePlugins(plugins : _*)
+    .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins : _*)
+    .settings(majorVersion := 0)
     .settings(playSettings : _*)
+    .settings(RoutesKeys.routesImport ++= Seq("models._"))
     .settings(scalaSettings: _*)
     .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)
-    .settings(majorVersion := 0)
+    .settings(scoverageSettings: _*)
     .settings(
-      PlayKeys.playDefaultPort := 9250,
-      targetJvm := "jvm-1.8",
+      scalacOptions ++= Seq("-feature"),
       libraryDependencies ++= appDependencies,
-      dependencyOverrides ++= appOverrides,
-      parallelExecution in Test := false,
-      fork in Test := false,
-      routesGenerator := StaticRoutesGenerator
+      retrieveManaged := true,
+      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+      resolvers ++= Seq(
+        Resolver.bintrayRepo("hmrc", "releases"),
+        Resolver.jcenterRepo
+      )
     )
-    .settings(testOptions in Test := Seq(Tests.Filter(unitFilter)),
-      addTestReportOption(Test, "test-reports"),
-      unmanagedSourceDirectories in FunTest <<= (baseDirectory in FunTest)(base => Seq(base / "test/unit")),
-      unmanagedResourceDirectories in FunTest <<= (baseDirectory in FunTest)(base => Seq(base / "test/unit"))
-    )
-    .configs(IntegrationTest)
-    .settings(inConfig(TemplateItTest)(Defaults.itSettings): _*)
     .settings(
-      Keys.fork in IntegrationTest := false,
-      unmanagedSourceDirectories in IntegrationTest <<= (baseDirectory in IntegrationTest)(base => Seq(base / "it")),
-      addTestReportOption(IntegrationTest, "int-test-reports"),
-      testGrouping in IntegrationTest := TestPhases.oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-      parallelExecution in IntegrationTest := false)
-    .configs(FunTest)
-    .settings(inConfig(FunTest)(Defaults.testSettings): _*)
-    .settings(
-      testOptions in FunTest := Seq(Tests.Filter(funFilter)),
-      unmanagedSourceDirectories   in FunTest <<= (baseDirectory in FunTest)(base => Seq(base / "test")),
-      unmanagedResourceDirectories in FunTest <<= (baseDirectory in FunTest)(base => Seq(base / "test")),
-      Keys.fork in FunTest := false,
-      parallelExecution in FunTest := false,
-      addTestReportOption(FunTest, "fun-test-reports")
-    )
-    .configs(SmokeTest)
-    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
-    .settings(
-      javaOptions in SmokeTest := Seq("-Denvironment=qa"),
-      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter)),
-      unmanagedSourceDirectories   in SmokeTest <<= (baseDirectory in SmokeTest)(base => Seq(base / "test")),
-      unmanagedResourceDirectories in SmokeTest <<= (baseDirectory in SmokeTest)(base => Seq(base / "test")),
-      Keys.fork in SmokeTest := true,
-      parallelExecution in SmokeTest := false,
-      addTestReportOption(SmokeTest, "smoke-test-reports")
-    )
-    .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
-    .settings(
-      resolvers += Resolver.bintrayRepo("hmrc", "releases"),
-      resolvers += Resolver.jcenterRepo,
-      resolvers += "HMRC private repository releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases"
+      // concatenate js
+      Concat.groups := Seq(
+        "javascripts/childcarecalculatorfrontend-app.js" -> group(Seq("javascripts/show-hide-content.js", "javascripts/childcarecalculatorfrontend.js", "javascripts/polyfill.js"))
+      ),
+      // prevent removal of unused code which generates warning errors due to use of third-party libs
+      uglifyCompressOptions := Seq("unused=false", "dead_code=false"),
+      pipelineStages := Seq(digest),
+      // below line required to force asset pipeline to operate in dev rather than only prod
+      pipelineStages in Assets := Seq(concat,uglify),
+      // only compress files generated by concat
+      includeFilter in uglify := GlobFilter("childcarecalculatorfrontend-*.js")
     )
 }
 
 private object TestPhases {
-
-  val allPhases = "tt->test;test->test;test->compile;compile->compile"
-  val allItPhases = "tit->it;it->it;it->compile;compile->compile"
-
-  lazy val TemplateTest = config("tt") extend Test
-  lazy val TemplateItTest = config("tit") extend IntegrationTest
-  lazy val FunTest = config("fun") extend Test
-  lazy val SmokeTest = config("smoke") extend Test
 
   def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
     tests map {
       test => new Group(test.name, Seq(test), SubProcess(ForkOptions(runJVMOptions = Seq("-Dtest.name=" + test.name))))
     }
 }
-
-

@@ -1,0 +1,190 @@
+@import 'partials/_variables';
+@import 'partials/_base';
+
+@import 'partials/_forms';
+@import 'partials/_tabular-data';
+@import 'partials/_typography';
+
+@import 'partials/_utilities';
+
+@import 'partials/_shame';
+
+
+.panel-indent {
+  margin-bottom: 0.78947em;
+}
+
+
+.green {
+    border-color: #006435;
+}
+
+.red {
+    border-color: #b10e1e;
+}
+
+
+
+.green, .red, .orange, .grassgreen {
+  border-left-width: 18px;
+  margin-bottom: 0px;
+  margin-top: 40px
+}
+
+details .summary {
+  text-decoration: underline;
+}
+
+
+/*
+IE8: Fix wrapping of crown on Gov.UK in header
+*/
+
+.lte-ie8 #logo img {
+    max-width: none;
+}
+
+.link-back, .js-visible p {
+    margin-top: 0;
+}
+
+/*
+IE8: Hide back button as it doesn't work in IE8
+*/
+
+.lte-ie8 #back-link {
+    display: none;
+}
+
+
+/* Fix's for some styling - Please put in the more appropriate place */
+
+.button {
+    padding: .526315em .789473em .263157em;
+}
+
+
+
+#wrapper {
+  padding-bottom: 0;
+}
+
+@media (min-width: 641px) {
+.content__body {
+  width: 66.666667%;
+}
+
+h2.heading-medium {
+  margin-top: 1.875em;
+  }
+}
+
+
+.results {
+  margin: 0;
+  padding: 0;
+  font-size: 42px;
+  display: block;
+}
+
+.results--heading {
+
+  margin-bottom: 0.5em;
+  padding: 0;
+
+}
+
+@media (min-width: 641px) {
+    .resultEligibleHeading {
+        margin-top: 1.875em !important;
+        font-size: 28px;
+    }
+
+    .resultNotEligibleHeading {
+        margin-top: 2em !important;
+        font-size: 28px;
+    }
+}
+@media (max-width: 640px) {
+    .resultEligibleHeading, .resultNotEligibleHeading {
+        margin-top: 1.25em !important;
+        font-size: 24px;
+    }
+
+}
+
+.heading-medium {
+    margin-top: 1.875em !important;
+}
+
+.panel .heading-medium {
+  margin-top: 0!important;
+}
+
+.panel-info {
+  margin-bottom: 30px;
+}
+
+.content__body .moreInfo {
+    margin-top: 3em;
+}
+
+.feedback {
+    background-color: #005EA5;
+    padding: 1em;
+    margin: 2em 0;
+}
+
+.feedback,.feedback a {
+    color: #fff
+}
+
+.feedback p {
+    margin: .63158em 0;
+    font-weight: 700;
+}
+
+.notice .icon {
+    margin-top: -17px;
+}
+
+
+.timeout-dialog h1.heading-medium {
+    display: none;
+}
+
+.notice {
+    margin-top: 1em;
+}
+
+.twoYearsOld {
+    margin-bottom: 1em;
+}
+
+.survey {
+  margin-top: 70px;
+}
+
+.sameIncomePY table {
+    margin-bottom: 40px;
+}
+.sameIncomePY table th{
+    font-weight: 700;
+}
+
+.ur-panel {
+  background-color: #005ea5;
+  color: #fff;
+  padding: 10px 20px;
+}
+.ur-panel a:link, .ur-panel a:visited {
+  color: #fff;
+  font-size: 16px;
+}
+
+.f-right p {
+  float: right;
+  font-size: 16px;
+  text-decoration: underline;
+  cursor: pointer;
+}

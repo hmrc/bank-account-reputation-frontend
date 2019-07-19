@@ -1,0 +1,18 @@
+
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET            /                        controllers.HomeController.index
+
+GET           /metadata/:sc             controllers.EiscdValidateController.metadata(sc)
+GET           /metadataLookup           controllers.EiscdValidateController.metadataLookup
+POST          /metadataLookup           controllers.EiscdValidateController.metadataLookup
+
+GET           /bankDetailsValidation    controllers.EiscdValidateController.validation
+POST          /validateBankDetails      controllers.EiscdValidateController.validate
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET           /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET           /language/:lang           controllers.LanguageSwitchController.switchToLanguage(lang: String)
+

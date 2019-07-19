@@ -1,10 +1,8 @@
 package controllers
 
-import com.google.inject.Singleton
-import javax.inject.Inject
+import javax.inject._
 import models._
 import play.api.mvc._
-
 
 @Singleton
 class EiscdValidateController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
@@ -39,19 +37,14 @@ class EiscdValidateController @Inject()(cc: ControllerComponents) extends Abstra
         BadRequest(views.html.validate(formWithErrors))
       },
       account => {
-//        call validation and return result
-       Ok(views.html.validationResult(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
+        //        call validation and return result
+        Ok(views.html.validationResult(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
       }
     )
   }
 
-
   def update = Action {
     Ok("false")
   }
-
-}
-
-object EiscdValidateController {
 
 }
