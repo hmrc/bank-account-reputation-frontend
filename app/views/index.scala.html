@@ -1,3 +1,13 @@
-@()
+@import uk.gov.hmrc.play.views.html.helpers
+@import config.FrontendAppConfig
 
-@main()
+@this(
+    mainTemplate: views.html.main_template,
+    form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+@mainTemplate(title = Messages("bars.title")) {
+    @main()
+}

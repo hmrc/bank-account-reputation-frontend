@@ -14,132 +14,87 @@
  * limitations under the License.
  *@
 
+@import config.FrontendAppConfig
 @import play.twirl.api.HtmlFormat
 
-@(appConfig: config.FrontendAppConfig,
-        title: String,
-        mainClass: Option[String] = None,
-        mainDataAttributes: Option[Html] = None,
-        bodyClasses: Option[String] = None,
-        sidebar: Html = HtmlFormat.empty,
-        contentHeader: Option[Html] = None,
-        mainContent: Html = HtmlFormat.empty,
-        serviceInfoContent: Html = HtmlFormat.empty,
-        timeout: Boolean = true,
-        gaCalls: Option[(String, String) => play.twirl.api.Html] = None,
-        urBanner: Boolean = false,
-        scriptElem: Option[Html] = None)(implicit request: Request[_], messages: Messages)
+@this(
+    govUkTemplate: views.html.layouts.GovUkTemplate,
+    uiHead: uk.gov.hmrc.play.views.html.layouts.Head,
+    uiHeaderNav: uk.gov.hmrc.play.views.html.layouts.HeaderNav,
+    uiFooter: uk.gov.hmrc.play.views.html.layouts.Footer,
+    uiServiceInfo: uk.gov.hmrc.play.views.html.layouts.ServiceInfo,
+    uiMainContentHeader: uk.gov.hmrc.play.views.html.layouts.MainContentHeader,
+    uiMainContent: uk.gov.hmrc.play.views.html.layouts.MainContent,
+    uiFooterLinks: uk.gov.hmrc.play.views.html.layouts.FooterLinks,
+    helperReportAProblemLink: uk.gov.hmrc.play.views.html.helpers.ReportAProblemLink
+)
 
-@import layouts.{govuk_template => hmrcGovUkTemplate}
-@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
-@import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
+@(appConfig: FrontendAppConfig,
+  title: String,
+  mainClass: Option[String] = None,
+  mainDataAttributes: Option[Html] = None,
+  bodyClasses: Option[String] = None,
+  sidebar: Html = HtmlFormat.empty,
+  contentHeader: Option[Html] = None,
+  mainContent: Html = HtmlFormat.empty,
+  serviceInfoContent: Html = HtmlFormat.empty,
+  scriptElem: Option[Html] = None)(implicit request: Request[_], messages: Messages)
 
 @head = {
-    @uiLayouts.head(
-        linkElem = None,
-        headScripts = None)
-        <meta name="format-detection" content="telephone=no" />
-        <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/childcarecalculatorfrontend-app.css")' />
+    @uiHead(
+      linkElem = None,
+      headScripts = None)
+    <meta name="format-detection" content="telephone=no" />
 }
 
 @headerNavLinks = {}
 
 @insideHeader = {
-    @uiLayouts.header_nav(
-        navTitle = Some(messages("site.service_name")),
-        navTitleLink = None,
-        showBetaLink = false,
-        navLinks = Some(headerNavLinks))
+    @uiHeaderNav(
+      navTitle = Some("ia-frontend"),
+      navTitleLink = None,
+      showBetaLink = false,
+      navLinks = Some(headerNavLinks))
 }
 
 @afterHeader = {}
 
 @bodyEnd = {
-    @uiLayouts.footer(
-        analyticsToken = Some(appConfig.analyticsToken),
-        analyticsHost = appConfig.analyticsHost,
-        ssoUrl = None,
-        scriptElem = scriptElem,
-        gaCalls = gaCalls)
-        <script src='@routes.Assets.versioned("javascripts/childcarecalculatorfrontend-app.min.js")'> </script>
-        <script src='@routes.Assets.versioned("javascripts/ccTimeoutDialog.js")'> </script>
-    @if(timeout) {
-        <script type="text/javascript" charset="utf-8">
-                ccTimeoutDialog({
-                    timeout: 1800,
-                    title: "@messages("timeout.heading")",
-                    message: "@messages("timeout.message")",
-                    keep_alive_button_text: "@messages("timeout.continue")",
-                    sign_out_button_text: "@messages("timeout.exit")",
-                    keep_alive_url: '/childcare-calc/session-extend',
-                    start_again_url: '/childcare-calc/session-clear-data',
-                    logout_url: '/childcare-calc/this-service-has-been-reset'
-                });
-                var dialogOpen;
-        </script>
-    }
+    @uiFooter(
+      analyticsToken = Some(appConfig.analyticsToken),
+      analyticsHost = appConfig.analyticsHost,
+      ssoUrl = None,
+      scriptElem = scriptElem,
+      gaCalls = None)
 }
 
 @footerTop = {}
 @footerLinks = {}
 
-
-@betaBanner = {
-    @if(urBanner) {
-        <div id="urBanner" class="ur-panel" >
-            <div class="grid-row">
-                <div class="column-two-thirds">
-                    <p class="bold-small">@messages("urBanner.title")</p>
-                    <p><a target="_blank" rel="external" data-journey-click="link - click :@messages("urBanner.title"):@messages("urBanner.message")"
-                    href=@messages("urBanner.message.link")>@messages("urBanner.message")
-                        <span class="visually-hidden">@messages("site.opens.new.window ")</span></a></p>
-                </div>
-                <div class="column-one-third f-right">
-                    <p id="urBannerLinkNo">@messages("urBanner.message.noThanks.link")</p>
-                </div>
-            </div>
-        </div>
-    }
-
-    @uiLayouts.betaBanner(
-        userLoggedIn = false,
-        betaFeedbackUrl = appConfig.betaFeedbackUrl,
-        betaFeedbackUnauthenticatedUrl = appConfig.betaFeedbackUnauthenticatedUrl,
-        showFeedbackLinkInBetaBanner = true)
-
-}
-
-
 @serviceInfo = {
-    @uiLayouts.serviceInfo(
-        betaBanner = betaBanner,
-        includeGridWrapper = false,
-        serviceInfoContent = Some(serviceInfoContent),
-        includeHMRCBranding = false)
+    @uiServiceInfo(
+      betaBanner = HtmlFormat.empty,
+      includeGridWrapper = false,
+      serviceInfoContent = Some(serviceInfoContent))
 }
 
 @mainContentHeader = {
-    @if(appConfig.languageTranslationEnabled) {
-        @views.html.language_selection(
-            appConfig.languageMap,
-            appConfig.routeToSwitchLanguage,
-            Some("u-align--right"))
-    }
-
     @if(contentHeader.isDefined) {
-        @uiLayouts.main_content_header(contentHeader = contentHeader.get)
+        @uiMainContentHeader(contentHeader = contentHeader.getOrElse(Html("")))
     }
 }
 
+@getHelpForm = @{helperReportAProblemLink(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
 
 @content = {
-    @uiLayouts.main_content(
-        article = mainContent,
-        mainClass = mainClass,
-        mainDataAttributes = mainDataAttributes,
-        mainContentHeader = mainContentHeader,
-        serviceInfo = serviceInfo,
-        sidebar = sidebar)
+    @uiMainContent(
+      article = mainContent,
+      mainClass = mainClass,
+      mainDataAttributes = mainDataAttributes,
+      mainContentHeader = mainContentHeader,
+      serviceInfo = serviceInfo,
+      getHelpForm = getHelpForm,
+      sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), true)(content)
+@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiFooterLinks()), true)(content)
