@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET            /                        controllers.HomeController.index
+GET           /                         controllers.HomeController.index
 
 GET           /metadata/:sc             controllers.EiscdValidateController.metadata(sc)
 GET           /metadataLookup           controllers.EiscdValidateController.metadataLookup

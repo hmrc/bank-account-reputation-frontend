@@ -11,7 +11,7 @@
             <div id="wrapper" class="panel">
                 <br/>
                 <label class="govuk-label--l">Validate Bank Details</label><br/><br/>
-                <form id="validate-form" method="post" action="/validateBankDetails" class="govuk-form" style="width: 50%">
+                <form id="validate-form" method="post" action="@controllers.routes.EiscdValidateController.validate()" class="govuk-form" style="width: 50%">
                     <div class="govuk-form-group">
                         <label class="govuk-label" for="sortCode">
                             Sort Code:
