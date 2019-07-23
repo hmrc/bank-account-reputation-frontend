@@ -1,41 +1,50 @@
 @import config.FrontendAppConfig
+@import controllers.routes
 
 @this(
-    mainTemplate: views.html.main_template,
-    form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+        mainTemplate: views.html.main_template,
+        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 @(accountForm: Form[AccountForm])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
 
-@mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
-<!DOCTYPE html>
-    <html lang="en">
-        <head>
+    @mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
+    <!DOCTYPE html>
+        <html lang="en">
+            <head>
             @views.html.header.render()
-        </head>
-        <body>
-            <div id="wrapper" class="panel">
-                <br/>
-                <label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/>
-                <form id="validate-form" method="post" action="@controllers.routes.EiscdValidateController.validate()" class="govuk-form" style="width: 50%">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label" for="sortCode">
-                            Sort Code:
-                        </label>
-                        <input class="govuk-input" id="sortCode" name="sortCode" type="text">
-                    </div>
-                    <div class="govuk-form-group">
-                        <label class="govuk-label" for="accountNumber">
-                            Account Number:
-                        </label>
-                        <input class="govuk-input" id="accountNumber" name="accountNumber" type="text">
-                    </div>
-                    <button type="submit" class="govuk-button"> Search</button>
-                </form>
-            </div>
-        </body>
-    </html>
-}
+            </head>
+            <body>
+                <div id="wrapper" class="panel">
+                    <br/>
+                    <label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/>
+
+                    @form(action = routes.EiscdValidateController.validate(),
+                        'id -> "validate-form",
+                        'method -> "post",
+                        'class -> "govuk-form",
+                        'autocomplete -> "off",
+                        'enctype -> "multipart/form-data",
+                        'style -> "width: 50%") {
+
+                        <div class="govuk-form-group">
+                            <label class="govuk-label" for="sortCode">
+                                Sort Code:
+                            </label>
+                            <input class="govuk-input" id="sortCode" name="sortCode" type="text">
+                        </div>
+                        <div class="govuk-form-group">
+                            <label class="govuk-label" for="accountNumber">
+                                Account Number:
+                            </label>
+                            <input class="govuk-input" id="accountNumber" name="accountNumber" type="text">
+                        </div>
+                        <button type="submit" class="govuk-button"> Search</button>
+                    }
+                </div>
+            </body>
+        </html>
+    }
 }
