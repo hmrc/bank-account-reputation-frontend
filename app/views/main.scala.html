@@ -1,4 +1,6 @@
-@()
+@import config.FrontendAppConfig
+
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
 <!DOCTYPE html>
@@ -7,10 +9,13 @@
             @views.html.header.render()
         </head>
         <body>
-            <br />
             <div id="wrapper" class="panel">
-                <a class="govuk-link" href="@controllers.routes.EiscdValidateController.validation()">Validate Bank Details</a><br/>
-                <a class="govuk-link" href="@controllers.routes.EiscdValidateController.metadataLookup()">Metadata Lookup</a><br/>
+                <br/>
+                <label class="govuk-label--l">@messages("bars.header")</label><br/><br/>
+                <a class="govuk-link" href="@controllers.routes.EiscdValidateController.validation()">
+                    Validate Bank Details</a><br/><br/>
+                <a class="govuk-link" href="@controllers.routes.EiscdValidateController.metadataLookup()">
+                    Metadata Lookup</a><br/>
             </div>
             <br />
         </body>

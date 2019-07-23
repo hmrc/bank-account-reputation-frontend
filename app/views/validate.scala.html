@@ -1,4 +1,3 @@
-@import uk.gov.hmrc.play.views.html.helpers
 @import config.FrontendAppConfig
 
 @this(
@@ -19,7 +18,7 @@
         <body>
             <div id="wrapper" class="panel">
                 <br/>
-                <label class="govuk-label--l">Validate Bank Details</label><br/><br/>
+                <label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/>
                 <form id="validate-form" method="post" action="@controllers.routes.EiscdValidateController.validate()" class="govuk-form" style="width: 50%">
                     <div class="govuk-form-group">
                         <label class="govuk-label" for="sortCode">
