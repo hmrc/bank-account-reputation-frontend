@@ -1,7 +1,16 @@
-@(accountForm: Form[AccountForm])
-@import play.filters.csrf.CSRF
+@import uk.gov.hmrc.play.views.html.helpers
+@import config.FrontendAppConfig
+
+@this(
+    mainTemplate: views.html.main_template,
+    form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+@(accountForm: Form[AccountForm])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
+
+@mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
 <!DOCTYPE html>
     <html lang="en">
         <head>
@@ -29,4 +38,5 @@
             </div>
         </body>
     </html>
+}
 }

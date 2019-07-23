@@ -1,2 +1,4 @@
-bars.title=Welcome to Bank Validation Reputation Service
+bars.title=Welcome to Bank Account Reputation Service
 bars.header=Please select from the following options
+bars.validate.title=Validate Bank Account
+bars.validate.header=Please fill the form

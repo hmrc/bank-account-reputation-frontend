@@ -12,55 +12,65 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EiscdValidateController @Inject()(connector: BackendConnector,
-                                        mcc: MessagesControllerComponents,
-                                        indexView: views.html.index)
+class EiscdValidateController @Inject()(
+                                         connector: BackendConnector,
+                                         mcc: MessagesControllerComponents,
+                                         indexView: views.html.index,
+                                         validateView: views.html.validate
+                                       )
                                        (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
 
   implicit val Hc: HeaderCarrier = HeaderCarrier()
 
-  def index() = Action { implicit request =>
-    Ok(indexView())
+  def index() = Action {
+
+    implicit request =>
+
+      Ok(indexView())
   }
 
-  // return true/false depending on whether the given sort code is actually in the EISCD data
-  def metadataLookup = Action { implicit request =>
-    Ok(views.html.metadata.render())
+  def metadataLookup = Action {
+
+    implicit request =>
+
+      Ok(views.html.metadata.render())
   }
 
-  // return true/false depending on whether the given sort code is actually in the EISCD data
   def metadata(sc: String) = Action {
-    try {
-      sc.matches("") match {
-        //        case Some(entry) => Ok(Json.toJson(entry))
-        //        case true => Ok(Json.toJson(entry))
-        case true => Ok("MetaData Data")
-        case _ => NotFound
+
+    implicit request =>
+
+      try {
+        sc.matches("") match {
+          //        case Some(entry) => Ok(Json.toJson(entry))
+          //        case true => Ok(Json.toJson(entry))
+          case true => Ok("MetaData Data")
+          case _ => NotFound
+        }
+      } catch {
+        case e: IllegalStateException => InternalServerError
       }
-    } catch {
-      case e: IllegalStateException => InternalServerError
-    }
   }
 
-  def validation = Action { implicit req =>
+  def validation = Action {
 
-    Ok(views.html.validate(accountForm))
+    implicit req =>
+
+      Ok(validateView(accountForm))
   }
 
-  def validate = Action { implicit request =>
-    accountForm.bindFromRequest.fold(
-      formWithErrors => {
-        BadRequest(views.html.validate(formWithErrors))
-      },
-      account => {
-        //        call validation and return result
-        Ok(views.html.validationResult(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
-      }
-    )
-  }
+  def validate = Action {
 
-  def update = Action {
-    Ok("false")
-  }
+    implicit request =>
 
+      accountForm.bindFromRequest.fold(
+        formWithErrors => {
+          BadRequest(validateView(formWithErrors))
+        },
+        account => {
+          //        call validation and return result
+          Ok(views.html.validationResult(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
+        }
+      )
+  }
 }

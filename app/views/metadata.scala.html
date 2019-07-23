@@ -19,27 +19,9 @@
                     </div>
                     <button type="submit" class="govuk-button"> Search</button>
                 </form>
-                {% for address in content %}
                 <div>
                     <hr/>
-
-                    <label class="govuk-label--m">{{address['uprn']}}</label><br/>
-                    {%if address['address']%}
-                    <label class="govuk-label--m">
-                        {{address['address']['lines'][0]}} {{address['address']['lines'][1]}}</label><br/>
-                    <label class="govuk-label--m">{{address['address']['town']}}</label><br/>
-                    <label class="govuk-label--m">{{address['address']['postcode']}}</label><br/>
-                    <label class="govuk-label--m">{{address['address']['country']['name']}}</label><br/>
-                    <a class="govuk-link" href="/fraud-events?uprn={{address['uprn']}}">
-                        Get fraud events<span class="govuk-visually-hidden"> uprn</span>
-                    </a>
-                    <label>&nbsp;&nbsp;&nbsp;</label>
-                    <a class="govuk-link" href="/add-fraud-event?uprn={{address['uprn']}}">
-                        Add fraud event<span class="govuk-visually-hidden"> uprn</span>
-                    </a>
-                    {%endif%}
                 </div>
-                {% endfor %}
             </div>
         </body>
     </html>

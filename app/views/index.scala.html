@@ -2,12 +2,17 @@
 @import config.FrontendAppConfig
 
 @this(
-    mainTemplate: views.html.main_template,
-    form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+        mainTemplate: views.html.main_template,
+        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
 @()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
-@mainTemplate(title = Messages("bars.title")) {
-    @main()
-}
+    @mainTemplate(title = Messages("bars.title")) {
+
+        <br />
+        <br />
+        @main()
+        <br />
+        <br />
+    }
