@@ -16,7 +16,8 @@ class EiscdValidateController @Inject()(
                                          connector: BackendConnector,
                                          mcc: MessagesControllerComponents,
                                          indexView: views.html.index,
-                                         validateView: views.html.validate
+                                         validateView: views.html.validate,
+                                         validationResultView: views.html.validationResult
                                        )
                                        (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
 
@@ -69,7 +70,7 @@ class EiscdValidateController @Inject()(
         },
         account => {
           //        call validation and return result
-          Ok(views.html.validationResult(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
+          Ok(validationResultView(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
         }
       )
   }
