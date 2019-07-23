@@ -20,8 +20,15 @@
                 <div id="wrapper" class="panel">
                     <br/>
                     <label class="govuk-label--l">@messages("bars.validateResults.title")</label><br/><br/>
-                    @validationResult <br />
-                    Is Valid: <b>@validationResult.accountNumberWithSortCodeIsValid</b>
+                    <table>
+                        <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td><td><b>@validationResult.accountNumberWithSortCodeIsValid</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td><td><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.sortCodeIsPresentOnEISCD")</td><td><b>@validationResult.sortCodeIsPresentOnEISCD</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.supportsBACS")</td><td><b>@validationResult.supportsBACS</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.ddiVoucherFlag")</td><td><b>@validationResult.ddiVoucherFlag</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.directDebitsDisallowed")</td><td><b>@validationResult.directDebitsDisallowed</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.directDebitInstructionsDisallowed")</td><td><b>@validationResult.directDebitInstructionsDisallowed</b></td></tr>
+                    </table>
                 </div>
                 <br />
             </body>
