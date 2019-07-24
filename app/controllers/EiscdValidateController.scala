@@ -70,7 +70,7 @@ class EiscdValidateController @Inject()(
         },
         account => {
           //        call validation and return result
-          Ok(validationResultView(ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
+          Ok(validationResultView(account, ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
         }
       )
   }

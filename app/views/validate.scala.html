@@ -1,5 +1,6 @@
 @import config.FrontendAppConfig
 @import controllers.routes
+@import helper._
 
 @this(
         mainTemplate: views.html.main_template,
@@ -29,21 +30,32 @@
                         'enctype -> "multipart/form-data",
                         'style -> "width: 50%") {
 
+                        @CSRF.formField
                         <div class="govuk-form-group">
-                            <label class="govuk-label" for="sortCode">
-                                Sort Code:
-                            </label>
-                            <input class="govuk-input" id="sortCode" name="sortCode" type="text">
+                            @inputText(accountForm("sortCode"), '_label -> "Sort Code:", 'class -> "govuk-label")
                         </div>
                         <div class="govuk-form-group">
-                            <label class="govuk-label" for="accountNumber">
-                                Account Number:
-                            </label>
-                            <input class="govuk-input" id="accountNumber" name="accountNumber" type="text">
+                            @inputText(accountForm("accountNumber"), '_label -> "Account Number:", 'class -> "govuk-label")
                         </div>
                         <button type="submit" class="govuk-button"> Search</button>
                     }
                 </div>
+
+                @if(accountForm.hasErrors || accountForm.hasGlobalErrors) {
+                    <div id="errors" class="govuk-error-summary" >
+                        <label class="govuk-label--m">@messages("bars.errors")</label>
+                        <ul>
+                        @for(error <- accountForm.errors) {
+                            <li>@error.format</li>
+                        }
+                        </ul>
+                        <ul>
+                        @for(error <- accountForm.globalErrors) {
+                            <li>@error.format</li>
+                        }
+                        </ul>
+                    </div>
+                }
             </body>
         </html>
     }

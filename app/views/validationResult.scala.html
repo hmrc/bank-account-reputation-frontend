@@ -5,7 +5,7 @@
         form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
-@(validationResult: ValidationResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountForm: AccountForm, validationResult: ValidationResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 
 @defining(play.core.PlayVersion.current) { version =>
@@ -19,15 +19,24 @@
             <body>
                 <div id="wrapper" class="panel">
                     <br/>
-                    <label class="govuk-label--l">@messages("bars.validateResults.title")</label><br/><br/>
+
                     <table>
-                        <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td><td><b>@validationResult.accountNumberWithSortCodeIsValid</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td><td><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.sortCodeIsPresentOnEISCD")</td><td><b>@validationResult.sortCodeIsPresentOnEISCD</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.supportsBACS")</td><td><b>@validationResult.supportsBACS</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.ddiVoucherFlag")</td><td><b>@validationResult.ddiVoucherFlag</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.directDebitsDisallowed")</td><td><b>@validationResult.directDebitsDisallowed</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.directDebitInstructionsDisallowed")</td><td><b>@validationResult.directDebitInstructionsDisallowed</b></td></tr>
+                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.validateResults.header")</label></td>
+                            <td><b> @accountForm.sortCode / @accountForm.accountNumber </b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td>
+                            <td align="center"><b>@validationResult.accountNumberWithSortCodeIsValid</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>
+                            <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.sortCodeIsPresentOnEISCD")</td>
+                            <td align="center"><b>@validationResult.sortCodeIsPresentOnEISCD</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.supportsBACS")</td>
+                            <td align="center"><b>@validationResult.supportsBACS</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.ddiVoucherFlag")</td>
+                            <td align="center"><b>@validationResult.ddiVoucherFlag</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.directDebitsDisallowed")</td>
+                            <td align="center"><b>@validationResult.directDebitsDisallowed</b></td></tr>
+                        <tr><td align="right">@messages("bars.validateResults.directDebitInstructionsDisallowed")</td>
+                            <td align="center"><b>@validationResult.directDebitInstructionsDisallowed</b></td></tr>
                     </table>
                 </div>
                 <br />

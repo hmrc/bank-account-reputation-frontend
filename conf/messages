@@ -1,5 +1,10 @@
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options:
+bars.errors=Please review the following errors:
+bars.label.accountNumber=Account Number
+bars.label.accountNumberInvalid=A valid account number is required
+bars.label.sortCode=Sort Code
+bars.label.sortCodeInvalid=A valid sort code is required
 bars.validate.title=Validate Bank Account
 bars.validate.header=Please fill the form to validate bank account:
 bars.validateResults.title=Validation Results for Bank Account

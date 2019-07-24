@@ -7,9 +7,9 @@ package object models {
 
   val accountForm: Form[AccountForm] = Form(
     mapping(
-      "sortCode" -> text.verifying(pattern("""[0-9]{6}""".r, error = "A valid sort code is required")),
-      "accountNumber" -> text.verifying(pattern("""[0-9.+]+""".r, error = "A valid account number is required")),
-      "csrfToken" -> text
+      "sortCode" -> text.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
+      "accountNumber" -> text.verifying(pattern("""\d+""".r, error = "bars.label.accountNumberInvalid", name = "")),
+      "csrfToken" -> nonEmptyText
     )(AccountForm.apply)(AccountForm.unapply)
   )
 
