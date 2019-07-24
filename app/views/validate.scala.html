@@ -20,7 +20,7 @@
             <body>
                 <div id="wrapper" class="panel">
                     <br/>
-                    <label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/>
+
 
                     @form(action = routes.EiscdValidateController.validate(),
                         'id -> "validate-form",
@@ -31,12 +31,16 @@
                         'style -> "width: 50%") {
 
                         @CSRF.formField
-                        <div class="govuk-form-group">
-                            @inputText(accountForm("sortCode"), '_label -> "Sort Code:", 'class -> "govuk-label")
-                        </div>
-                        <div class="govuk-form-group">
-                            @inputText(accountForm("accountNumber"), '_label -> "Account Number:", 'class -> "govuk-label")
-                        </div>
+
+                        <table class="govuk-table">
+                            <tr><td align="center"><label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/></td></tr>
+                        </table>
+                        <table class="govuk-table">
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.sortCode")</label></td>
+                                <td><b> @inputText(accountForm("sortCode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.accountNumber")</label></td>
+                                <td><b> @inputText(accountForm("accountNumber"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                        </table>
                         <button type="submit" class="govuk-button"> Search</button>
                     }
                 </div>
