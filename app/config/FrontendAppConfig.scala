@@ -30,7 +30,7 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   private lazy val contactHost = loadConfig("contact-frontend.host")
   private val contactFormServiceIdentifier = "childcarecalculatorfrontend"
 
-  lazy val eligibilityUrl: String =  config.baseUrl("cc-eligibility") + loadConfig("microservice.services.cc-eligibility.url")
+  lazy val eligibilityUrl: String = config.baseUrl("cc-eligibility") + loadConfig("microservice.services.cc-eligibility.url")
 
   lazy val analyticsToken: String = loadConfig("google-analytics.token")
   lazy val analyticsHost: String = loadConfig("google-analytics.host")
@@ -54,8 +54,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   )
 
   def routeToSwitchLanguage: String => Call = (lang: String) => routes.LanguageSwitchController.switchToLanguage(lang)
-  def isWelshEnabled: Boolean =
-    configuration.getBoolean("microservice.services.features.welsh-translation").getOrElse(true)
+
+  def isWelshEnabled: Boolean = config.getBoolean("microservice.services.features.welsh-translation")
 
   lazy val minWorkingHours: Double = config.getString("workingHours.min").toDouble
 

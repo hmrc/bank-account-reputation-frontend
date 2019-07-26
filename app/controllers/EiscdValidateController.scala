@@ -16,6 +16,7 @@ class EiscdValidateController @Inject()(
                                          connector: BackendConnector,
                                          mcc: MessagesControllerComponents,
                                          indexView: views.html.index,
+                                         metadataView: views.html.metadata,
                                          validateView: views.html.validate,
                                          validationResultView: views.html.validationResult
                                        )
@@ -34,7 +35,7 @@ class EiscdValidateController @Inject()(
 
     implicit request =>
 
-      Ok(views.html.metadata())
+      Ok(metadataView())
   }
 
   def metadata(sc: String) = Action {

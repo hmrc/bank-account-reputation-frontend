@@ -1,6 +1,8 @@
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options:
 bars.errors=Please review the following errors:
+bars.options.validate=Validate Bank Details
+bars.options.metadata=Metadata Lookup
 bars.label.accountNumber=Account Number
 bars.label.accountNumberInvalid=A valid account number is required
 bars.label.sortCode=Sort Code

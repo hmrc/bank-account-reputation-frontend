@@ -22,7 +22,7 @@ class LanguageSwitchController @Inject()(
 
   private def langToCall(lang: String): (String) => Call = appConfig.routeToSwitchLanguage
 
-  //  private def fallbackURL: String = routes.WhatToTellTheCalculatorController.onPageLoad().url
+  private def fallbackURL: String = routes.EiscdValidateController.index().url
 
   private def languageMap: Map[String, Lang] = appConfig.languageMap
 

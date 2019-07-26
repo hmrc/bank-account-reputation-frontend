@@ -2,6 +2,7 @@
 
 @this(
         mainTemplate: views.html.main_template,
+        header: views.html.header,
         form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
@@ -14,7 +15,7 @@
     <!DOCTYPE html>
         <html>
             <head>
-            @views.html.header()
+            @header()
             </head>
             <body>
                 <div id="wrapper" class="panel">

@@ -2,6 +2,7 @@
 
 @this(
         mainTemplate: views.html.main_template,
+        mainView: views.html.main,
         form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
 )
 
@@ -11,7 +12,7 @@
 
         <br />
         <br />
-        @main()
+        @mainView()
         <br />
         <br />
     }
