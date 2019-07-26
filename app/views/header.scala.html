@@ -1,6 +1,9 @@
-@()
+@import config.FrontendAppConfig
+
+@(enableWelshToggle: Boolean = true)(implicit request: Request[_], m: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
+
     <meta charset="utf-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,5 +14,19 @@
         <a class="govuk-link" href="@controllers.routes.EiscdValidateController.index()">Home</a><br/>
         <hr/>
         <br />
+    </div>
+    <div class="header-proposition">
+        <div class="content">
+            <nav id="proposition-menu" class="header__menu" role="navigation">
+
+                <ul id="proposition-links" class="header__menu__proposition-links">
+                @if(enableWelshToggle) {
+                    @*<li><span id="language-toggle">@language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage, Some("govuk-header__navigation-item"))</span></li>*@
+                    @*<li><span id="language-toggle">@views.html.language_selection(appConfig.languageMap, appConfig.routeToSwitchLanguage)</span></li>*@
+                }
+                </ul>
+
+            </nav>
+        </div>
     </div>
 }

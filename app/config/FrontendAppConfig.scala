@@ -54,6 +54,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   )
 
   def routeToSwitchLanguage: String => Call = (lang: String) => routes.LanguageSwitchController.switchToLanguage(lang)
+  def isWelshEnabled: Boolean =
+    configuration.getBoolean("microservice.services.features.welsh-translation").getOrElse(true)
 
   lazy val minWorkingHours: Double = config.getString("workingHours.min").toDouble
 

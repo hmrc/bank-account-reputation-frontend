@@ -1,10 +1,12 @@
-@()
+@import config.FrontendAppConfig
+
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
 <!DOCTYPE html>
     <html>
         <head>
-            @views.html.header.render()
+            @views.html.header()
         </head>
         <body>
             <div id="wrapper" class="panel">

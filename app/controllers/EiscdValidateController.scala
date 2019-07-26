@@ -34,7 +34,7 @@ class EiscdValidateController @Inject()(
 
     implicit request =>
 
-      Ok(views.html.metadata.render())
+      Ok(views.html.metadata())
   }
 
   def metadata(sc: String) = Action {
