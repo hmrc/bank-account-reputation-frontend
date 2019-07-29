@@ -9,17 +9,18 @@ import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+
 
 @Singleton
 class BarsController @Inject()(
-                                         connector: BackendConnector,
-                                         mcc: MessagesControllerComponents,
-                                         indexView: views.html.index,
-                                         metadataView: views.html.metadata,
-                                         validateView: views.html.validate,
-                                         validationResultView: views.html.validationResult
-                                       )
+                                connector: BackendConnector,
+                                mcc: MessagesControllerComponents,
+                                indexView: views.html.index,
+                                metadataView: views.html.metadata,
+                                validateView: views.html.validate,
+                                validationResultView: views.html.validationResult
+                              )
                               (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
 
   implicit val Hc: HeaderCarrier = HeaderCarrier()
@@ -61,17 +62,19 @@ class BarsController @Inject()(
       Ok(validateView(accountForm))
   }
 
-  def validate = Action {
+  def validate = Action.async {
 
     implicit request =>
 
       accountForm.bindFromRequest.fold(
         formWithErrors => {
-          BadRequest(validateView(formWithErrors))
+          Future.successful(BadRequest(validateView(formWithErrors)))
         },
         account => {
-          //        call validation and return result
-          Ok(validationResultView(account, ValidationResult(true, "", "", None, None, None, None))) //.flashing("success" -> "Bank details validated!")
+          connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
+            .map(result =>
+              Ok(validationResultView(account, result))
+            )
         }
       )
   }

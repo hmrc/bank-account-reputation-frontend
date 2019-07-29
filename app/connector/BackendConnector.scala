@@ -3,12 +3,14 @@ package connector
 import config.BackendAppConfig
 import javax.inject.Inject
 import models.Implicits._
-import models.{AccountDetails, EiscdEntry, ValidationResult}
+import models.{Account, AccountDetails, EiscdEntry, ValidationResult}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import play.api.libs.json._
+
 
 class BackendConnector @Inject()(
                                   http: HttpClient,
@@ -19,7 +21,7 @@ class BackendConnector @Inject()(
 
   def validate(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ValidationResult] = {
     http.POST(urlValidate, account).map(result =>
-      result.body.asInstanceOf[ValidationResult])
+      Json.fromJson[ValidationResult](Json.parse(result.body)).get)
   }
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier): Future[EiscdEntry] = {
