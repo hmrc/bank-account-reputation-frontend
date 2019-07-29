@@ -16,5 +16,3 @@ POST          /validateBankDetails      controllers.EiscdValidateController.vali
 GET           /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
 
 GET           /language/:lang           controllers.LanguageSwitchController.switchToLanguage(lang: String)
-GET           /switch-to-welsh          controllers.LanguageController.switchToWelsh
-GET           /switch-to-english        controllers.LanguageController.switchToEnglish
