@@ -2,14 +2,14 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET           /                         controllers.EiscdValidateController.index
+GET           /                         controllers.BarsController.index
 
-GET           /metadata/:sc             controllers.EiscdValidateController.metadata(sc)
-GET           /metadataLookup           controllers.EiscdValidateController.metadataLookup
-POST          /metadataLookup           controllers.EiscdValidateController.metadataLookup
+GET           /metadata/:sc             controllers.BarsController.metadata(sc)
+GET           /metadataLookup           controllers.BarsController.metadataLookup
+POST          /metadataLookup           controllers.BarsController.metadataLookup
 
-GET           /bankDetailsValidation    controllers.EiscdValidateController.validation
-POST          /validateBankDetails      controllers.EiscdValidateController.validate
+GET           /bankDetailsValidation    controllers.BarsController.validation
+POST          /validateBankDetails      controllers.BarsController.validate
 
 
 # Map static resources from the /public folder to the /assets URL path

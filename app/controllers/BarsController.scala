@@ -12,7 +12,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class EiscdValidateController @Inject()(
+class BarsController @Inject()(
                                          connector: BackendConnector,
                                          mcc: MessagesControllerComponents,
                                          indexView: views.html.index,
@@ -20,7 +20,7 @@ class EiscdValidateController @Inject()(
                                          validateView: views.html.validate,
                                          validationResultView: views.html.validationResult
                                        )
-                                       (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
+                              (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
 
   implicit val Hc: HeaderCarrier = HeaderCarrier()
 
