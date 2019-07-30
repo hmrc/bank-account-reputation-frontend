@@ -2,16 +2,19 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET           /                         controllers.BarsController.index
+GET         /                             controllers.BarsController.index
 
-GET           /metadataLookup           controllers.BarsController.metadataLookup
-POST          /metadata                 controllers.BarsController.metadata
+GET         /metadataLookup               controllers.BarsController.metadataLookup
+POST        /metadata                     controllers.BarsController.metadata
 
-GET           /bankDetailsValidation    controllers.BarsController.validation
-POST          /validateBankDetails      controllers.BarsController.validate
+GET         /modChecking                  controllers.BarsController.modChecking
+POST        /modcheck                     controllers.BarsController.modCheck
+
+GET         /bankDetailsValidation        controllers.BarsController.validation
+POST        /validateBankDetails          controllers.BarsController.validate
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file             controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file                 controllers.Assets.versioned(path="/public", file: Asset)
 
-GET           /language/:lang           controllers.LanguageSwitchController.switchToLanguage(lang: String)
+GET         /language/:lang               controllers.LanguageSwitchController.switchToLanguage(lang: String)

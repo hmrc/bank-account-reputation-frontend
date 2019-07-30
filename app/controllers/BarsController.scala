@@ -19,6 +19,8 @@ class BarsController @Inject()(
                                 indexView: views.html.index,
                                 metadataView: views.html.metadata,
                                 metadataResultView: views.html.metadataResult,
+                                modckeckView: views.html.modcheck,
+                                modckeckResultView: views.html.modcheckResult,
                                 validateView: views.html.validate,
                                 validationResultView: views.html.validationResult
                               )
@@ -52,6 +54,30 @@ class BarsController @Inject()(
           connector.metadata(account.sortCode)
             .map(result =>
               Ok(metadataResultView(account, result))
+            )
+        }
+      )
+  }
+
+  def modChecking = Action {
+
+    implicit req =>
+
+      Ok(modckeckView(accountForm))
+  }
+
+  def modCheck = Action.async {
+
+    implicit request =>
+
+      accountForm.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(modckeckView(formWithErrors)))
+        },
+        account => {
+          connector.modcheck(AccountDetails(Account(account.sortCode, account.accountNumber)))
+            .map(result =>
+              Ok(modckeckResultView(account, result))
             )
         }
       )

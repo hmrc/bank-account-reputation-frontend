@@ -3,7 +3,7 @@ package connector
 import config.BackendAppConfig
 import javax.inject.Inject
 import models.Implicits._
-import models.{AccountDetails, EiscdEntry, ValidationResult}
+import models._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
@@ -16,11 +16,17 @@ class BackendConnector @Inject()(
                                   bars: BackendAppConfig) {
 
   private val urlValidate = s"${bars.baseUrl}/validateBankDetails"
+  private val urlModcheck = s"${bars.baseUrl}/modcheck"
   private val urlMetadata = s"${bars.baseUrl}/metadata/"
 
   def validate(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ValidationResult] = {
 
     http.POST(urlValidate, account).map(response => response.json.validate[ValidationResult].get)
+  }
+
+  def modcheck(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ModCheckResult] = {
+
+    http.POST(urlModcheck, account).map(response => response.json.validate[ModCheckResult].get)
   }
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier): Future[EiscdEntry] = {

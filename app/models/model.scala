@@ -6,7 +6,7 @@ case class AccountDetails(account: Account)
 
 case class Account(sortCode: String, accountNumber: String)
 
-case class Verification(accountNumberWithSortCodeIsValid: Boolean, nonStandardAccountDetailsRequiredForBacs: String)
+case class ModCheckResult(accountNumberWithSortCodeIsValid: Boolean, nonStandardAccountDetailsRequiredForBacs: String)
 
 case class ValidationResult(accountNumberWithSortCodeIsValid: Boolean,
                             nonStandardAccountDetailsRequiredForBacs: String,
@@ -61,6 +61,8 @@ object Implicits {
   implicit val accountDetailsFormat = Json.format[AccountDetails]
 
   implicit val validationResultFormat = Json.format[ValidationResult]
+
+  implicit val modcheckResultFormat = Json.format[ModCheckResult]
 
   def opt(str: String): Option[String] = str.isEmpty match {
     case true => None
