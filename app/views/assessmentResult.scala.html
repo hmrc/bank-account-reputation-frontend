@@ -1,0 +1,47 @@
+@import config.FrontendAppConfig
+
+@this(
+        mainTemplate: views.html.main_template,
+        header: views.html.header,
+        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+@(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+
+@defining(play.core.PlayVersion.current) { version =>
+
+    @mainTemplate(title = Messages("bars.assessmentResult.title"), bodyClasses = None) {
+    <!DOCTYPE html>
+        <html>
+            <head>
+            @header()
+            </head>
+            <body>
+                <div id="wrapper" class="panel">
+                    <br/>
+
+                    <table>
+                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.assessmentResult.header")</label></td>
+                            <td><b> @inputForm.input.account  / @inputForm.input </b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.accountNumberWithSortCodeIsValid")</td>
+                            <td align="center"><b>@assessment.accountNumberWithSortCodeIsValid</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.accountExists")</td>
+                            <td align="center"><b>@assessment.accountExists</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.nameMatches")</td>
+                            <td align="center"><b>@assessment.nameMatches</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.addressMatches")</td>
+                            <td align="center"><b>@assessment.addressMatches</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.nonConsented")</td>
+                            <td align="center"><b>@assessment.nonConsented</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.subjectHasDeceased")</td>
+                            <td align="center"><b>@assessment.subjectHasDeceased</b></td></tr>
+                        <tr><td align="right">@messages("bars.assessmentResult.nonStandardAccountDetailsRequiredForBacs")</td>
+                            <td align="center"><b>@assessment.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
+                    </table>
+                </div>
+                <br />
+            </body>
+        </html>
+    }
+}

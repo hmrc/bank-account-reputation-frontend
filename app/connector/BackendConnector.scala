@@ -18,6 +18,7 @@ class BackendConnector @Inject()(
   private val urlValidate = s"${bars.baseUrl}/validateBankDetails"
   private val urlModcheck = s"${bars.baseUrl}/modcheck"
   private val urlMetadata = s"${bars.baseUrl}/metadata/"
+  private val urlAssess = s"${bars.baseUrl}/assess"
 
   def validate(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ValidationResult] = {
 
@@ -34,6 +35,11 @@ class BackendConnector @Inject()(
     http.GET(urlMetadata + sortCode).map(response => response.status match {
       case 200 => response.json.validate[EiscdEntry].get
     })
+  }
+
+  def assess(account: Input)(implicit hc: HeaderCarrier): Future[Assessment] = {
+
+    http.POST(urlAssess, account).map(response => response.json.validate[Assessment].get)
   }
 }
 

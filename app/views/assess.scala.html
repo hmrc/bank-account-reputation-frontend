@@ -1,0 +1,85 @@
+@import config.FrontendAppConfig
+@import controllers.routes
+@import helper._
+
+@this(
+        mainTemplate: views.html.main_template,
+        header: views.html.header,
+        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+@defining(play.core.PlayVersion.current) { version =>
+
+    @mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
+    <!DOCTYPE html>
+        <html>
+            <head>
+            @header()
+            </head>
+            <body>
+                <div id="wrapper" class="panel">
+                    <br/>
+
+
+                    @form(action = routes.BarsController.assess(),
+                        'id -> "validate-form",
+                        'method -> "post",
+                        'class -> "govuk-form",
+                        'autocomplete -> "off",
+                        'enctype -> "multipart/form-data",
+                        'style -> "width: 50%") {
+
+                        @CSRF.formField
+
+                        <table class="govuk-table">
+                            <tr><td align="center"><label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/></td></tr>
+                        </table>
+                        <table class="govuk-table">
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.sortCode")</label></td>
+                                <td><b> @inputText(inputForm("input.account.sortCode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.accountNumber")</label></td>
+                                <td><b> @inputText(inputForm("input.account.accountNumber"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.title")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.title"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.name")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.name"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.firstName")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.firstName"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.lastName")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.lastName"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.dob")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.dob"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.line1")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.address.lines[0]"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.line2")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.address.lines[1]"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.town")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.address.town"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.postcode")</label></td>
+                                <td><b> @inputText(inputForm("input.subject.address.postcode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                        </table>
+                        <button type="submit" class="govuk-button"> Search</button>
+                    }
+                </div>
+
+                @if(inputForm.hasErrors || inputForm.hasGlobalErrors) {
+                    <div id="errors" class="govuk-error-summary" >
+                        <label class="govuk-label--m">@messages("bars.errors")</label>
+                        <ul>
+                        @for(error <- inputForm.errors) {
+                            <li>@error.format</li>
+                        }
+                        </ul>
+                        <ul>
+                        @for(error <- inputForm.globalErrors) {
+                            <li>@error.format</li>
+                        }
+                        </ul>
+                    </div>
+                }
+            </body>
+        </html>
+    }
+}

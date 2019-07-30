@@ -4,6 +4,9 @@
 
 GET         /                             controllers.BarsController.index
 
+GET         /assessment                   controllers.BarsController.assessment
+POST        /assess                       controllers.BarsController.assess
+
 GET         /metadataLookup               controllers.BarsController.metadataLookup
 POST        /metadata                     controllers.BarsController.metadata
 

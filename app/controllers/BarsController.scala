@@ -22,7 +22,9 @@ class BarsController @Inject()(
                                 modckeckView: views.html.modcheck,
                                 modckeckResultView: views.html.modcheckResult,
                                 validateView: views.html.validate,
-                                validationResultView: views.html.validationResult
+                                validationResultView: views.html.validationResult,
+                                assessmentView: views.html.assess,
+                                assessmentResultView: views.html.assessmentResult
                               )
                               (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
 
@@ -102,6 +104,30 @@ class BarsController @Inject()(
           connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
             .map(result =>
               Ok(validationResultView(account, result))
+            )
+        }
+      )
+  }
+
+  def assessment = Action {
+
+    implicit req =>
+
+      Ok(assessmentView(inputForm))
+  }
+
+  def assess = Action.async {
+
+    implicit request =>
+
+      inputForm.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(assessmentView(formWithErrors)))
+        },
+        input => {
+          connector.assess(input.input)
+            .map(result =>
+              Ok(assessmentResultView(input, result))
             )
         }
       )
