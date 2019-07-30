@@ -4,9 +4,8 @@
 
 GET           /                         controllers.BarsController.index
 
-GET           /metadata/:sc             controllers.BarsController.metadata(sc)
 GET           /metadataLookup           controllers.BarsController.metadataLookup
-POST          /metadataLookup           controllers.BarsController.metadataLookup
+POST          /metadata                 controllers.BarsController.metadata
 
 GET           /bankDetailsValidation    controllers.BarsController.validation
 POST          /validateBankDetails      controllers.BarsController.validate

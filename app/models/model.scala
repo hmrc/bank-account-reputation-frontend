@@ -31,14 +31,20 @@ case class EiscdEntry(bankCode: String,
                       address: EiscdAddress,
                       bacsOfficeStatus: String,
                       branchName: Option[String] = None,
-                      ddiVoucherFlag: Option[String] = None,
-                      disallowedTransactions: Seq[String] = Seq.empty)
+                      ddiVoucherFlag: Option[String] = None
+                      //                      ,                      disallowedTransactions: Seq[String] = Seq.empty
+                     )
 
 case class AccountForm(
                         sortCode: String,
                         accountNumber: String,
                         csrfToken: String
                       )
+
+case class SortCodeForm(
+                         sortCode: String,
+                         csrfToken: String
+                       )
 
 object Implicits {
 

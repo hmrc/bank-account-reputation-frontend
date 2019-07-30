@@ -1,0 +1,55 @@
+@import config.FrontendAppConfig
+
+@this(
+        mainTemplate: views.html.main_template,
+        header: views.html.header,
+        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
+)
+
+@(sortCodeForm: SortCodeForm, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+
+@defining(play.core.PlayVersion.current) { version =>
+
+    @mainTemplate(title = Messages("bars.metadataResults.title"), bodyClasses = None) {
+    <!DOCTYPE html>
+        <html>
+            <head>
+            @header()
+            </head>
+            <body>
+                <div id="wrapper" class="panel">
+                    <br/>
+
+                    <table>
+                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.metadataResults.header")</label></td>
+                            <td><b> @sortCodeForm.sortCode </b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
+                            <td align="center"><b>@metadata.bankCode</b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
+                            <td align="center"><b>@metadata.bankName</b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.address")</td>
+                            <td align="center"><pre><b>
+                                @metadata.address.lines.mkString(" ")
+                                @metadata.address.zipCode
+                                @metadata.address.town
+                                @metadata.address.county
+                                @metadata.address.country
+                                @metadata.address.postCode
+                                @metadata.address.zipCode </b>
+                            </pre></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
+                            <td align="center"><b>@metadata.bacsOfficeStatus</b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
+                            <td align="center"><b>@metadata.branchName</b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.ddiVoucherFlag")</td>
+                            <td align="center"><b>@metadata.ddiVoucherFlag</b></td></tr>
+                        @*<tr><td align="right">@messages("bars.metadataResults.disallowedTransactions")</td>*@
+                        @*<td align="center"><b>@metadata.disallowedTransactions</b></td></tr>*@
+                    </table>
+                </div>
+                <br />
+            </body>
+        </html>
+    }
+}

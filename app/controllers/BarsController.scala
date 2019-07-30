@@ -18,6 +18,7 @@ class BarsController @Inject()(
                                 mcc: MessagesControllerComponents,
                                 indexView: views.html.index,
                                 metadataView: views.html.metadata,
+                                metadataResultView: views.html.metadataResult,
                                 validateView: views.html.validate,
                                 validationResultView: views.html.validationResult
                               )
@@ -36,23 +37,24 @@ class BarsController @Inject()(
 
     implicit request =>
 
-      Ok(metadataView())
+      Ok(metadataView(sortCodeForm))
   }
 
-  def metadata(sc: String) = Action {
+  def metadata = Action.async {
 
     implicit request =>
 
-      try {
-        sc.matches("") match {
-          //        case Some(entry) => Ok(Json.toJson(entry))
-          //        case true => Ok(Json.toJson(entry))
-          case true => Ok("MetaData Data")
-          case _ => NotFound
+      sortCodeForm.bindFromRequest.fold(
+        formWithErrors => {
+          Future.successful(BadRequest(metadataView(formWithErrors)))
+        },
+        account => {
+          connector.metadata(account.sortCode)
+            .map(result =>
+              Ok(metadataResultView(account, result))
+            )
         }
-      } catch {
-        case e: IllegalStateException => InternalServerError
-      }
+      )
   }
 
   def validation = Action {
