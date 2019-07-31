@@ -44,7 +44,8 @@ package object models {
               (subject.lastName.isDefined && subject.name.isEmpty) ||
               (subject.name.isDefined && subject.firstName.isEmpty && subject.lastName.isEmpty))
           .verifying("bars.label.partNamesInvalid", subject =>
-            subject.firstName.isDefined && subject.lastName.isDefined)
+            subject.firstName.isDefined && subject.lastName.isDefined ||
+              subject.firstName.isEmpty && subject.lastName.isEmpty)
       )(Input.apply)(Input.unapply),
       "csrfToken" -> nonEmptyText
     )(InputForm.apply)(InputForm.unapply)
