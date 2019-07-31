@@ -39,6 +39,12 @@ package object models {
             "postcode" -> optional(text.verifying(pattern(regex = """.+""".r, error = "bars.label.postcodeInvalid", name = "")))
           )(Address.apply)(Address.unapply)
         )(Subject.apply)(Subject.unapply)
+          .verifying("bars.label.fullNameAndPartNames", subject =>
+            (subject.firstName.isDefined && subject.name.isEmpty) ||
+              (subject.lastName.isDefined && subject.name.isEmpty) ||
+              (subject.name.isDefined && subject.firstName.isEmpty && subject.lastName.isEmpty))
+          .verifying("bars.label.partNamesInvalid", subject =>
+            subject.firstName.isDefined && subject.lastName.isDefined)
       )(Input.apply)(Input.unapply),
       "csrfToken" -> nonEmptyText
     )(InputForm.apply)(InputForm.unapply)
