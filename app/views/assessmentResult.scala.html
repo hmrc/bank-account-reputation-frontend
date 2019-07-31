@@ -8,7 +8,6 @@
 
 @(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
-
 @defining(play.core.PlayVersion.current) { version =>
 
     @mainTemplate(title = Messages("bars.assessmentResult.title"), bodyClasses = None) {
@@ -20,10 +19,9 @@
             <body>
                 <div id="wrapper" class="panel">
                     <br/>
-
                     <table>
                         <tr><td align="right"><label class="govuk-label--l">@messages("bars.assessmentResult.header")</label></td>
-                            <td><b> @inputForm.input.account  / @inputForm.input </b></td></tr>
+                            <td><b> @value(inputForm.input.account)  / @value(inputForm.input.subject.name) @value(inputForm.input.subject.firstName)  @value(inputForm.input.subject.lastName) - @value(inputForm.input.subject.address.lines)  @value(inputForm.input.subject.address.postcode)</b></td></tr>
                         <tr><td align="right">@messages("bars.assessmentResult.accountNumberWithSortCodeIsValid")</td>
                             <td align="center"><b>@assessment.accountNumberWithSortCodeIsValid</b></td></tr>
                         <tr><td align="right">@messages("bars.assessmentResult.accountExists")</td>
@@ -43,5 +41,15 @@
                 <br />
             </body>
         </html>
+    }
+}
+
+@value(obj: Any) = @{
+
+    obj match {
+
+        case option: Option[String] => option.getOrElse("")
+        case list: List[String] => if(list.isEmpty) "" else list.map(item => item.trim).mkString(" ")
+        case obj => obj.toString
     }
 }
