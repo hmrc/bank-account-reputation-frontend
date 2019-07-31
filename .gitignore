@@ -41,3 +41,4 @@ dist
 bin
 /*.ipr
 *.iws
+worksheet.sc
