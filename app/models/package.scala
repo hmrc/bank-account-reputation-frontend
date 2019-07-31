@@ -24,8 +24,8 @@ package object models {
     mapping(
       "input" -> mapping(
         "account" -> mapping(
-          "sortCode" -> text.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
-          "accountNumber" -> text.verifying(pattern("""\d+""".r, error = "bars.label.accountNumberInvalid", name = ""))
+          "sortCode" -> nonEmptyText.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
+          "accountNumber" -> nonEmptyText.verifying(pattern("""\d+""".r, error = "bars.label.accountNumberInvalid", name = ""))
         )(Account.apply)(Account.unapply),
         "subject" -> mapping(
           "title" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.titleInvalid", name = ""))),
@@ -36,7 +36,7 @@ package object models {
           "address" -> mapping(
             "lines" -> list(text.verifying(pattern(regex = """.+""".r, error = "bars.label.lineInvalid", name = ""))),
             "town" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.townInvalid", name = ""))),
-            "postcode" -> optional(text.verifying(pattern(regex = """.+""".r, error = "bars.label.postcodeInvalid", name = "")))
+            "postcode" -> optional(nonEmptyText.verifying(pattern(regex = """.+""".r, error = "bars.label.postcodeInvalid", name = "")))
           )(Address.apply)(Address.unapply)
         )(Subject.apply)(Subject.unapply)
           .verifying("bars.label.fullNameAndPartNames", subject =>
