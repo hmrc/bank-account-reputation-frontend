@@ -1,5 +1,7 @@
 # Bank Account Reputation Frontend
 
+*BASE URL: /bank-account-reputation-frontend*
+
 This is a front end for [BARS - Bank Account Reputation Service](https://github.com/hmrc/bank-account-reputation/blob/master/docs/README.md)
 
 The following **BARS** services can be availed through this UI:
