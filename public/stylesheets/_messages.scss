@@ -1,0 +1,27 @@
+.message-inbox__list {
+  display: table;
+  width: 100%;
+  margin-bottom: 20px;
+
+  .message-inbox__list-item {
+    width: 100%;
+    td{font-weight: bold;}
+    a:link {
+      text-decoration: none;
+    }
+    &.message-inbox__list-item--read {
+      background-color: #f8f8f8;
+      td{
+        font-weight: normal;
+      }
+    }
+  }
+
+  .message-inbox__block {
+    display: table-cell;
+    width: 100%;
+    &.no-wrap {
+      white-space: nowrap;
+    }
+  }
+}

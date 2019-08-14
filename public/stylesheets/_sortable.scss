@@ -1,0 +1,35 @@
+
+th {
+
+  a {
+    position: relative;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &.descending a:after,
+  &.ascending a:after {
+    content: "\00a0\00a0\25BC";
+    font-size: 8px;
+  }
+
+  &.ascending a:after {
+    content: "\00a0\00a0\25B2";
+  }
+
+}
+
+.currency, .percent, .integer, .number {
+  text-align: right;
+}
+
+table thead .sort-column,
+table tbody .sort-column {
+  font-weight: bold;
+}
+
+table.fixed { table-layout:fixed; }
+table.fixed td { overflow: hidden; }
+

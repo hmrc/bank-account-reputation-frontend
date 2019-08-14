@@ -1,0 +1,56 @@
+.upload-list li, .download-list li {
+  border-bottom: 1px solid #bfc1c3;
+  padding-bottom: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.upload-list .upload-list-file-name, .download-list .download-list-file-name {
+  width: 40%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.download-list .download-list-file-name {
+  width:70%;
+}
+
+.upload-list .upload-list-file-size, .download-list .download-list-file-size {
+  width: 15%;
+  overflow: hidden;
+}
+
+.upload-list .upload-list-file-select-type, .download-list .download-list-file-type {
+  width: 30%;
+  margin-right: 20px;
+}
+
+.upload-list .upload-list-file-remove, .download-list .download-list-file-link {
+  margin-top: 4px;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.download-list .download-list-file-link {
+  display:inline-block;
+  text-align:right;
+  width:28%;
+}
+
+.upload-list .upload-list-file-name, .upload-list .upload-list-file-size, .upload-list .upload-list-file-select-type, .upload-list .upload-list-file-remove,
+.download-list .download-list-file-name, .download-list .download-list-file-size, .download-list .download-list-file-type, .download-list .download-list-file-link {
+  display: inline-block;
+}
+
+
+.button-link {
+  background: none !important;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  color: #005ea5;
+  box-shadow: none;
+}
