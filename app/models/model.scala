@@ -34,6 +34,25 @@ case class EiscdAddress(lines: Seq[String],
                         postCode: Option[String],
                         zipCode: Option[String])
 
+object BacsStatus extends Enumeration {
+
+  type BacsStatus = Value
+
+  protected case class Val(status: String) extends super.Val
+
+  import scala.language.implicitConversions
+
+  implicit def valueToBacsStatusVal(x: Value): Val = x.asInstanceOf[Val]
+
+  val NA = Val("!!! Unknown Bacs Office Status !!!")
+
+  val M = Val("The bank office of a Bacs member; accepts Bacs payments")
+
+  val A = Val("The bank office of an agency bank; accepts Bacs payments")
+
+  val N = Val("he bank office does not accept Bacs payments. See field 17.")
+}
+
 object TransactionType extends Enumeration {
 
   type TransactionType = Value
@@ -44,7 +63,7 @@ object TransactionType extends Enumeration {
 
   implicit def valueToTransactionTypeVal(x: Value): Val = x.asInstanceOf[Val]
 
-  val NA = Val("")
+  val NA = Val("!!! Unknown Transaction Type !!!")
 
   val DR = Val("Direct Debits")
 
@@ -61,12 +80,13 @@ object TransactionType extends Enumeration {
   val AU = Val("Direct Debit instructions")
 }
 
+import models.BacsStatus.BacsStatus
 import models.TransactionType._
 
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
-                      bacsOfficeStatus: String,
+                      bacsOfficeStatus: BacsStatus,
                       branchName: Option[String] = None,
                       ddiVoucherFlag: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty)
@@ -138,7 +158,9 @@ object Implicits {
 
   implicit val assessmentFormat = Json.format[Assessment]
 
-  implicit def transactionType(transactionTypeCode: String): TransactionType = TransactionType.values.find(_.toString.matches(transactionTypeCode)).getOrElse(NA)
+  implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
+
+  implicit def transactionType(transactionTypeCode: String): TransactionType = TransactionType.values.find(_.toString.matches(transactionTypeCode)).getOrElse(TransactionType.NA)
 
   implicit def transactionTypes(transactionTypeCodes: Option[Seq[String]]): Seq[TransactionType] = transactionTypeCodes.getOrElse(Seq.empty).map(code => transactionType(code))
 
@@ -146,7 +168,7 @@ object Implicits {
     ((JsPath \ "bankCode").read[String] and
       (JsPath \ "bankName").read[String] and
       (JsPath \ "address").read[EiscdAddress] and
-      (JsPath \ "bacsOfficeStatus").read[String] and
+      (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus _) and
       (JsPath \ "branchName").readNullable[String] and
       (JsPath \ "ddiVoucherFlag").readNullable[String] and
       (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _)
