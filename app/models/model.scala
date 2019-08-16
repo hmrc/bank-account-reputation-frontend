@@ -16,7 +16,9 @@
 
 package models
 
-import play.api.libs.json.Json
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 case class AccountDetails(account: Account)
 
@@ -37,9 +39,8 @@ case class EiscdEntry(bankCode: String,
                       address: EiscdAddress,
                       bacsOfficeStatus: String,
                       branchName: Option[String] = None,
-                      ddiVoucherFlag: Option[String] = None
-                      //                      ,                      disallowedTransactions: Seq[String] = Seq.empty
-                     )
+                      ddiVoucherFlag: Option[String] = None,
+                      disallowedTransactions: Seq[String] = Seq.empty)
 
 case class Address(lines: List[String],
                    town: Option[String],
@@ -96,8 +97,6 @@ object Implicits {
 
   implicit val eiscdAddressFormat = Json.format[EiscdAddress]
 
-  implicit val eiscdEntryFormat = Json.format[EiscdEntry]
-
   implicit val addressFormat = Json.format[Address]
 
   implicit val subjectFormat = Json.format[Subject]
@@ -109,6 +108,16 @@ object Implicits {
   implicit val modcheckResultFormat = Json.format[ModCheckResult]
 
   implicit val assessmentFormat = Json.format[Assessment]
+
+  implicit val eiscdReads: Reads[EiscdEntry] =
+    ((JsPath \ "bankCode").read[String] and
+      (JsPath \ "bankName").read[String] and
+      (JsPath \ "address").read[EiscdAddress] and
+      (JsPath \ "bacsOfficeStatus").read[String] and
+      (JsPath \ "branchName").readNullable[String] and
+      (JsPath \ "ddiVoucherFlag").readNullable[String] and
+      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(_.getOrElse(Seq.empty))
+      ) (EiscdEntry.apply _)
 
   def opt(str: String): Option[String] = str.isEmpty match {
     case true => None

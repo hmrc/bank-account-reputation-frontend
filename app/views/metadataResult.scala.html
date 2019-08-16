@@ -60,8 +60,16 @@
                             <td align="center"><b>@metadata.branchName</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.ddiVoucherFlag")</td>
                             <td align="center"><b>@metadata.ddiVoucherFlag</b></td></tr>
-                        @*<tr><td align="right">@messages("bars.metadataResults.disallowedTransactions")</td>*@
-                        @*<td align="center"><b>@metadata.disallowedTransactions</b></td></tr>*@
+                        <tr><td align="right">@messages("bars.metadataResults.disallowedTransactions")</td>
+                            <td align="center">
+                            @if(!metadata.disallowedTransactions.isEmpty) {
+                                <ul>
+                                @for(txn <- metadata.disallowedTransactions) {
+                                    <li><b>@txn</b></li>
+                                }
+                                </ul>
+                            }
+                            </td></tr>
                     </table>
                 </div>
                 <br />
