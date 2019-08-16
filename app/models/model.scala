@@ -34,13 +34,42 @@ case class EiscdAddress(lines: Seq[String],
                         postCode: Option[String],
                         zipCode: Option[String])
 
+object TransactionType extends Enumeration {
+
+  type TransactionType = Value
+
+  protected case class Val(name: String) extends super.Val
+
+  import scala.language.implicitConversions
+
+  implicit def valueToTransactionTypeVal(x: Value): Val = x.asInstanceOf[Val]
+
+  val NA = Val("")
+
+  val DR = Val("Direct Debits")
+
+  val CR = Val("Direct Credits")
+
+  val CU = Val("Claims for unpaid cheques")
+
+  val PR = Val("Life office debit No longer used")
+
+  val BS = Val("Building society credits")
+
+  val DV = Val("Dividend interest payments")
+
+  val AU = Val("Direct Debit instructions")
+}
+
+import models.TransactionType._
+
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
                       bacsOfficeStatus: String,
                       branchName: Option[String] = None,
                       ddiVoucherFlag: Option[String] = None,
-                      disallowedTransactions: Seq[String] = Seq.empty)
+                      disallowedTransactions: Seq[TransactionType] = Seq.empty)
 
 case class Address(lines: List[String],
                    town: Option[String],
@@ -109,6 +138,10 @@ object Implicits {
 
   implicit val assessmentFormat = Json.format[Assessment]
 
+  implicit def transactionType(transactionTypeCode: String): TransactionType = TransactionType.values.find(_.toString.matches(transactionTypeCode)).getOrElse(NA)
+
+  implicit def transactionTypes(transactionTypeCodes: Option[Seq[String]]): Seq[TransactionType] = transactionTypeCodes.getOrElse(Seq.empty).map(code => transactionType(code))
+
   implicit val eiscdReads: Reads[EiscdEntry] =
     ((JsPath \ "bankCode").read[String] and
       (JsPath \ "bankName").read[String] and
@@ -116,7 +149,7 @@ object Implicits {
       (JsPath \ "bacsOfficeStatus").read[String] and
       (JsPath \ "branchName").readNullable[String] and
       (JsPath \ "ddiVoucherFlag").readNullable[String] and
-      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(_.getOrElse(Seq.empty))
+      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _)
       ) (EiscdEntry.apply _)
 
   def opt(str: String): Option[String] = str.isEmpty match {

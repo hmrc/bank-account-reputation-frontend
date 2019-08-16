@@ -71,7 +71,7 @@
                             @if(!metadata.disallowedTransactions.isEmpty) {
                                 <ul>
                                 @for(txn <- metadata.disallowedTransactions) {
-                                    <li><b>@txn</b></li>
+                                    <li><b>@txn.name</b></li>
                                 }
                                 </ul>
                             }
