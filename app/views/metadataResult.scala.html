@@ -45,15 +45,21 @@
                         <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
                             <td align="center"><b>@metadata.bankName</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.address")</td>
-                            <td align="center"><pre><b>
-                                @metadata.address.lines.mkString(" ")
-                                @metadata.address.zipCode
-                                @metadata.address.town
-                                @metadata.address.county
-                                @metadata.address.country
-                                @metadata.address.postCode
-                                @metadata.address.zipCode </b>
-                            </pre></td></tr>
+                            <td align="center"><b>
+                                <ul>
+                                    @for(line <- metadata.address.lines){
+                                        <li>@line</li>
+                                    }
+                                    <li>@metadata.address.zipCode</li>
+                                    <li>@metadata.address.town</li>
+                                    <li>@metadata.address.county</li>
+                                    @if(metadata.address.country.isDefined) {
+                                        <li>@metadata.address.country.map(_.name)</li>
+                                    }
+                                    <li>@metadata.address.postCode</li>
+                                    <li>@metadata.address.zipCode</li>
+                                </ul>
+                            </b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
                             <td align="center"><b>@metadata.bacsOfficeStatus</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
