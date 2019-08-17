@@ -39,15 +39,15 @@ package object models {
     mapping(
       "input" -> mapping(
         "account" -> mapping(
-          "sortCode" -> nonEmptyText.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
-          "accountNumber" -> nonEmptyText.verifying(pattern("""\d+""".r, error = "bars.label.accountNumberInvalid", name = ""))
+          "sortCode" -> nonEmptyText.verifying(pattern(regex = """[0-9]{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
+          "accountNumber" -> nonEmptyText.verifying(pattern("""[0-9]{8}""".r, error = "bars.label.accountNumberInvalid", name = ""))
         )(Account.apply)(Account.unapply),
         "subject" -> mapping(
           "title" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.titleInvalid", name = ""))),
           "name" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.nameInvalid", name = ""))),
           "firstName" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.firstNameInvalid", name = ""))),
           "lastName" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.lastNameInvalid", name = ""))),
-          "dob" -> optional(text.verifying(pattern(regex = """[\d\]+""".r, error = "bars.label.dobInvalid", name = ""))),
+          "dob" -> optional(text.verifying(pattern(regex = """[12][0-9]{3}-[01][0-9]-[0-3][0-9]""".r, error = "bars.label.dobInvalid", name = ""))),
           "address" -> mapping(
             "lines" -> list(text.verifying(pattern(regex = """.+""".r, error = "bars.label.lineInvalid", name = ""))),
             "town" -> optional(text.verifying(pattern(regex = """\D+""".r, error = "bars.label.townInvalid", name = ""))),
