@@ -71,7 +71,7 @@ object TransactionType extends Enumeration {
 
   val CU = Val("Claims for unpaid cheques")
 
-  val PR = Val("Life office debit No longer used")
+  val PR = Val("Life office debit")
 
   val BS = Val("Building society credits")
 
