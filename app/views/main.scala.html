@@ -18,7 +18,7 @@
 
 @this(header: views.html.header)
 
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(enableAssessmentToggle: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
 <!DOCTYPE html>
@@ -36,8 +36,10 @@
                 @messages("bars.options.metadata")</a><br/><br/>
                 <a class="govuk-link" href="@controllers.routes.BarsController.modChecking()">
                 @messages("bars.options.modcheck")</a><br/><br/>
+            @if(enableAssessmentToggle) {
                 <a class="govuk-link" href="@controllers.routes.BarsController.assessment()">
                 @messages("bars.options.assess")</a><br/><br/>
+            }
             </div>
         </body>
     </html>

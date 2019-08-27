@@ -57,6 +57,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
 
   def isWelshEnabled: Boolean = config.getBoolean("microservice.services.features.welsh-translation")
 
+  def isAssessmentEnabled: Boolean = config.getBoolean("microservice.services.features.assessment")
+
   lazy val minWorkingHours: Double = config.getString("workingHours.min").toDouble
 
   lazy val maxWorkingHours: Double = config.getString("workingHours.max").toDouble
