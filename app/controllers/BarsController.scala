@@ -22,6 +22,7 @@ import javax.inject._
 import models._
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import play.api.Logger
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -129,23 +130,35 @@ class BarsController @Inject()(
 
     implicit req =>
 
-      Ok(assessmentView(inputForm))
+      if (!assessmentEnabled) {
+        Logger.warn("Attempted access to assessment but feature is disabled")
+        NotFound
+      } else {
+        Ok(assessmentView(inputForm))
+      }
   }
 
   def assess = Action.async {
 
     implicit request =>
 
-      inputForm.bindFromRequest.fold(
-        formWithErrors => {
-          Future.successful(BadRequest(assessmentView(formWithErrors)))
-        },
-        input => {
-          connector.assess(input.input)
-            .map(result =>
-              Ok(assessmentResultView(input, result))
-            )
-        }
-      )
+      if (!assessmentEnabled) {
+        Logger.warn("Attempted access to assessment but feature is disabled")
+        Future.successful(NotFound)
+      } else {
+        inputForm.bindFromRequest.fold(
+          formWithErrors => {
+            Future.successful(BadRequest(assessmentView(formWithErrors)))
+          },
+          input => {
+            connector.assess(input.input)
+              .map(result =>
+                Ok(assessmentResultView(input, result))
+              )
+          }
+        )
+      }
   }
+
+  private def assessmentEnabled = appConfig.isAssessmentEnabled
 }
