@@ -48,6 +48,7 @@ bars.metadataResults.bankName=Bank Name:
 bars.metadataResults.address=Address:
 bars.metadataResults.telephone=Telephone:
 bars.metadataResults.bacsOfficeStatus=BACS Office Status:
+bars.metadataResults.chapsSterlingStatus=CHAPS Sterling Status:
 bars.metadataResults.branchName=Branch Name:
 bars.metadataResults.ddiVoucherFlag=DDI Voucher Flag:
 bars.metadataResults.disallowedTransactions=Transactions Disallowed:
