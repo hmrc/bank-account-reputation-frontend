@@ -86,6 +86,7 @@ import models.TransactionType._
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
+                      telephone: Option[String],
                       bacsOfficeStatus: BacsStatus,
                       branchName: Option[String] = None,
                       ddiVoucherFlag: Option[String] = None,
@@ -168,6 +169,7 @@ object Implicits {
     ((JsPath \ "bankCode").read[String] and
       (JsPath \ "bankName").read[String] and
       (JsPath \ "address").read[EiscdAddress] and
+      (JsPath \ "telephone").readNullable[String] and
       (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus _) and
       (JsPath \ "branchName").readNullable[String] and
       (JsPath \ "ddiVoucherFlag").readNullable[String] and

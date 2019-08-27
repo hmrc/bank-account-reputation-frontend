@@ -46,6 +46,7 @@ bars.metadataResults.header=Metadata for Bank Sort Code:
 bars.metadataResults.bankCode=Bank Code:
 bars.metadataResults.bankName=Bank Name:
 bars.metadataResults.address=Address:
+bars.metadataResults.telephone=Telephone:
 bars.metadataResults.bacsOfficeStatus=BACS Office Status:
 bars.metadataResults.branchName=Branch Name:
 bars.metadataResults.ddiVoucherFlag=DDI Voucher Flag:
