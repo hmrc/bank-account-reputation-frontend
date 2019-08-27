@@ -80,13 +80,30 @@ object TransactionType extends Enumeration {
   val AU = Val("Direct Debit instructions")
 }
 
+object ChapsStatus extends Enumeration {
+
+  type ChapsStatus = Value
+  protected case class Val(status: String) extends super.Val
+  import scala.language.implicitConversions
+
+  implicit def valueToChapsStatusVal(x: Value): Val = x.asInstanceOf[Val]
+
+  val NA = Val("!!! Unknown CHAPS Sterling Status !!!")
+  val D = Val("Direct")
+  val I = Val("Indirect")
+  val N = Val("Does not accept")
+}
+
 import models.BacsStatus.BacsStatus
+import models.ChapsStatus.ChapsStatus
 import models.TransactionType._
 
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
+                      telephone: Option[String],
                       bacsOfficeStatus: BacsStatus,
+                      chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
                       ddiVoucherFlag: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty)
@@ -160,6 +177,13 @@ object Implicits {
 
   implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
 
+  implicit def chapsSterlingStatus(statusCode: Option[String]): ChapsStatus = {
+    statusCode match {
+      case None => ChapsStatus.NA
+      case Some(x) => ChapsStatus.values.find(_.toString.matches(x)).getOrElse(ChapsStatus.NA)
+    }
+  }
+
   implicit def transactionType(transactionTypeCode: String): TransactionType = TransactionType.values.find(_.toString.matches(transactionTypeCode)).getOrElse(TransactionType.NA)
 
   implicit def transactionTypes(transactionTypeCodes: Option[Seq[String]]): Seq[TransactionType] = transactionTypeCodes.getOrElse(Seq.empty).map(code => transactionType(code))
@@ -168,7 +192,9 @@ object Implicits {
     ((JsPath \ "bankCode").read[String] and
       (JsPath \ "bankName").read[String] and
       (JsPath \ "address").read[EiscdAddress] and
+      (JsPath \ "telephone").readNullable[String] and
       (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus _) and
+      (JsPath \ "chapsSterlingStatus").readNullable[String].map(chapsSterlingStatus _) and
       (JsPath \ "branchName").readNullable[String] and
       (JsPath \ "ddiVoucherFlag").readNullable[String] and
       (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _)
