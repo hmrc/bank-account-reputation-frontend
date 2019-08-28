@@ -54,30 +54,20 @@ object BacsStatus extends Enumeration {
 }
 
 object TransactionType extends Enumeration {
-
   type TransactionType = Value
-
   protected case class Val(name: String) extends super.Val
 
   import scala.language.implicitConversions
-
   implicit def valueToTransactionTypeVal(x: Value): Val = x.asInstanceOf[Val]
 
   val NA = Val("!!! Unknown Transaction Type !!!")
-
   val DR = Val("Direct Debits")
-
-  val CR = Val("Direct Credits")
-
+  val CR = Val("BACS Credits")
   val CU = Val("Claims for unpaid cheques")
-
   val PR = Val("Life office debit")
-
   val BS = Val("Building society credits")
-
   val DV = Val("Dividend interest payments")
-
-  val AU = Val("Direct Debit instructions")
+  val AU = Val("AUDDIS")
 }
 
 object ChapsStatus extends Enumeration {

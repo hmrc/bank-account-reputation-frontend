@@ -15,6 +15,7 @@
  *@
 
 @import config.FrontendAppConfig
+@import models._
 
 @this(
         mainTemplate: views.html.main_template,
@@ -70,15 +71,17 @@
                             <td align="center"><b>@metadata.branchName</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.ddiVoucherFlag")</td>
                             <td align="center"><b>@metadata.ddiVoucherFlag</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.disallowedTransactions")</td>
+                        <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
                             <td align="center">
-                            @if(!metadata.disallowedTransactions.isEmpty) {
-                                <ul>
-                                @for(txn <- metadata.disallowedTransactions) {
-                                    <li><b>@txn.name</b></li>
+                                @for(txnType <- models.TransactionType.values) {
+                                    @if(appConfig.displayedTransactionTypes.contains(txnType)) {
+                                        @if(metadata.disallowedTransactions.contains(txnType)) {
+                                            (@txnType) @txnType.name - <font color="red">DISALLOWED</font><br>
+                                        } else {
+                                            (@txnType) @txnType.name - <font color="green">ALLOWED</font><br>
+                                        }
+                                    }
                                 }
-                                </ul>
-                            }
                             </td></tr>
                     </table>
                 </div>
