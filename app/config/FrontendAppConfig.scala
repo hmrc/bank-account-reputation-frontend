@@ -18,6 +18,8 @@ package config
 
 import controllers.routes
 import javax.inject.Inject
+import models.TransactionType
+import models.TransactionType.TransactionType
 import play.api.Configuration
 import play.api.i18n.Lang
 import play.api.mvc.Call
@@ -58,6 +60,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   def isWelshEnabled: Boolean = config.getBoolean("microservice.services.features.welsh-translation")
 
   def isAssessmentEnabled: Boolean = config.getBoolean("microservice.services.features.assessment")
+
+  lazy val displayedTransactionTypes: Array[TransactionType] = config.getString("displayed-transaction-types").split(" ").map(TransactionType.withName(_))
 
   lazy val minWorkingHours: Double = config.getString("workingHours.min").toDouble
 

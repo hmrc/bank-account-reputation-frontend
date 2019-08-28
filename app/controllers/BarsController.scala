@@ -47,21 +47,21 @@ class BarsController @Inject()(
 
   implicit val Hc: HeaderCarrier = HeaderCarrier()
 
-  def index() = Action {
+  def index(): Action[AnyContent] = Action {
 
     implicit request =>
 
       Ok(indexView())
   }
 
-  def metadataLookup = Action {
+  def metadataLookup: Action[AnyContent] = Action {
 
     implicit request =>
 
       Ok(metadataView(sortCodeForm))
   }
 
-  def metadata = Action.async {
+  def metadata: Action[AnyContent] = Action.async {
 
     implicit request =>
 
@@ -78,14 +78,14 @@ class BarsController @Inject()(
       )
   }
 
-  def modChecking = Action {
+  def modChecking: Action[AnyContent] = Action {
 
     implicit req =>
 
       Ok(modckeckView(accountForm))
   }
 
-  def modCheck = Action.async {
+  def modCheck: Action[AnyContent] = Action.async {
 
     implicit request =>
 
@@ -102,14 +102,14 @@ class BarsController @Inject()(
       )
   }
 
-  def validation = Action {
+  def validation: Action[AnyContent] = Action {
 
     implicit req =>
 
       Ok(validateView(accountForm))
   }
 
-  def validate = Action.async {
+  def validate: Action[AnyContent] = Action.async {
 
     implicit request =>
 
@@ -126,7 +126,7 @@ class BarsController @Inject()(
       )
   }
 
-  def assessment = Action {
+  def assessment: Action[AnyContent] = Action {
 
     implicit req =>
 
@@ -138,7 +138,7 @@ class BarsController @Inject()(
       }
   }
 
-  def assess = Action.async {
+  def assess: Action[AnyContent] = Action.async {
 
     implicit request =>
 
@@ -160,5 +160,5 @@ class BarsController @Inject()(
       }
   }
 
-  private def assessmentEnabled = appConfig.isAssessmentEnabled
+  private def assessmentEnabled: Boolean = appConfig.isAssessmentEnabled
 }
