@@ -118,10 +118,20 @@ class BarsController @Inject()(
           Future.successful(BadRequest(validateView(formWithErrors)))
         },
         account => {
-          connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
-            .map(result =>
-              Ok(validationResultView(account, result))
-            )
+          val validationFuture: Future[ValidationResult] = {
+            if (!account.accountNumber.isEmpty) {
+              connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
+            } else {
+              Future.successful(ValidationResult(false, "N/A", "N/A"))
+            }
+          }
+
+          val result = for {
+            metadata <- connector.metadata(account.sortCode)
+            validation <- validationFuture
+          } yield (metadata, validation)
+
+          result.map(res => Ok(validationResultView(account, res._1, res._2)))
         }
       )
   }
