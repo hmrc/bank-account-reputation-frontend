@@ -48,9 +48,7 @@ class BackendConnector @Inject()(
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier): Future[EiscdEntry] = {
 
-    http.GET(urlMetadata + sortCode).map(response => response.status match {
-      case 200 => response.json.validate[EiscdEntry].get
-    })
+    http.GET(urlMetadata + sortCode).map(response => response.json.validate[EiscdEntry].get)
   }
 
   def assess(account: Input)(implicit hc: HeaderCarrier): Future[Assessment] = {

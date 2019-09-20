@@ -130,8 +130,14 @@ class BarsController @Inject()(
             metadata <- connector.metadata(account.sortCode)
             validation <- validationFuture
           } yield (metadata, validation)
-
-          result.map(res => Ok(validationResultView(account, res._1, res._2)))
+            result.map {
+              res => Ok(validationResultView(account, res._1, res._2))
+            } recover {
+              case e : uk.gov.hmrc.http.NotFoundException => {
+                Logger.warn("Failed to retrieve bank details: " + e.toString)
+                BadRequest(validateView(accountForm.withError("sortCode", "Failed to retrieve bank details for sort code " + account.sortCode)))
+              }
+            }
         }
       )
   }
