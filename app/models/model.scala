@@ -96,7 +96,8 @@ case class EiscdEntry(bankCode: String,
                       chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
                       ddiVoucherFlag: Option[String] = None,
-                      disallowedTransactions: Seq[TransactionType] = Seq.empty)
+                      disallowedTransactions: Seq[TransactionType] = Seq.empty,
+                      bicBankCode: Option[String] = None)
 
 case class Address(lines: List[String],
                    town: Option[String],
@@ -121,7 +122,8 @@ case class ValidationResult(accountNumberWithSortCodeIsValid: Boolean,
                             supportsBACS: Option[String] = None,
                             ddiVoucherFlag: Option[String] = None,
                             directDebitsDisallowed: Option[String] = None,
-                            directDebitInstructionsDisallowed: Option[String] = None)
+                            directDebitInstructionsDisallowed: Option[String] = None,
+                            iban: Option[String] = None)
 
 case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       accountExists: String,
@@ -187,7 +189,8 @@ object Implicits {
       (JsPath \ "chapsSterlingStatus").readNullable[String].map(chapsSterlingStatus _) and
       (JsPath \ "branchName").readNullable[String] and
       (JsPath \ "ddiVoucherFlag").readNullable[String] and
-      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _)
+      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _) and
+      (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
 
   def opt(str: String): Option[String] = str.isEmpty match {

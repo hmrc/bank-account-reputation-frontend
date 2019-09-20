@@ -39,6 +39,8 @@
                     <br/>
 
                     <table style="min-width: 600px">
+                        <tr><td align="right">@messages("bars.label.iban")</td>
+                            <td align="center"><b>@if(!validationResult.iban.isEmpty) { @validationResult.iban } else { N/A }</b></td></tr>
                         <tr><td align="right">@messages("bars.label.accountNumber")</td>
                             <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @accountForm.accountNumber } else { N/A }</b></td></tr>
                         <tr><td align="right">@messages("bars.label.sortCode")</td>
@@ -54,6 +56,8 @@
 <!--                            <td><b> @accountForm.sortCode </b></td></tr>-->
                         <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
                             <td align="center"><b>@metadata.bankCode</b></td></tr>
+                        <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
+                            <td align="center"><b>@metadata.bicBankCode</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
                             <td align="center"><b>@metadata.bankName</b></td></tr>
                         <tr><td align="right">@messages("bars.metadataResults.address")</td>
