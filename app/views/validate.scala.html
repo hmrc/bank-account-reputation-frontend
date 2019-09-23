@@ -55,7 +55,7 @@
 
                         <table class="govuk-table">
                             <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.sortCode")</label></td>
-                                <td align="left"><b> @inputText(accountForm("sortCode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
+                                <td align="left"><b> @inputText(accountForm("sortCode"), '_label -> "", 'class -> "govuk-label", 'autofocus -> true) </b></td></tr>
                             <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.accountNumber") [@messages("bars.label.optional")]</label></td>
                                 <td align="left"><b> @inputText(accountForm("accountNumber"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
                             <tr><td /><td align="left"><button type="submit" class="govuk-button">
