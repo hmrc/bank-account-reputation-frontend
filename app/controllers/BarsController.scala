@@ -51,7 +51,11 @@ class BarsController @Inject()(
 
     implicit request =>
 
-      Ok(indexView())
+      if (!assessmentEnabled) {
+        Ok(validateView(accountForm))
+      } else {
+        Ok(indexView())
+      }
   }
 
   def metadataLookup: Action[AnyContent] = Action {
