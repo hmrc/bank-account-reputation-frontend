@@ -32,10 +32,6 @@
                 <label class="govuk-label--l">@messages("bars.header")</label><br/><br/>
                 <a class="govuk-link" href="@controllers.routes.BarsController.validation()">
                 @messages("bars.options.validate")</a><br/><br/>
-                <a class="govuk-link" href="@controllers.routes.BarsController.metadataLookup()">
-                @messages("bars.options.metadata")</a><br/><br/>
-                <a class="govuk-link" href="@controllers.routes.BarsController.modChecking()">
-                @messages("bars.options.modcheck")</a><br/><br/>
             @if(enableAssessmentToggle) {
                 <a class="govuk-link" href="@controllers.routes.BarsController.assessment()">
                 @messages("bars.options.assess")</a><br/><br/>
