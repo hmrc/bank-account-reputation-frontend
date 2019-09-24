@@ -44,13 +44,13 @@ object BacsStatus extends Enumeration {
 
   implicit def valueToBacsStatusVal(x: Value): Val = x.asInstanceOf[Val]
 
-  val NA = Val("!!! Unknown Bacs Office Status !!!")
+  val NA = Val("!!! Unknown BACS Office Status !!!")
 
-  val M = Val("The bank office of a Bacs member; accepts Bacs payments")
+  val M = Val("BACS member; accepts BACS payments")
 
-  val A = Val("The bank office of an agency bank; accepts Bacs payments")
+  val A = Val("Agency bank; accepts BACS payments")
 
-  val N = Val("he bank office does not accept Bacs payments. See field 17.")
+  val N = Val("Does not accept BACS payments")
 }
 
 object TransactionType extends Enumeration {
