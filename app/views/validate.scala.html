@@ -37,8 +37,7 @@
             <body>
                 <div id="wrapper" class="panel">
                     <br/>
-
-
+                    @errorSummary(Messages("bars.errors"), accountForm)
                     @form(action = routes.BarsController.validate(),
                         'id -> "validate-form",
                         'method -> "post",
@@ -63,22 +62,6 @@
                         </table>
                     }
                 </div>
-
-                @if(accountForm.hasErrors || accountForm.hasGlobalErrors) {
-                    <div id="errors" class="govuk-error-summary" >
-                        <label class="govuk-label--m">@messages("bars.errors")</label>
-                        <ul>
-                        @for(error <- accountForm.errors) {
-                            <li>@error.format</li>
-                        }
-                        </ul>
-                        <ul>
-                        @for(error <- accountForm.globalErrors) {
-                            <li>@error.format</li>
-                        }
-                        </ul>
-                    </div>
-                }
             </body>
         </html>
     }
