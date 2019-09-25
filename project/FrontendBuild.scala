@@ -25,6 +25,7 @@ private object AppDependencies {
   private val playLanguageVersion = "3.4.0"
   private val taxYearVersion = "0.4.0"
   private val playJavaVersion = "2.6.12"
+  private val authClient = "2.27.0-play-26"
 
   private val hmrc = "uk.gov.hmrc"
   private val typesafe = "com.typesafe.play"
@@ -39,6 +40,7 @@ private object AppDependencies {
     hmrc %% "bootstrap-play-26" % bootstrapPlayVersion,
     hmrc %% "play-language" % playLanguageVersion,
     hmrc %% "tax-year" % taxYearVersion,
+    hmrc %% "auth-client" % authClient,
     typesafe %% "play-java" % playJavaVersion,
     typesafe %% "play-json" % "2.7.3",
     typesafe %% "play-json-joda" % "2.7.3"

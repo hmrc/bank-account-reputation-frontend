@@ -20,12 +20,12 @@ import controllers.routes
 import javax.inject.Inject
 import models.TransactionType
 import models.TransactionType.TransactionType
-import play.api.Configuration
+import play.api.{Configuration, Environment}
 import play.api.i18n.Lang
 import play.api.mvc.Call
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Configuration) {
+class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Configuration, val environment: Environment) {
 
   private def loadConfig(key: String) = config.getString(key)
 
@@ -50,6 +50,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
 
   lazy val languageTranslationEnabled: Boolean = config.getBoolean("microservice.services.features.welsh-translation")
 
+  lazy val isLocal: Boolean = config.getBoolean("microservice.services.stride-auth-local")
+
   def languageMap: Map[String, Lang] = Map(
     "english" -> Lang("en"),
     "cymraeg" -> Lang("cy")
@@ -60,6 +62,8 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   def isWelshEnabled: Boolean = config.getBoolean("microservice.services.features.welsh-translation")
 
   def isAssessmentEnabled: Boolean = config.getBoolean("microservice.services.features.assessment")
+
+  def isStrideAuthEnabled: Boolean = config.getBoolean("microservice.services.features.stride-auth-enabled")
 
   lazy val displayedTransactionTypes: Array[TransactionType] = config.getString("displayed-transaction-types").split(" ").map(TransactionType.withName(_))
 

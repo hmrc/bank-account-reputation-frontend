@@ -20,10 +20,11 @@ import config.FrontendAppConfig
 import connector.BackendConnector
 import javax.inject._
 import models._
-import play.api.i18n.I18nSupport
-import play.api.mvc._
 import play.api.Logger
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.i18n.I18nSupport
+import play.api.mvc.{Action, _}
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
+import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,6 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class BarsController @Inject()(
                                 connector: BackendConnector,
+                                val authConnector: AuthConnector,
                                 mcc: MessagesControllerComponents,
                                 indexView: views.html.index,
                                 metadataView: views.html.metadata,
@@ -41,21 +43,44 @@ class BarsController @Inject()(
                                 validateView: views.html.validate,
                                 validationResultView: views.html.validationResult,
                                 assessmentView: views.html.assess,
-                                assessmentResultView: views.html.assessmentResult
+                                assessmentResultView: views.html.assessmentResult,
+                                error: views.html.error_template
                               )
-                              (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc) with I18nSupport {
+                              (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc)
+  with AuthorisedFunctions with AuthRedirects with I18nSupport {
 
-  implicit val Hc: HeaderCarrier = HeaderCarrier()
+  val config = appConfig.configuration
+  val env = appConfig.environment
 
-  def index(): Action[AnyContent] = Action {
-
-    implicit request =>
-
+  def index(): Action[AnyContent] = Action.async { implicit request =>
+    strideAuth {
       if (!assessmentEnabled) {
-        Ok(validateView(accountForm))
+        Future.successful(Ok(validateView(accountForm)))
       } else {
-        Ok(indexView())
+        Future.successful(Ok(indexView()))
       }
+    }
+  }
+
+  private def strideAuth(f: => Future[Result])(implicit request: Request[_]) = {
+    if (strideAuthEnabled) {
+      authorised() {
+        f
+      } recover {
+        case _: NoActiveSession =>
+          toStrideLogin {
+            if (appConfig.isLocal) {
+              s"http://${request.host}${request.uri}"
+            }
+            else {
+              s"${request.uri}"
+            }
+          }
+        case _ => Ok(error("Not authorised", "Not authorised", "Sorry, not authorised"))
+      }
+    } else {
+      f
+    }
   }
 
   def metadataLookup: Action[AnyContent] = Action {
@@ -114,36 +139,37 @@ class BarsController @Inject()(
   }
 
   def validate: Action[AnyContent] = Action.async {
-
     implicit request =>
 
-      accountForm.bindFromRequest.fold(
-        formWithErrors => {
-          Future.successful(BadRequest(validateView(formWithErrors)))
-        },
-        account => {
-          val validationFuture: Future[ValidationResult] = {
-            if (!account.accountNumber.isEmpty) {
-              connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
-            } else {
-              Future.successful(ValidationResult(false, "N/A", "N/A"))
+      strideAuth {
+        accountForm.bindFromRequest.fold(
+          formWithErrors => {
+            Future.successful(BadRequest(validateView(formWithErrors)))
+          },
+          account => {
+            val validationFuture: Future[ValidationResult] = {
+              if (!account.accountNumber.isEmpty) {
+                connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
+              } else {
+                Future.successful(ValidationResult(false, "N/A", "N/A"))
+              }
             }
-          }
 
-          val result = for {
-            metadata <- connector.metadata(account.sortCode)
-            validation <- validationFuture
-          } yield (metadata, validation)
+            val result = for {
+              metadata <- connector.metadata(account.sortCode)
+              validation <- validationFuture
+            } yield (metadata, validation)
             result.map {
               res => Ok(validationResultView(account, res._1, res._2))
             } recover {
-              case e : uk.gov.hmrc.http.NotFoundException => {
+              case e: uk.gov.hmrc.http.NotFoundException => {
                 Logger.warn("Failed to retrieve bank details: " + e.toString)
                 BadRequest(validateView(accountForm.withError("sortCode", "Failed to retrieve bank details for sort code " + account.sortCode)))
               }
             }
-        }
-      )
+          }
+        )
+      }
   }
 
   def assessment: Action[AnyContent] = Action {
@@ -181,4 +207,6 @@ class BarsController @Inject()(
   }
 
   private def assessmentEnabled: Boolean = appConfig.isAssessmentEnabled
+
+  private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled
 }
