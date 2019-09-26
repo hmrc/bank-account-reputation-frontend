@@ -34,34 +34,37 @@
             <head>
             @header(appConfig.isWelshEnabled)
             </head>
+            <h1 class="form-title heading-large" id="pageHeading">@messages("bars.options.validate")</h1>
             <body>
-                <div id="wrapper" class="panel">
-                    <br/>
-                    @errorSummary(Messages("bars.errors"), accountForm)
-                    @form(action = routes.BarsController.validate(),
-                        'id -> "validate-form",
-                        'method -> "post",
-                        'class -> "govuk-form",
-                        'autocomplete -> "off",
-                        'enctype -> "multipart/form-data",
-                        'style -> "width: 99%") {
+                <br/>
+                @errorSummary(Messages("bars.errors"), accountForm)
+                @form(action = routes.BarsController.validate(),
+                    'id -> "validate-form",
+                    'method -> "post",
+                    'class -> "govuk-form",
+                    'autocomplete -> "off",
+                    'enctype -> "multipart/form-data",
+                    'style -> "width: 99%") {
 
-                        @CSRF.formField
+                    @CSRF.formField
 
-                        <table class="govuk-table">
-                            <tr><td align="center"><label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/></td></tr>
-                        </table>
+                    <div class="form-field spaced-below">
+                        @inputText(accountForm("sortCode"),
+                            '_label -> messages("bars.label.sortCode"),
+                            '_id -> "sortCode-input",
+                            'class -> "govuk-label",
+                            'autofocus -> true)
+                    </div>
 
-                        <table class="govuk-table">
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.sortCode")</label></td>
-                                <td align="left"><b> @inputText(accountForm("sortCode"), '_label -> "", 'class -> "govuk-label", 'autofocus -> true) </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.accountNumber") [@messages("bars.label.optional")]</label></td>
-                                <td align="left"><b> @inputText(accountForm("accountNumber"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td /><td align="left"><button type="submit" class="govuk-button">
-                                Search</button></td></tr>
-                        </table>
-                    }
-                </div>
+                    <div class="form-field spaced-below">
+                        @inputText(accountForm("accountNumber"),
+                            '_label -> f"${messages("bars.label.accountNumber")} [${messages("bars.label.optional")}]",
+                            '_id -> "accountNumber-input",
+                            'class -> "govuk-label")
+                    </div>
+
+                    <button type="submit" class="govuk-button">Search</button>
+                }
             </body>
         </html>
     }
