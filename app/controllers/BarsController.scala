@@ -22,7 +22,7 @@ import javax.inject._
 import models._
 import play.api.Logger
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, _}
+import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
