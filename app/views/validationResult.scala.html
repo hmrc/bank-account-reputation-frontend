@@ -30,75 +30,74 @@
     <!DOCTYPE html>
         <html>
             <head>
-            @header()
+            @header(appConfig.isWelshEnabled)
             </head>
+            <h1 class="form-title heading-large" id="pageHeading">@messages("bars.options.validate")</h1>
             <body>
-                <div id="wrapper" class="panel">
-                    <br/>
+                <br/>
 
-                    <table style="min-width: 600px">
-                        <tr><td align="right">@messages("bars.label.iban")</td>
-                            <td align="center"><b>@if(!validationResult.iban.isEmpty) { @validationResult.iban } else { N/A }</b></td></tr>
-                        <tr><td align="right">@messages("bars.label.accountNumber")</td>
-                            <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @accountForm.accountNumber } else { N/A }</b></td></tr>
-                        <tr><td align="right">@messages("bars.label.sortCode")</td>
-                            <td align="center"><b>@accountForm.sortCode</b></td></tr>
+                <table style="min-width: 600px">
+                    <tr><td align="right">@messages("bars.label.iban")</td>
+                        <td align="center"><b>@if(!validationResult.iban.isEmpty) { @validationResult.iban } else { N/A }</b></td></tr>
+                    <tr><td align="right">@messages("bars.label.accountNumber")</td>
+                        <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @accountForm.accountNumber } else { N/A }</b></td></tr>
+                    <tr><td align="right">@messages("bars.label.sortCode")</td>
+                        <td align="center"><b>@accountForm.sortCode</b></td></tr>
 <!--                        <tr><td align="right"><label class="govuk-label&#45;&#45;l">@@messages("bars.validateResults.header")</label></td>-->
 <!--                            <td><b> @@accountForm.sortCode / @@accountForm.accountNumber </b></td></tr>-->
-                        <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td>
-                            <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @validationResult.accountNumberWithSortCodeIsValid } else { N/A }</b></td></tr>
+                    <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td>
+                        <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @validationResult.accountNumberWithSortCodeIsValid } else { N/A }</b></td></tr>
 <!--                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>-->
 <!--                            <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>-->
 
 <!--                        <tr><td align="right"><label class="govuk-label&#45;&#45;l">@messages("bars.metadataResults.header")</label></td>-->
 <!--                            <td><b> @accountForm.sortCode </b></td></tr>-->
-                        <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
-                            <td align="center"><b>@metadata.bankCode</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
-                            <td align="center"><b>@metadata.bicBankCode</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
-                            <td align="center"><b>@metadata.bankName</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.address")</td>
-                            <td align="center"><b>
-                                <ul>
-                                    @for(line <- metadata.address.lines){
-                                        <li>@line</li>
-                                    }
-                                    <li>@metadata.address.zipCode</li>
-                                    <li>@metadata.address.town</li>
-                                    <li>@metadata.address.county</li>
-                                    @if(metadata.address.country.isDefined) {
-                                        <li>@metadata.address.country.map(_.name)</li>
-                                    }
-                                    <li>@metadata.address.postCode</li>
-                                    <li>@metadata.address.zipCode</li>
-                                </ul>
-                            </b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.telephone")</td>
-                            <td align="left"><b>@metadata.telephone</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
-                            <td align="center"><b>@metadata.bacsOfficeStatus.status</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.chapsSterlingStatus")</td>
-                            <td align="center"><b>@metadata.chapsSterlingStatus.status</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
-                            <td align="center"><b>@metadata.branchName</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.ddiVoucherFlag")</td>
-                            <td align="center"><b>@metadata.ddiVoucherFlag</b></td></tr>
-                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>
-                            <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
-                        <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
-                            <td align="center">
-                                @for(txnType <- models.TransactionType.values) {
-                                    @if(appConfig.displayedTransactionTypes.contains(txnType)) {
-                                        @if(metadata.disallowedTransactions.contains(txnType)) {
-                                            (@txnType) @txnType.name - <font color="red">DISALLOWED</font><br>
-                                        } else {
-                                            (@txnType) @txnType.name - <font color="green">ALLOWED</font><br>
-                                        }
+                    <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
+                        <td align="center"><b>@metadata.bankCode</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
+                        <td align="center"><b>@metadata.bicBankCode</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
+                        <td align="center"><b>@metadata.bankName</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.address")</td>
+                        <td align="center"><b>
+                            <ul>
+                                @for(line <- metadata.address.lines){
+                                    <li>@line</li>
+                                }
+                                <li>@metadata.address.zipCode</li>
+                                <li>@metadata.address.town</li>
+                                <li>@metadata.address.county</li>
+                                @if(metadata.address.country.isDefined) {
+                                    <li>@metadata.address.country.map(_.name)</li>
+                                }
+                                <li>@metadata.address.postCode</li>
+                                <li>@metadata.address.zipCode</li>
+                            </ul>
+                        </b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.telephone")</td>
+                        <td align="left"><b>@metadata.telephone</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
+                        <td align="center"><b>@metadata.bacsOfficeStatus.status</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.chapsSterlingStatus")</td>
+                        <td align="center"><b>@metadata.chapsSterlingStatus.status</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
+                        <td align="center"><b>@metadata.branchName</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.ddiVoucherFlag")</td>
+                        <td align="center"><b>@metadata.ddiVoucherFlag</b></td></tr>
+                    <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>
+                        <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
+                    <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
+                        <td align="center">
+                            @for(txnType <- models.TransactionType.values) {
+                                @if(appConfig.displayedTransactionTypes.contains(txnType)) {
+                                    @if(metadata.disallowedTransactions.contains(txnType)) {
+                                        (@txnType) @txnType.name - <font color="red">DISALLOWED</font><br>
+                                    } else {
+                                        (@txnType) @txnType.name - <font color="green">ALLOWED</font><br>
                                     }
                                 }
-                    </table>
-                </div>
+                            }
+                </table>
                 <br />
             </body>
         </html>

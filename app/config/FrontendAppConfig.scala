@@ -30,7 +30,7 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
   private def loadConfig(key: String) = config.getString(key)
 
   private lazy val contactHost = loadConfig("contact-frontend.host")
-  private val contactFormServiceIdentifier = "childcarecalculatorfrontend"
+  private val contactFormServiceIdentifier = "bank-account-reputation-frontend"
 
   lazy val eligibilityUrl: String = config.baseUrl("cc-eligibility") + loadConfig("microservice.services.cc-eligibility.url")
 
