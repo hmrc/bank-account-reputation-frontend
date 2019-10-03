@@ -63,7 +63,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
 
     "validate" should {
       "show error when sortcode and account are not passed" in new Scenario {
-        val json = Json.parse("""{ "sortCode": "", "accountNumber": ""}""")
+        val json = Json.parse("""{ "sortCode": "", "accountNumber": "" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 
@@ -73,7 +73,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
       }
 
       "show errors when invalid sortcode and account are empty" in new Scenario {
-        val json = Json.parse("""{ "sortCode": "12345", "accountNumber": "1234567"}""")
+        val json = Json.parse("""{ "sortCode": "12345", "accountNumber": "1234567" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 
@@ -84,7 +84,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
       }
 
       "show errors when  sortcode is valid and account is invalid " in new Scenario {
-        val json = Json.parse("""{ "sortCode": "123456", "accountNumber": "1234567"}""")
+        val json = Json.parse("""{ "sortCode": "123456", "accountNumber": "1234567" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 
@@ -96,7 +96,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
       "show error when sortcode and account does not exist" in new Scenario {
         mockPOSTException(new NotFoundException("Not Found"))
         mockGETException(new NotFoundException("Not Found"))
-        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}", "csrfToken" : "token"}""")
+        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 
@@ -107,7 +107,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
       "show only sortcode data" in new Scenario {
         mockPOST(validateResult)
         mockGET(eiscdEntry)
-        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "", "csrfToken" : "token"}""")
+        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 
@@ -145,7 +145,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
       "show both sortcode and account data" in new Scenario {
         mockPOST(validateResult)
         mockGET(eiscdEntry)
-        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}", "csrfToken" : "token"}""")
+        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
 

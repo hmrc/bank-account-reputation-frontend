@@ -23,15 +23,13 @@ package object models {
   val accountForm: Form[AccountForm] = Form(
     mapping(
       "sortCode" -> text.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
-      "accountNumber" -> text.verifying(pattern("""^(|\d{8})$""".r, error = "bars.label.accountNumberInvalid", name = "")),
-      "csrfToken" -> nonEmptyText
+      "accountNumber" -> text.verifying(pattern("""^(|\d{8})$""".r, error = "bars.label.accountNumberInvalid", name = ""))
     )(AccountForm.apply)(AccountForm.unapply)
   )
 
   val sortCodeForm: Form[SortCodeForm] = Form(
     mapping(
-      "sortCode" -> text.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
-      "csrfToken" -> nonEmptyText
+      "sortCode" -> text.verifying(pattern(regex = """\d{6}""".r, error = "bars.label.sortCodeInvalid", name = ""))
     )(SortCodeForm.apply)(SortCodeForm.unapply)
   )
 
@@ -61,8 +59,7 @@ package object models {
           .verifying("bars.label.partNamesInvalid", subject =>
             subject.firstName.isDefined && subject.lastName.isDefined ||
               subject.firstName.isEmpty && subject.lastName.isEmpty)
-      )(Input.apply)(Input.unapply),
-      "csrfToken" -> nonEmptyText
+      )(Input.apply)(Input.unapply)
     )(InputForm.apply)(InputForm.unapply)
   )
 

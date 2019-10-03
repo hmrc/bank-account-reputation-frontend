@@ -43,10 +43,7 @@
                     'method -> "post",
                     'class -> "govuk-form",
                     'autocomplete -> "off",
-                    'enctype -> "multipart/form-data",
                     'style -> "width: 99%") {
-
-                    @CSRF.formField
 
                     <div class="form-field spaced-below">
                         @inputText(accountForm("sortCode"),

@@ -134,14 +134,11 @@ case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       nonStandardAccountDetailsRequiredForBacs: Option[String] = None)
 
 case class AccountForm(sortCode: String,
-                       accountNumber: String,
-                       csrfToken: String)
+                       accountNumber: String)
 
-case class SortCodeForm(sortCode: String,
-                        csrfToken: String)
+case class SortCodeForm(sortCode: String)
 
-case class InputForm(input: Input,
-                     csrfToken: String)
+case class InputForm(input: Input)
 
 object Implicits {
 
