@@ -193,6 +193,8 @@ object Implicits {
       (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
 
+  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
+
   def opt(str: String): Option[String] = str.isEmpty match {
     case true => None
     case false => Some(str)
