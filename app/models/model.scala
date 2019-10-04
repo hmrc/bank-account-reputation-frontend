@@ -134,14 +134,11 @@ case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       nonStandardAccountDetailsRequiredForBacs: Option[String] = None)
 
 case class AccountForm(sortCode: String,
-                       accountNumber: String,
-                       csrfToken: String)
+                       accountNumber: String)
 
-case class SortCodeForm(sortCode: String,
-                        csrfToken: String)
+case class SortCodeForm(sortCode: String)
 
-case class InputForm(input: Input,
-                     csrfToken: String)
+case class InputForm(input: Input)
 
 object Implicits {
 
@@ -192,6 +189,8 @@ object Implicits {
       (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _) and
       (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
+
+  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
 
   def opt(str: String): Option[String] = str.isEmpty match {
     case true => None
