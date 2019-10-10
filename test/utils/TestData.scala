@@ -40,9 +40,9 @@ trait TestData {
 
   val connector = new BackendConnector(http, config);
   val address = EiscdAddress(Seq("line1"), None, None, None, None, None)
-  val eiscdEntry = EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), Some("D"), bicBankCode = Some("HBUK"))
+  val eiscdEntry = EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK"))
   val yes = "Yes"
-  val validateResult = ValidationResult(true, yes, yes, Some(yes), Some(yes), Some(yes), Some(yes), Some("GB42ABCD12345612345678"))
+  val validateResult = ValidationResult(true, yes, yes, Some(yes), Some(yes), Some(yes), Some("GB42ABCD12345612345678"))
   val modCheckResult = ModCheckResult(true, yes)
   val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
 

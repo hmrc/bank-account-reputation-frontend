@@ -95,7 +95,6 @@ case class EiscdEntry(bankCode: String,
                       bacsOfficeStatus: BacsStatus,
                       chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
-                      ddiVoucherFlag: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty,
                       bicBankCode: Option[String] = None)
 
@@ -120,7 +119,6 @@ case class ValidationResult(accountNumberWithSortCodeIsValid: Boolean,
                             nonStandardAccountDetailsRequiredForBacs: String,
                             sortCodeIsPresentOnEISCD: String,
                             supportsBACS: Option[String] = None,
-                            ddiVoucherFlag: Option[String] = None,
                             directDebitsDisallowed: Option[String] = None,
                             directDebitInstructionsDisallowed: Option[String] = None,
                             iban: Option[String] = None)
@@ -185,7 +183,6 @@ object Implicits {
       (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus _) and
       (JsPath \ "chapsSterlingStatus").readNullable[String].map(chapsSterlingStatus _) and
       (JsPath \ "branchName").readNullable[String] and
-      (JsPath \ "ddiVoucherFlag").readNullable[String] and
       (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _) and
       (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
