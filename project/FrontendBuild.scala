@@ -20,7 +20,7 @@ private object AppDependencies {
   private val pegdownVersion = "1.6.0"
   private val mockitoCoreVersion = "2.27.0"
   private val httpCachingClientVersion = "8.4.0-play-26"
-  private val playReactivemongoVersion = "7.20.0-play-26"
+  private val playReactivemongoVersion = "7.30.0-play-26"
   private val playConditionalFormMappingVersion = "1.1.0-play-26"
   private val playLanguageVersion = "3.4.0"
   private val taxYearVersion = "0.4.0"
