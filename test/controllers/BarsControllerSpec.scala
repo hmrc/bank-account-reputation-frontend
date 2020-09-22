@@ -39,7 +39,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
   implicit lazy val materializer: Materializer = app.materializer
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.index], inject[views.html.metadata], inject[views.html.metadataResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
+    inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
     inject[views.html.validate], inject[views.html.validationResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {
@@ -58,6 +58,16 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("Sort Code")
         contentAsString(result) must include("Account Number [Optional]")
         contentAsString(result) must include("Search")
+      }
+    }
+
+    "show accessibility statement" should {
+      "page" in new Scenario {
+        val request = FakeRequest().withCSRFToken
+        val result = accessibilityStatement()(request)
+
+        status(result) mustEqual OK
+        contentAsString(result) must include("Accessibility statement for Bank Account Reputation Service")
       }
     }
 

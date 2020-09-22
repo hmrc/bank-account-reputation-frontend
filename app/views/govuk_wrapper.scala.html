@@ -1,5 +1,5 @@
 @*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,16 @@
 }
 
 @footerTop = {}
-@footerLinks = {}
+
+@additionalLinksHtml = {
+<li>
+    <a href="/bank-account-reputation-frontend/accessibility-statement">Accessibility statement</a>
+</li>
+}
+
+@footerLinks = {
+    @uiFooterLinks( additionalLinks = Some(additionalLinksHtml), euExitLinks = None )
+}
 
 @serviceInfo = {
     @uiServiceInfo(
@@ -94,4 +103,4 @@
       sidebar = sidebar)
 }
 
-@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiFooterLinks()), true)(content)
+@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footerLinks), true)(content)

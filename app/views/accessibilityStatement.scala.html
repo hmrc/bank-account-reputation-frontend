@@ -1,0 +1,91 @@
+@*
+ * Copyright 2020 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.FrontendAppConfig
+
+@this(header: views.html.header)
+
+@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+
+@defining(play.core.PlayVersion.current) { version =>
+<!DOCTYPE html>
+    <html>
+        <head>
+            @header(false)
+        </head>
+        <body>
+        <div class="govuk-width-container">
+            <main class="govuk-main-wrapper govuk-main-wrapper--auto-spacing" id="main-content" role="main">
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-two-thirds">
+
+                        <h1 class="govuk-heading-xl">Accessibility statement for Bank Account Reputation Service</h1>
+                        <p class="govuk-body-l">This accessibility statement explains how accessible this service is, what to do if you have difficulty using it, and how to report accessibility problems with the service.</p>
+                        <p class="govuk-body">This page only contains information about the <a href="/bank-account-reputation-frontend">Bank Account Reputation Service</a>.</p>
+
+                        <h2 class="govuk-heading-l">Using this service</h2>
+                        <p class="govuk-body">The Bank Account Reputation Service provides the ability to do a simple check on a given sort code and account number.
+                            It is used by HMRC staff to validate bank account details provided by taxpayers.</p>
+                        <p class="govuk-body">This service is run by HM Revenue and Customs (HMRC). We want as many people as possible to be able to use this service. This means you should be able to:</p>
+                        <ul class="bullets">
+                            <li>change colours, contrast levels and fonts</li>
+                            <li>zoom in up to 300% without the text spilling off the screen</li>
+                            <li>get from the start of the service to the end using just a keyboard</li>
+                            <li>get from the start of the service to the end using speech recognition software</li>
+                            <li>listen to the service using a screen reader (including the most recent versions of JAWS, Narrator and VoiceOver)</li>
+                        </ul>
+                        <p class="govuk-body">We have also made the text in the service as simple as possible to understand.</p>
+                        <p class="govuk-body">
+                            <a href="https://mcmw.abilitynet.org.uk/">AbilityNet has advice</a> on making your device easier to use if you have a disability.</p>
+
+                        <h2 class="govuk-heading-l">How accessible this service is</h2>
+                        <p class="govuk-body">This service is partially compliant with the
+                            <a href="https://www.w3.org/TR/WCAG21/">Web Content Accessibility Guidelines version 2.1 AA standard</a>.</p>
+                        <p class="govuk-body">We have completed basic checks on this service to find out how accessible it is. There may be areas that are not fully accessible.</p>
+                        <p class="govuk-body">We are committed to improving accessibility to meet the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.</p>
+
+                        <h2 class="govuk-heading-l">Reporting accessibility problems with this service</h2>
+                        <p class="govuk-body">We are always looking to improve the accessibility of this service. If you find any problems that are not listed on this page or think we are not meeting accessibility requirements, email <a href="mailto:txm-search-ui-g@@digital.hmrc.gov.uk">txm-search-ui-g@@digital.hmrc.gov.uk</a></p>
+
+                        <h2 class="govuk-heading-l">If you are not happy with our response</h2>
+                        <p class="govuk-body">
+                            The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you are not happy with how we respond to your complaint,
+                            <a href="https://www.equalityadvisoryservice.com/">contact the Equality Advisory and Support Service (EASS)</a>,
+                            or the
+                            <a href="https://www.equalityni.org/home">Equality Commission for Northern Ireland (ECNI)</a>
+                            if you live in Northern Ireland.
+                        </p>
+
+                        <h2 class="govuk-heading-l">Technical information about this service’s accessibility</h2>
+                        <p class="govuk-body">HMRC is committed to making this service accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.</p>
+                        <p class="govuk-body">This service is partially compliant with the
+                            <a href="https://www.w3.org/TR/WCAG21/">Web Content Accessibility Guidelines version 2.1 AA standard</a> due to the non-compliances listed below.</p>
+
+                        <h3 class="govuk-heading-m">Non-accessible content</h3>
+                        <p class="govuk-body">The content listed below is non-accessible for the following reasons:</p>
+
+                        <p>The validation result on the last page cannot be navigated by the keyboard so is not accessible to screen readers.</p>
+
+                        <h2 class="govuk-heading-l">How we tested this service</h2>
+                        <p class="govuk-body">Basic accessibility checks were completed on 22/09/2020.</p>
+                        <p class="govuk-body">Published on 23/09/2020.</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+        </body>
+    </html>
+}

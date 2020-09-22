@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 HM Revenue & Customs
+ * Copyright 2020 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ class BarsController @Inject()(
                                 val authConnector: AuthConnector,
                                 mcc: MessagesControllerComponents,
                                 indexView: views.html.index,
+                                accessibilityView: views.html.accessibility,
                                 metadataView: views.html.metadata,
                                 metadataResultView: views.html.metadataResult,
                                 modckeckView: views.html.modcheck,
@@ -61,6 +62,11 @@ class BarsController @Inject()(
       }
     }
   }
+
+  def accessibilityStatement(): Action[AnyContent] = Action.async { implicit request =>
+    Future.successful(Ok(accessibilityView()))
+  }
+
 
   private def strideAuth(f: => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {

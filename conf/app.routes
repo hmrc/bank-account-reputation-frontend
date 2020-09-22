@@ -3,6 +3,7 @@
 # ~~~~
 
 GET         /                             controllers.BarsController.index
+GET         /accessibility-statement      controllers.BarsController.accessibilityStatement
 
 GET         /assessment                   controllers.BarsController.assessment
 POST        /assess                       controllers.BarsController.assess
