@@ -16,6 +16,7 @@
 
 package models
 
+import models.BacsStatus.{A, M}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -96,7 +97,14 @@ case class EiscdEntry(bankCode: String,
                       chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty,
-                      bicBankCode: Option[String] = None)
+                      bicBankCode: Option[String] = None) {
+  def isDirectDebitSupported: Boolean =
+    (bacsOfficeStatus == M || bacsOfficeStatus == A) &&
+      !(disallowedTransactions.contains(DR) || disallowedTransactions.contains(AU))
+
+  def isDirectCreditSupported: Boolean =
+    (bacsOfficeStatus == M || bacsOfficeStatus == A) && !disallowedTransactions.contains(CR)
+}
 
 case class Address(lines: List[String],
                    town: Option[String],

@@ -86,15 +86,17 @@
                         <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
                     <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
                         <td align="center">
-                            @for(txnType <- models.TransactionType.values) {
-                                @if(appConfig.displayedTransactionTypes.contains(txnType)) {
-                                    @if(metadata.disallowedTransactions.contains(txnType)) {
-                                        (@txnType) @txnType.name - <font color="red">DISALLOWED</font><br>
-                                    } else {
-                                        (@txnType) @txnType.name - <font color="green">ALLOWED</font><br>
-                                    }
-                                }
-                            }
+                        @if(metadata.isDirectDebitSupported) {
+                            Direct Debit - <font color="red">ALLOWED</font><br>
+                        } else {
+                            Direct Debit - <font color="green">DISALLOWED</font><br>
+                        }
+
+                        @if(metadata.isDirectCreditSupported) {
+                            Direct Credit - <font color="red">ALLOWED</font><br>
+                        } else {
+                            Direct Credit - <font color="green">DISALLOWED</font><br>
+                        }
                 </table>
                 <br />
             </body>
