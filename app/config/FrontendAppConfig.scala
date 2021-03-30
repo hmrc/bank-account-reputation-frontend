@@ -65,8 +65,6 @@ class FrontendAppConfig @Inject()(config: ServicesConfig, val configuration: Con
 
   def isStrideAuthEnabled: Boolean = config.getBoolean("microservice.services.features.stride-auth-enabled")
 
-  lazy val displayedTransactionTypes: Array[TransactionType] = config.getString("displayed-transaction-types").split(" ").map(TransactionType.withName(_))
-
   lazy val minWorkingHours: Double = config.getString("workingHours.min").toDouble
 
   lazy val maxWorkingHours: Double = config.getString("workingHours.max").toDouble
