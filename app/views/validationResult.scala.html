@@ -87,15 +87,15 @@
                     <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
                         <td align="center">
                         @if(metadata.isDirectDebitSupported) {
-                            Direct Debit - <font color="red">ALLOWED</font><br>
+                            Direct Debit - <font color="green">ALLOWED</font><br>
                         } else {
-                            Direct Debit - <font color="green">DISALLOWED</font><br>
+                            Direct Debit - <font color="red">DISALLOWED</font><br>
                         }
 
                         @if(metadata.isDirectCreditSupported) {
-                            Direct Credit - <font color="red">ALLOWED</font><br>
+                            Direct Credit - <font color="green">ALLOWED</font><br>
                         } else {
-                            Direct Credit - <font color="green">DISALLOWED</font><br>
+                            Direct Credit - <font color="red">DISALLOWED</font><br>
                         }
                 </table>
                 <br />
