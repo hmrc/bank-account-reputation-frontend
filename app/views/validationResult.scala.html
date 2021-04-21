@@ -86,22 +86,17 @@
                         <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
                     <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
                         <td align="center">
-                            <span class="nobr">Direct Debit -
-                                @if(metadata.isDirectDebitSupported) {
-                                    <span class="allowed-colour">ALLOWED</span>
-                                } else {
-                                    <span class="disallowed-colour">DISALLOWED</span>
-                                }
-                            </span>
+                        @if(metadata.isDirectDebitSupported) {
+                            <nobr>Direct Debit - <font color="green">ALLOWED</font></nobr><br>
+                        } else {
+                            <nobr>Direct Debit - <font color="red">DISALLOWED</font></nobr><br>
+                        }
 
-                            <span class="nobr">Direct Credit -
-                                @if(metadata.isDirectCreditSupported) {
-                                    <span class="allowed-colour">ALLOWED</span>
-                                } else {
-                                    <span class="disallowed-colour">DISALLOWED</span>
-                                }
-                            </span>
-                        </td>
+                        @if(metadata.isDirectCreditSupported) {
+                            <nobr>Direct Credit - <font color="green">ALLOWED</font></nobr><br>
+                        } else {
+                            <nobr>Direct Credit - <font color="red">DISALLOWED</font></nobr><br>
+                        }
                 </table>
                 <br />
             </body>
