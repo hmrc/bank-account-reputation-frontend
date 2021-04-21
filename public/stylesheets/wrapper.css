@@ -3,3 +3,15 @@
     margin-left: auto;
     width: 80%;
 }
+
+.nobr {
+    white-space: nowrap;
+}
+
+.disallowed-colour {
+    color: red;
+}
+
+.allowed-colour {
+    color: green;
+}
