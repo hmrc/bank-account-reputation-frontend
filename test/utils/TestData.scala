@@ -34,7 +34,9 @@ trait TestData {
   when(config.baseUrl).thenReturn("http://localhost")
 
   val sortCode = "123456"
+  val hmrcSortCode = "201147"
   val account: AccountDetails = AccountDetails(Account(sortCode, "12345678"))
+  val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, "54697788"))
   val assessInput: Input = Input(account.account, Subject(Some("Mr"), Some("James"), None, None, None, Address(List("line1"), None, None)))
   val http = mock[HttpClient]
 
@@ -43,6 +45,7 @@ trait TestData {
   val eiscdEntry = EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK"))
   val yes = "Yes"
   val validateResult = ValidationResult(true, yes, yes, Some(yes), Some(yes), Some(yes), Some("GB42ABCD12345612345678"))
+  val errorValidateResult = ValidationErrorResult("SORT_CODE_ON_DENY_LIST", hmrcSortCode + ": sort code is on deny list. This usually means that it is an HMRC sort code.")
   val modCheckResult = ModCheckResult(true, yes)
   val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
 
@@ -51,9 +54,9 @@ trait TestData {
       .thenReturn(Future.successful(HttpResponse(OK, Some(Json.toJson(data)))))
   }
 
-  def mockPOST[T](data: T)(implicit writes: Writes[T]): Unit = {
+  def mockPOST[T](data: T, status: Int = OK)(implicit writes: Writes[T]): Unit = {
     when(http.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-      .thenReturn(Future.successful(HttpResponse(OK, Some(Json.toJson(data)))))
+      .thenReturn(Future.successful(HttpResponse(status, Some(Json.toJson(data)))))
   }
 
   def mockPOSTException[T](exception: Exception): Unit = {

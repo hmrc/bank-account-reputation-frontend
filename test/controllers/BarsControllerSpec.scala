@@ -40,7 +40,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
     inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
-    inject[views.html.validate], inject[views.html.validationResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
+    inject[views.html.validate], inject[views.html.validationResult], inject[views.html.validationErrorResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {
     def withCSRFToken: Request[_] = addCSRFToken(request)
@@ -122,6 +122,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual OK
+
         contentAsString(result) must include("Validate Bank Details")
         contentAsString(result) must include("IBAN")
         contentAsString(result) must include("N/A")
