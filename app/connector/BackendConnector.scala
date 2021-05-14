@@ -16,11 +16,13 @@
 
 package connector
 
+import akka.http.scaladsl.model.StatusCodes.OK
 import config.BackendAppConfig
+
 import javax.inject.Inject
 import models.Implicits._
 import models._
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,9 +38,18 @@ class BackendConnector @Inject()(
   private val urlMetadata = s"${bars.baseUrl}/metadata/"
   private val urlAssess = s"${bars.baseUrl}/assess"
 
-  def validate(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ValidationResult] = {
+  implicit val sensibleReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+    def read(method: String, url: String, response: HttpResponse) = response
+  }
 
-    http.POST(urlValidate, account).map(response => response.json.validate[ValidationResult].get)
+  def validate(account: AccountDetails)(implicit hc: HeaderCarrier): Future[Either[ValidationErrorResult, ValidationResult]] = {
+
+    http.POST[AccountDetails, HttpResponse](urlValidate, account).map{
+      case response if response.status == 200 =>
+        Right(response.json.validate[ValidationResult].get)
+      case response if response.status == 400 =>
+        Left(response.json.validate[ValidationErrorResult].get)
+    }
   }
 
   def modcheck(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ModCheckResult] = {

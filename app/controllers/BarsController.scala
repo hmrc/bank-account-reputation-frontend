@@ -43,6 +43,7 @@ class BarsController @Inject()(
                                 modckeckResultView: views.html.modcheckResult,
                                 validateView: views.html.validate,
                                 validationResultView: views.html.validationResult,
+                                validationErrorResultView: views.html.validationErrorResult,
                                 assessmentView: views.html.assess,
                                 assessmentResultView: views.html.assessmentResult,
                                 error: views.html.error_template
@@ -153,11 +154,11 @@ class BarsController @Inject()(
             Future.successful(BadRequest(validateView(formWithErrors)))
           },
           account => {
-            val validationFuture: Future[ValidationResult] = {
+            val validationFuture: Future[Either[ValidationErrorResult, ValidationResult]] = {
               if (!account.accountNumber.isEmpty) {
                 connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
               } else {
-                Future.successful(ValidationResult(false, "N/A", "N/A"))
+                Future.successful(Right(ValidationResult(false, "N/A", "N/A")))
               }
             }
 
@@ -165,8 +166,11 @@ class BarsController @Inject()(
               metadata <- connector.metadata(account.sortCode)
               validation <- validationFuture
             } yield (metadata, validation)
+
             result.map {
-              res => Ok(validationResultView(account, res._1, res._2))
+              res =>
+                if(res._2.isRight) Ok(validationResultView(account, res._1, res._2.right.get))
+                else Ok(validationErrorResultView(account, res._1, res._2.left.get))
             } recover {
               case e: uk.gov.hmrc.http.NotFoundException => {
                 Logger.warn("Failed to retrieve bank details: " + e.toString)

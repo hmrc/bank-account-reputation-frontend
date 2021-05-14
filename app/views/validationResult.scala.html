@@ -16,95 +16,80 @@
 
 @import config.FrontendAppConfig
 
-@this(
-        mainTemplate: views.html.main_template,
-        header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
+@this(mainTemplate: views.html.main_template, header: views.html.header, form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF)
 
 @(accountForm: AccountForm, metadata: EiscdEntry, validationResult: ValidationResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
-@defining(play.core.PlayVersion.current) { version =>
+@mainTemplate(title = Messages("bars.validateResults.title"), bodyClasses = None) {
+<!DOCTYPE html>
+    <html>
+        <head>
+        @header(appConfig.isWelshEnabled)
+        </head>
+        <h1 class="form-title heading-large" id="pageHeading">@messages("bars.options.validate")</h1>
+        <body>
+            <br/>
+            <table style="min-width: 600px">
+                <tr><td align="right">@messages("bars.label.iban")</td>
+                    <td align="center"><b>@if(!validationResult.iban.isEmpty) { @validationResult.iban } else { N/A }</b></td></tr>
+                <tr><td align="right">@messages("bars.label.accountNumber")</td>
+                    <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @accountForm.accountNumber } else { N/A }</b></td></tr>
+                <tr><td align="right">@messages("bars.label.sortCode")</td>
+                    <td align="center"><b>@accountForm.sortCode</b></td></tr>
+                <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td>
+                    <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @validationResult.accountNumberWithSortCodeIsValid } else { N/A }</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
+                    <td align="center"><b>@metadata.bankCode</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
+                    <td align="center"><b>@metadata.bicBankCode</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
+                    <td align="center"><b>@metadata.bankName</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.address")</td>
+                    <td align="center"><b>
+                        <ul>
+                            @for(line <- metadata.address.lines){
+                                <li>@line</li>
+                            }
+                            <li>@metadata.address.zipCode</li>
+                            <li>@metadata.address.town</li>
+                            <li>@metadata.address.county</li>
+                            @if(metadata.address.country.isDefined) {
+                                <li>@metadata.address.country.map(_.name)</li>
+                            }
+                            <li>@metadata.address.postCode</li>
+                            <li>@metadata.address.zipCode</li>
+                        </ul>
+                    </b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.telephone")</td>
+                    <td align="left"><b>@metadata.telephone</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
+                    <td align="center"><b>@metadata.bacsOfficeStatus.status</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.chapsSterlingStatus")</td>
+                    <td align="center"><b>@metadata.chapsSterlingStatus.status</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
+                    <td align="center"><b>@metadata.branchName</b></td></tr>
+                <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>
+                    <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
+                <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
+                    <td align="center">
+                        <span class="nobr">Direct Debit -
+                            @if(metadata.isDirectDebitSupported) {
+                                <span class="allowed-colour">ALLOWED</span>
+                            } else {
+                                <span class="disallowed-colour">DISALLOWED</span>
+                            }
+                        </span>
 
-    @mainTemplate(title = Messages("bars.validateResults.title"), bodyClasses = None) {
-    <!DOCTYPE html>
-        <html>
-            <head>
-            @header(appConfig.isWelshEnabled)
-            </head>
-            <h1 class="form-title heading-large" id="pageHeading">@messages("bars.options.validate")</h1>
-            <body>
-                <br/>
-
-                <table style="min-width: 600px">
-                    <tr><td align="right">@messages("bars.label.iban")</td>
-                        <td align="center"><b>@if(!validationResult.iban.isEmpty) { @validationResult.iban } else { N/A }</b></td></tr>
-                    <tr><td align="right">@messages("bars.label.accountNumber")</td>
-                        <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @accountForm.accountNumber } else { N/A }</b></td></tr>
-                    <tr><td align="right">@messages("bars.label.sortCode")</td>
-                        <td align="center"><b>@accountForm.sortCode</b></td></tr>
-<!--                        <tr><td align="right"><label class="govuk-label&#45;&#45;l">@@messages("bars.validateResults.header")</label></td>-->
-<!--                            <td><b> @@accountForm.sortCode / @@accountForm.accountNumber </b></td></tr>-->
-                    <tr><td align="right">@messages("bars.validateResults.accountNumberWithSortCodeIsValid")</td>
-                        <td align="center"><b>@if(!accountForm.accountNumber.isEmpty) { @validationResult.accountNumberWithSortCodeIsValid } else { N/A }</b></td></tr>
-<!--                        <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>-->
-<!--                            <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>-->
-
-<!--                        <tr><td align="right"><label class="govuk-label&#45;&#45;l">@messages("bars.metadataResults.header")</label></td>-->
-<!--                            <td><b> @accountForm.sortCode </b></td></tr>-->
-                    <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
-                        <td align="center"><b>@metadata.bankCode</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
-                        <td align="center"><b>@metadata.bicBankCode</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
-                        <td align="center"><b>@metadata.bankName</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.address")</td>
-                        <td align="center"><b>
-                            <ul>
-                                @for(line <- metadata.address.lines){
-                                    <li>@line</li>
-                                }
-                                <li>@metadata.address.zipCode</li>
-                                <li>@metadata.address.town</li>
-                                <li>@metadata.address.county</li>
-                                @if(metadata.address.country.isDefined) {
-                                    <li>@metadata.address.country.map(_.name)</li>
-                                }
-                                <li>@metadata.address.postCode</li>
-                                <li>@metadata.address.zipCode</li>
-                            </ul>
-                        </b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.telephone")</td>
-                        <td align="left"><b>@metadata.telephone</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
-                        <td align="center"><b>@metadata.bacsOfficeStatus.status</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.chapsSterlingStatus")</td>
-                        <td align="center"><b>@metadata.chapsSterlingStatus.status</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
-                        <td align="center"><b>@metadata.branchName</b></td></tr>
-                    <tr><td align="right">@messages("bars.validateResults.nonStandardAccountDetailsRequiredForBacs")</td>
-                        <td align="center"><b>@validationResult.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
-                    <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
-                        <td align="center">
-                            <span class="nobr">Direct Debit -
-                                @if(metadata.isDirectDebitSupported) {
-                                    <span class="allowed-colour">ALLOWED</span>
-                                } else {
-                                    <span class="disallowed-colour">DISALLOWED</span>
-                                }
-                            </span>
-
-                            <span class="nobr">Direct Credit -
-                                @if(metadata.isDirectCreditSupported) {
-                                    <span class="allowed-colour">ALLOWED</span>
-                                } else {
-                                    <span class="disallowed-colour">DISALLOWED</span>
-                                }
-                            </span>
-                        </td>
-                </table>
-                <br />
-            </body>
-        </html>
-    }
+                        <span class="nobr">Direct Credit -
+                            @if(metadata.isDirectCreditSupported) {
+                                <span class="allowed-colour">ALLOWED</span>
+                            } else {
+                                <span class="disallowed-colour">DISALLOWED</span>
+                            }
+                        </span>
+                    </td>
+            </table>
+            <br />
+        </body>
+    </html>
 }

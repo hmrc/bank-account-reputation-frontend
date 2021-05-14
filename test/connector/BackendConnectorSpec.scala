@@ -47,10 +47,24 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
       mockPOST(validateResult)
       val response = connector.validate(account).futureValue
 
-      response must be(validateResult)
+      response must be(Right(validateResult))
       verify(http, times(1)).POST[AccountDetails, HttpResponse](
         meq("http://localhost/validateBankDetails"),
         meq(account),
+        any()
+      )(any(), any(), any(), any())
+    }
+
+    "validate with 400 response" in new TestData {
+      import models.Implicits._
+
+      mockPOST(errorValidateResult, 400)
+      val response = connector.validate(hmrcAccount).futureValue
+
+      response must be(Left(errorValidateResult))
+      verify(http, times(1)).POST[AccountDetails, HttpResponse](
+        meq("http://localhost/validateBankDetails"),
+        meq(hmrcAccount),
         any()
       )(any(), any(), any(), any())
     }
