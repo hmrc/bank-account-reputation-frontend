@@ -33,7 +33,7 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
   "connector" should {
 
     "get metadata" in new TestData {
-      mockGET(eiscdEntry)
+      mockGET[Option[EiscdEntry]](eiscdEntry)
       val response = connector.metadata(sortCode).futureValue
 
       response must be(eiscdEntry)

@@ -43,6 +43,7 @@ bars.validateResults.directDebitInstructionsDisallowed=Direct Debit Instructions
 bars.metadata.title=Bank Meta Data Lookup
 bars.metadata.header=Please fill the form to lookup sort code metadata:
 bars.metadataResults.title=Metadata for Bank Sort Code
+bars.metadataResults.notFound=Metadata for Bank Sort Code Not Found
 bars.metadataResults.header=Metadata for Bank Sort Code:
 bars.metadataResults.bankCode=Bank Code:
 bars.metadataResults.bicBankCode=BIC Bank Code:

@@ -18,7 +18,7 @@
 
 @this(mainTemplate: views.html.main_template, header: views.html.header, form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF)
 
-@(accountForm: AccountForm, metadata: EiscdEntry, validationErrorResult: ValidationErrorResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountForm: AccountForm, metadata: Option[EiscdEntry], validationErrorResult: ValidationErrorResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
 
 @mainTemplate(title = Messages("bars.validateResults.title"), bodyClasses = None) {
 <!DOCTYPE html>

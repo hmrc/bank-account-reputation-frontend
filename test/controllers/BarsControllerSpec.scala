@@ -18,6 +18,7 @@ package controllers
 
 import akka.stream.Materializer
 import config.FrontendAppConfig
+import models.EiscdEntry
 import models.Implicits.{eiscdWrites, validationResultFormat}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -39,7 +40,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
   implicit lazy val materializer: Materializer = app.materializer
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
+    inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
     inject[views.html.validate], inject[views.html.validationResult], inject[views.html.validationErrorResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {
@@ -190,6 +191,18 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("ALLOWED")
       }
 
+    }
+
+    "metadata" should {
+      "show message when sortcode not found" in new Scenario {
+        mockGET[Option[EiscdEntry]](None)
+        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
+        val request = FakeRequest().withJsonBody(json).withCSRFToken
+        val result = metadata(request)
+
+        status(result) mustEqual OK
+        contentAsString(result) must include("Metadata for Bank Sort Code Not Found")
+      }
     }
   }
 }
