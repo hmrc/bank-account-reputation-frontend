@@ -1,0 +1,83 @@
+@*
+ * Copyright 2021 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import config.FrontendAppConfig
+@import models._
+
+@this()
+
+@(sortCode: String, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+    <tr><td align="right">
+        <label class="govuk-label--l">@messages("bars.metadataResults.header")</label></td>
+        <td><b> @sortCode </b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.bankCode")</td>
+        <td align="center"><b>@metadata.bankCode</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.bicBankCode")</td>
+        <td align="center"><b>@metadata.bicBankCode</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.bankName")</td>
+        <td align="center"><b>@metadata.bankName</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.address")</td>
+        <td align="center"><b>
+            <ul>
+                @for(line <- metadata.address.lines) {
+                    <li>@line</li>
+                }
+                <li>@metadata.address.zipCode</li>
+                <li>@metadata.address.town</li>
+                <li>@metadata.address.county</li>
+                @if(metadata.address.country.isDefined) {
+                    <li>@metadata.address.country.map(_.name)</li>
+                }
+                <li>@metadata.address.postCode</li>
+                <li>@metadata.address.zipCode</li>
+            </ul>
+        </b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.telephone")</td>
+        <td align="left"><b>@metadata.telephone</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.bacsOfficeStatus")</td>
+        <td align="center"><b>@metadata.bacsOfficeStatus.status</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.chapsSterlingStatus")</td>
+        <td align="center"><b>@metadata.chapsSterlingStatus.status</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.branchName")</td>
+        <td align="center"><b>@metadata.branchName</b></td>
+    </tr>
+    <tr><td align="right">@messages("bars.metadataResults.transactionTypes")</td>
+        <td align="center">
+            @if(metadata.isDirectDebitSupported) {
+                Direct Debit - <font color="green">ALLOWED</font>
+                <br>
+            } else {
+                Direct Debit - <font color="red">DISALLOWED</font>
+                <br>
+            }
+
+            @if(metadata.isDirectCreditSupported) {
+                Direct Credit - <font color="green">ALLOWED</font>
+                <br>
+            } else {
+                Direct Credit - <font color="red">DISALLOWED</font>
+                <br>
+                }
+        </td>
+    </tr>

@@ -42,6 +42,7 @@ bars.validateResults.directDebitInstructionsDisallowed=Welsh eqv. of Direct Debi
 bars.metadata.title=Welsh eqv. of Bank Meta Data Lookup
 bars.metadata.header=Welsh eqv. of Please fill the form to lookup sort code metadata:
 bars.metadataResults.title=Welsh eqv. of Metadata for Bank Sort Code
+bars.metadataResults.notFound=W Metadata for Bank Sort Code Not Found
 bars.metadataResults.header=Welsh eqv. of Metadata for Bank Sort Code:
 bars.metadataResults.bankCode=Welsh eqv. of Bank Code:
 bars.metadataResults.bicBankCode=Welsh eqv. of BIC Bank Code:

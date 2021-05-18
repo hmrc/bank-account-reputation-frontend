@@ -38,7 +38,9 @@ class BarsController @Inject()(
                                 indexView: views.html.index,
                                 accessibilityView: views.html.accessibility,
                                 metadataView: views.html.metadata,
+                                metadataResultTable: views.html.metadataResultTablePartial,
                                 metadataResultView: views.html.metadataResult,
+                                metadataNoResultView: views.html.metadataNoResult,
                                 modckeckView: views.html.modcheck,
                                 modckeckResultView: views.html.modcheckResult,
                                 validateView: views.html.validate,
@@ -107,9 +109,10 @@ class BarsController @Inject()(
         },
         account => {
           connector.metadata(account.sortCode)
-            .map(result =>
-              Ok(metadataResultView(account, result))
-            )
+            .map {
+              case Some(result) => Ok(metadataResultView(account, result))
+              case _            => Ok(metadataNoResultView(account))
+            }
         }
       )
   }
@@ -168,9 +171,8 @@ class BarsController @Inject()(
             } yield (metadata, validation)
 
             result.map {
-              res =>
-                if(res._2.isRight) Ok(validationResultView(account, res._1, res._2.right.get))
-                else Ok(validationErrorResultView(account, res._1, res._2.left.get))
+              case (metadataMaybe, Right(validationResult)) => Ok(validationResultView(account, metadataMaybe, validationResult))
+              case (metadataMaybe, Left(validationError)) => Ok(validationErrorResultView(account, metadataMaybe, validationError))
             } recover {
               case e: uk.gov.hmrc.http.NotFoundException => {
                 Logger.warn("Failed to retrieve bank details: " + e.toString)
