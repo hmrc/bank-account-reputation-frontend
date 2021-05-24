@@ -14,37 +14,39 @@
 * limitations under the License.
 *@
 @import controllers.routes
-@import helper._
+@import helper.form
+@import helper.Implicits._
 @import config.AppConfig
 
-@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton)
 
 @(accountForm: Form[AccountForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @mainTemplate(pageTitle = Option(messages("bars.validate.title"))) {
+    <h1 class="govuk-heading">@messages("bars.validate.title")</h1>
+
     @errorSummary(Messages("bars.errors"), accountForm)
-    @form(action = routes.BarsController.validate(),
-        'id -> "validate-form",
-        'method -> "post",
-        'class -> "govuk-form",
-        'autocomplete -> "off",
-        'style -> "width: 99%") {
+    @form(action = routes.BarsController.validate()) {
 
-        <div class="form-field spaced-below">
-        @inputText(accountForm("sortCode"),
-            '_label -> messages("bars.label.sortCode"),
-            '_id -> "sortCode-input",
-            'class -> "govuk-label",
-            'autofocus -> true)
-        </div>
+        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+            value = accountForm("sortCode").value,
+            label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
+            formGroupClasses = "form-field-group",
+            name = accountForm("sortCode").name,
+            id = accountForm("sortCode").name,
+            errorMessage = accountForm("sortCode").error.map(fe ⇒
+                ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
-        <div class="form-field spaced-below">
-        @inputText(accountForm("accountNumber"),
-            '_label -> f"${messages("bars.label.accountNumber")} [${messages("bars.label.optional")}]",
-            '_id -> "accountNumber-input",
-            'class -> "govuk-label")
-        </div>
+        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+            value = accountForm("accountNumber").value,
+            label = Label(content = HtmlContent(messages("bars.label.accountNumber"))),
+            formGroupClasses = "form-field-group",
+            name = accountForm("accountNumber").name,
+            id = accountForm("accountNumber").name,
+            errorMessage = accountForm("accountNumber").error.map(fe ⇒
+                ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
-        <button type="submit" class="govuk-button">Search</button>
+        @button(Button(content = HtmlContent("Search"),
+            inputType = Some("submit")))
     }
 }

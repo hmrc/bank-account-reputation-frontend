@@ -69,7 +69,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("A valid sort code is required")
       }
 
@@ -79,7 +79,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("A valid sort code is required")
         contentAsString(result) must include("Invalid account number: should be 8 digits")
       }
@@ -90,7 +90,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("Invalid account number: should be 8 digits")
       }
 
@@ -119,27 +119,27 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("N/A")
         contentAsString(result) must include("Account Number")
         contentAsString(result) must include("N/A")
-        contentAsString(result) must include("Account Number/Sort Code Valid:")
+        contentAsString(result) must include("Account Number/Sort Code Valid")
         contentAsString(result) must include("N/A")
-        contentAsString(result) must include("Bank Code:")
+        contentAsString(result) must include("Bank Code")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("BIC Bank Code:")
+        contentAsString(result) must include("BIC Bank Code")
         contentAsString(result) must include("HBUK")
-        contentAsString(result) must include("Bank Name:")
+        contentAsString(result) must include("Bank Name")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("Address:")
+        contentAsString(result) must include("Address")
         contentAsString(result) must include("line1")
-        contentAsString(result) must include("Telephone:")
+        contentAsString(result) must include("Telephone")
         contentAsString(result) must include("12121")
-        contentAsString(result) must include("BACS Office Status:")
+        contentAsString(result) must include("BACS Office Status")
         contentAsString(result) must include("BACS member; accepts BACS payments")
-        contentAsString(result) must include("CHAPS Sterling Status:")
+        contentAsString(result) must include("CHAPS Sterling Status")
         contentAsString(result) must include("Indirect")
-        contentAsString(result) must include("Branch Name:")
+        contentAsString(result) must include("Branch Name")
         contentAsString(result) must include("London")
-        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number):")
+        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
         contentAsString(result) must include("no")
-        contentAsString(result) must include("Transaction Types:")
+        contentAsString(result) must include("Transaction Types")
         contentAsString(result) must include("ALLOWED")
       }
 
@@ -157,30 +157,29 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("GB42ABCD12345612345678")
         contentAsString(result) must include("Account Number")
         contentAsString(result) must include("12345678")
-        contentAsString(result) must include("Account Number/Sort Code Valid:")
+        contentAsString(result) must include("Account Number/Sort Code Valid")
         contentAsString(result) must include("true")
-        contentAsString(result) must include("Bank Code:")
+        contentAsString(result) must include("Bank Code")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("BIC Bank Code:")
+        contentAsString(result) must include("BIC Bank Code")
         contentAsString(result) must include("HBUK")
-        contentAsString(result) must include("Bank Name:")
+        contentAsString(result) must include("Bank Name")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("Address:")
+        contentAsString(result) must include("Address")
         contentAsString(result) must include("line1")
-        contentAsString(result) must include("Telephone:")
+        contentAsString(result) must include("Telephone")
         contentAsString(result) must include("12121")
-        contentAsString(result) must include("BACS Office Status:")
+        contentAsString(result) must include("BACS Office Status")
         contentAsString(result) must include("BACS member; accepts BACS payments")
-        contentAsString(result) must include("CHAPS Sterling Status:")
+        contentAsString(result) must include("CHAPS Sterling Status")
         contentAsString(result) must include("Indirect")
-        contentAsString(result) must include("Branch Name:")
+        contentAsString(result) must include("Branch Name")
         contentAsString(result) must include("London")
-        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number):")
+        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
         contentAsString(result) must include("no")
-        contentAsString(result) must include("Transaction Types:")
+        contentAsString(result) must include("Transaction Types")
         contentAsString(result) must include("ALLOWED")
       }
-
     }
 
     "metadata" should {
