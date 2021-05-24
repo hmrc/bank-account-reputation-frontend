@@ -14,21 +14,15 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 @import controllers.routes
 @import helper._
 
-@this(
-        mainTemplate: views.html.main_template,
-        header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
 
-@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@defining(play.core.PlayVersion.current) { version =>
-
-    @mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
+    @mainTemplate(pageTitle = Option(messages("bars.validate.title"))) {
     <!DOCTYPE html>
         <html>
             <head>
@@ -96,4 +90,3 @@
             </body>
         </html>
     }
-}

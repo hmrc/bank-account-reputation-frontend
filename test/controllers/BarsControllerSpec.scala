@@ -17,7 +17,7 @@
 package controllers
 
 import akka.stream.Materializer
-import config.FrontendAppConfig
+import config.AppConfig
 import models.EiscdEntry
 import models.Implicits.{eiscdWrites, validationResultFormat}
 import org.scalatestplus.mockito.MockitoSugar
@@ -29,18 +29,18 @@ import play.api.test.CSRFTokenHelper._
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.NotFoundException
+import uk.gov.hmrc.http.{HttpResponse, NotFoundException}
 import utils.TestData
 
 import scala.concurrent.ExecutionContext
 
 class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with MockitoSugar with TestData {
   implicit val ec = ExecutionContext.global
-  implicit val appConfig = inject[FrontendAppConfig]
+  implicit val appConfig = inject[AppConfig]
   implicit lazy val materializer: Materializer = app.materializer
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
+    inject[views.html.main], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
     inject[views.html.validate], inject[views.html.validationResult], inject[views.html.validationErrorResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {
@@ -56,19 +56,9 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
 
         status(result) mustEqual OK
         contentAsString(result) must include("Validate Bank Details")
-        contentAsString(result) must include("Sort Code")
-        contentAsString(result) must include("Account Number [Optional]")
-        contentAsString(result) must include("Search")
-      }
-    }
-
-    "show accessibility statement" should {
-      "page" in new Scenario {
-        val request = FakeRequest().withCSRFToken
-        val result = accessibilityStatement()(request)
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Accessibility statement for Bank Account Reputation Service")
+        contentAsString(result) must include("Bank Metadata (Sort Code) Lookup")
+        contentAsString(result) must include("Mod Check")
+        contentAsString(result) must include("Assess Existence and Reputation")
       }
     }
 
@@ -106,7 +96,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
 
       "show error when sortcode and account does not exist" in new Scenario {
         mockPOSTException(new NotFoundException("Not Found"))
-        mockGETException(new NotFoundException("Not Found"))
+        mockGET(noEiscdEntry)
         val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)

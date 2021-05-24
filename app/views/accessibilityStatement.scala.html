@@ -14,11 +14,11 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 
 @this(header: views.html.header)
 
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @defining(play.core.PlayVersion.current) { version =>
 <!DOCTYPE html>

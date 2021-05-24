@@ -1,6 +1,5 @@
 # Add all the application routes to the app.routes file
-->         /bank-account-reputation-frontend            app.Routes
-->         /                                            health.Routes
-->     	   /template                                    template.Routes
+->         /bank-account-reputation-frontend             app.Routes
+->         /                                                health.Routes
 
-GET        /admin/metrics                               @com.kenshoo.play.metrics.MetricsController.metrics
+GET        /admin/metrics             com.kenshoo.play.metrics.MetricsController.metrics

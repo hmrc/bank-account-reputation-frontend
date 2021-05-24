@@ -14,34 +14,34 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 @import models._
 
 @this(
-        mainTemplate: views.html.main_template,
+        mainTemplate: views.html.Layout,
         header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF,
+        form: FormWithCSRF,
         metadataResultTable: views.html.metadataResultTablePartial
 )
 
-@(sortCodeForm: SortCodeForm, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(sortCodeForm: SortCodeForm, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@mainTemplate(title = Messages("bars.metadataResults.title"), bodyClasses = None) {
-<!DOCTYPE html>
-    <html>
-        <head>
-        @header()
-        </head>
-        <body>
-            <div id="wrapper" class="panel">
-                <br/>
-                <table>
-                    @metadataResultTable(sortCodeForm.sortCode, metadata)
-                </table>
-            </div>
-            <br />
-        </body>
-    </html>
-}
+@*mainTemplate(title = Messages("bars.metadataResults.title"), bodyClasses = None) {*@
+@*<!DOCTYPE html>*@
+@*    <html>*@
+@*        <head>*@
+@*        @header()*@
+@*        </head>*@
+@*        <body>*@
+@*            <div id="wrapper" class="panel">*@
+@*                <br/>*@
+@*                <table>*@
+@*                    @metadataResultTable(sortCodeForm.sortCode, metadata)*@
+@*                </table>*@
+@*            </div>*@
+@*            <br />*@
+@*        </body>*@
+@*    </html>*@
+@*}*@
 
 

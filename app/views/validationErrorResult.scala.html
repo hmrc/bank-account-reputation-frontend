@@ -14,17 +14,17 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 
-@this(mainTemplate: views.html.main_template, header: views.html.header, form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
 
-@(accountForm: AccountForm, metadata: Option[EiscdEntry], validationErrorResult: ValidationErrorResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountForm: AccountForm, metadata: Option[EiscdEntry], validationErrorResult: ValidationErrorResult)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@mainTemplate(title = Messages("bars.validateResults.title"), bodyClasses = None) {
+@mainTemplate(pageTitle = Option(messages("bars.validateResults.title"))) {
 <!DOCTYPE html>
     <html>
         <head>
-        @header(appConfig.isWelshEnabled)
+        @header(false)
         </head>
         <h1 class="form-title heading-large" id="pageHeading">@messages("bars.options.validate")</h1>
         <body>

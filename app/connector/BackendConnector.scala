@@ -16,22 +16,17 @@
 
 package connector
 
-import akka.http.scaladsl.model.StatusCodes.OK
-import config.BackendAppConfig
+import config.AppConfig
+import models.{AccountDetails, Assessment, EiscdEntry, Input, ModCheckResult, ValidationErrorResult, ValidationResult}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
+import models.Implicits._
 
 import javax.inject.Inject
-import models.Implicits._
-import models._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class BackendConnector @Inject()(
-                                  http: HttpClient,
-                                  bars: BackendAppConfig) {
+class BackendConnector @Inject()(http: HttpClient, bars: AppConfig) {
 
   private val urlValidate = s"${bars.baseUrl}/validateBankDetails"
   private val urlModcheck = s"${bars.baseUrl}/modcheck"
@@ -59,7 +54,7 @@ class BackendConnector @Inject()(
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier): Future[Option[EiscdEntry]] = {
 
-    http.GET(urlMetadata + sortCode)
+    http.GET[HttpResponse](urlMetadata + sortCode)
         .map(r => r -> r.status)
         .map{
           case (response, 200) => response.json.validate[EiscdEntry].asOpt

@@ -16,21 +16,20 @@
 
 package utils
 
-import config.BackendAppConfig
+import config.AppConfig
 import connector.BackendConnector
 import models._
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.mockito.MockitoSugar._
 import play.api.libs.json.{Json, Writes}
 import play.api.test.Helpers.OK
-import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.Future
 
 trait TestData {
-  val config = mock[BackendAppConfig]
+  val config = mock[AppConfig]
   when(config.baseUrl).thenReturn("http://localhost")
 
   val sortCode = "123456"
@@ -51,7 +50,7 @@ trait TestData {
   val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
 
   def mockGET[T](data: T)(implicit writes: Writes[T]): Unit = {
-    when(http.GET[HttpResponse](any())(any(), any(), any()))
+    when(http.GET[HttpResponse](any(), any(), any())(any(), any(), any()))
       .thenReturn(Future.successful(HttpResponse(OK, Some(Json.toJson(data)))))
   }
 

@@ -16,9 +16,10 @@
 
 package models
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class EiscdEntryTest extends WordSpec with Matchers {
+class EiscdEntryTest extends AnyWordSpec with Matchers {
 
   import TransactionType._
 
