@@ -118,9 +118,6 @@ case class Subject(title: Option[String],
 case class Input(account: Account,
                  subject: Subject)
 
-case class ModCheckResult(accountNumberWithSortCodeIsValid: Boolean,
-                          nonStandardAccountDetailsRequiredForBacs: String)
-
 case class ValidationResult(accountNumberWithSortCodeIsValid: Boolean,
                             nonStandardAccountDetailsRequiredForBacs: String,
                             sortCodeIsPresentOnEISCD: String,
@@ -167,8 +164,6 @@ object Implicits {
   implicit val validationResultFormat = Json.format[ValidationResult]
 
   implicit val validationErrorResultFormat = Json.format[ValidationErrorResult]
-
-  implicit val modcheckResultFormat = Json.format[ModCheckResult]
 
   implicit val assessmentFormat = Json.format[Assessment]
 

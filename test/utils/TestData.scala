@@ -46,7 +46,6 @@ trait TestData {
   val yes = "Yes"
   val validateResult = ValidationResult(true, yes, yes, Some(yes), Some(yes), Some(yes), Some("GB42ABCD12345612345678"))
   val errorValidateResult = ValidationErrorResult("SORT_CODE_ON_DENY_LIST", hmrcSortCode + ": sort code is on deny list. This usually means that it is an HMRC sort code.")
-  val modCheckResult = ModCheckResult(true, yes)
   val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
 
   def mockGET[T](data: T)(implicit writes: Writes[T]): Unit = {
