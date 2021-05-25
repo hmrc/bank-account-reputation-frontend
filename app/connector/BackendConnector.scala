@@ -17,7 +17,7 @@
 package connector
 
 import config.AppConfig
-import models.{AccountDetails, Assessment, EiscdEntry, Input, ModCheckResult, ValidationErrorResult, ValidationResult}
+import models.{AccountDetails, Assessment, EiscdEntry, Input, ValidationErrorResult, ValidationResult}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpReads, HttpResponse}
 import models.Implicits._
 
@@ -29,7 +29,6 @@ import scala.concurrent.Future
 class BackendConnector @Inject()(http: HttpClient, bars: AppConfig) {
 
   private val urlValidate = s"${bars.baseUrl}/validateBankDetails"
-  private val urlModcheck = s"${bars.baseUrl}/modcheck"
   private val urlMetadata = s"${bars.baseUrl}/metadata/"
   private val urlAssess = s"${bars.baseUrl}/assess"
 
@@ -45,11 +44,6 @@ class BackendConnector @Inject()(http: HttpClient, bars: AppConfig) {
       case response if response.status == 400 =>
         Left(response.json.validate[ValidationErrorResult].get)
     }
-  }
-
-  def modcheck(account: AccountDetails)(implicit hc: HeaderCarrier): Future[ModCheckResult] = {
-
-    http.POST(urlModcheck, account).map(response => response.json.validate[ModCheckResult].get)
   }
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier): Future[Option[EiscdEntry]] = {

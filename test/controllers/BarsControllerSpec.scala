@@ -40,7 +40,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
   implicit lazy val materializer: Materializer = app.materializer
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.main], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
+    inject[views.html.main], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult],
     inject[views.html.validate], inject[views.html.validationResult], inject[views.html.validationErrorResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {

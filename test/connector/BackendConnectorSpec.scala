@@ -68,18 +68,6 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
       )(any(), any(), any(), any())
     }
 
-    "modcheck" in new TestData {
-      mockPOST(modCheckResult)
-      val response = connector.modcheck(account).futureValue
-
-      response must be(modCheckResult)
-      verify(http, times(1)).POST[AccountDetails, HttpResponse](
-        meq("http://localhost/modcheck"),
-        meq(account),
-        any()
-      )(any(), any(), any(), any())
-    }
-
     "assess" in new TestData {
       mockPOST(assessResult)
       val response = connector.assess(assessInput).futureValue
