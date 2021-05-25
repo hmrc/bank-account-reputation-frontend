@@ -29,7 +29,7 @@ import play.api.test.CSRFTokenHelper._
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, Injecting}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.{HttpResponse, NotFoundException}
+import uk.gov.hmrc.http.NotFoundException
 import utils.TestData
 
 import scala.concurrent.ExecutionContext
@@ -55,10 +55,10 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = index()(request)
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Validate Bank Details")
-        contentAsString(result) must include("Bank Metadata (Sort Code) Lookup")
-        contentAsString(result) must include("Mod Check")
-        contentAsString(result) must include("Assess Existence and Reputation")
+        contentAsString(result) must include("Validate Bank Account")
+        contentAsString(result) must include("Sort Code")
+        contentAsString(result) must include("Account Number")
+        contentAsString(result) must include("Search")
       }
     }
 

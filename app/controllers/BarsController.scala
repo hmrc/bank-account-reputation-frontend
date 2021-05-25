@@ -56,7 +56,11 @@ class BarsController @Inject()(
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
     strideAuth {
+      if (!assessmentEnabled) {
+        Future.successful(Ok(validateView(accountForm)))
+      } else {
         Future.successful(Ok(mainView()))
+      }
     }
   }
 
