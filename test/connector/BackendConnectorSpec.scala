@@ -16,7 +16,6 @@
 
 package connector
 
-import models.Implicits.{assessmentFormat, eiscdWrites, modcheckResultFormat, validationResultFormat}
 import models._
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{times, verify}
@@ -28,6 +27,7 @@ import utils.TestData
 
 
 class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
+  import models.Implicits._
   implicit val hc = HeaderCarrier()
 
   "connector" should {
@@ -38,7 +38,7 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
 
       response must be(eiscdEntry)
       verify(http, times(1)).GET(
-        meq(s"http://localhost/metadata/$sortCode")
+        meq(s"http://localhost/metadata/$sortCode"), any(), any()
       )(any(), any(), any())
     }
 
@@ -56,7 +56,6 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
     }
 
     "validate with 400 response" in new TestData {
-      import models.Implicits._
 
       mockPOST(errorValidateResult, 400)
       val response = connector.validate(hmrcAccount).futureValue

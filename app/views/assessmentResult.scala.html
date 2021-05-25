@@ -14,58 +14,54 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 
-@this(
-        mainTemplate: views.html.main_template,
-        header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
 
-@(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@defining(play.core.PlayVersion.current) { version =>
+@*defining(play.core.PlayVersion.current) { version =>*@
 
-    @mainTemplate(title = Messages("bars.assessmentResult.title"), bodyClasses = None) {
-    <!DOCTYPE html>
-        <html>
-            <head>
-            @header()
-            </head>
-            <body>
-                <div id="wrapper" class="panel">
-                    <br/>
-                    <table>
-                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.assessmentResult.header")</label></td>
-                            <td><b> @value(inputForm.input.account)  / @value(inputForm.input.subject.name) @value(inputForm.input.subject.firstName)  @value(inputForm.input.subject.lastName) - @value(inputForm.input.subject.address.lines)  @value(inputForm.input.subject.address.postcode)</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.accountNumberWithSortCodeIsValid")</td>
-                            <td align=""><b>@assessment.accountNumberWithSortCodeIsValid</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.accountExists")</td>
-                            <td align=""><b>@assessment.accountExists</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.nameMatches")</td>
-                            <td align=""><b>@assessment.nameMatches</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.addressMatches")</td>
-                            <td align=""><b>@assessment.addressMatches</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.nonConsented")</td>
-                            <td align=""><b>@assessment.nonConsented</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.subjectHasDeceased")</td>
-                            <td align=""><b>@assessment.subjectHasDeceased</b></td></tr>
-                        <tr><td align="right">@messages("bars.assessmentResult.nonStandardAccountDetailsRequiredForBacs")</td>
-                            <td align=""><b>@assessment.nonStandardAccountDetailsRequiredForBacs</b></td></tr>
-                    </table>
-                </div>
-                <br />
-            </body>
-        </html>
-    }
-}
+@*    @mainTemplate(title = Messages("bars.assessmentResult.title"), bodyClasses = None) {*@
+@*    <!DOCTYPE html>*@
+@*        <html>*@
+@*            <head>*@
+@*            @header()*@
+@*            </head>*@
+@*            <body>*@
+@*                <div id="wrapper" class="panel">*@
+@*                    <br/>*@
+@*                    <table>*@
+@*                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.assessmentResult.header")</label></td>*@
+@*                            <td><b> @value(inputForm.input.account)  / @value(inputForm.input.subject.name) @value(inputForm.input.subject.firstName)  @value(inputForm.input.subject.lastName) - @value(inputForm.input.subject.address.lines)  @value(inputForm.input.subject.address.postcode)</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.accountNumberWithSortCodeIsValid")</td>*@
+@*                            <td align=""><b>@assessment.accountNumberWithSortCodeIsValid</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.accountExists")</td>*@
+@*                            <td align=""><b>@assessment.accountExists</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.nameMatches")</td>*@
+@*                            <td align=""><b>@assessment.nameMatches</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.addressMatches")</td>*@
+@*                            <td align=""><b>@assessment.addressMatches</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.nonConsented")</td>*@
+@*                            <td align=""><b>@assessment.nonConsented</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.subjectHasDeceased")</td>*@
+@*                            <td align=""><b>@assessment.subjectHasDeceased</b></td></tr>*@
+@*                        <tr><td align="right">@messages("bars.assessmentResult.nonStandardAccountDetailsRequiredForBacs")</td>*@
+@*                            <td align=""><b>@assessment.nonStandardAccountDetailsRequiredForBacs</b></td></tr>*@
+@*                    </table>*@
+@*                </div>*@
+@*                <br />*@
+@*            </body>*@
+@*        </html>*@
+@*    }*@
+@*}*@
 
-@value(obj: Any) = @{
+@*@value(obj: Any) = @{*@
 
-    obj match {
+@*    obj match {*@
 
-        case option: Option[String] => option.getOrElse("")
-        case list: List[String] => if(list.isEmpty) "" else list.map(item => item.trim).mkString(" ")
-        case obj => obj.toString
-    }
-}
+@*        case option: Option[String] => option.getOrElse("")*@
+@*        case list: List[String] => if(list.isEmpty) "" else list.map(item => item.trim).mkString(" ")*@
+@*        case obj => obj.toString*@
+@*    }*@
+@*}*@

@@ -17,7 +17,7 @@
 package controllers
 
 import akka.stream.Materializer
-import config.FrontendAppConfig
+import config.AppConfig
 import models.EiscdEntry
 import models.Implicits.{eiscdWrites, validationResultFormat}
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,11 +36,11 @@ import scala.concurrent.ExecutionContext
 
 class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with MockitoSugar with TestData {
   implicit val ec = ExecutionContext.global
-  implicit val appConfig = inject[FrontendAppConfig]
+  implicit val appConfig = inject[AppConfig]
   implicit lazy val materializer: Materializer = app.materializer
 
   class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.index], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
+    inject[views.html.main], inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResultTablePartial], inject[views.html.metadataResult], inject[views.html.metadataNoResult], inject[views.html.modcheck], inject[views.html.modcheckResult],
     inject[views.html.validate], inject[views.html.validationResult], inject[views.html.validationErrorResult], inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
 
   implicit class CSRFFRequestHeader(request: Request[_]) {
@@ -55,20 +55,10 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = index()(request)
 
         status(result) mustEqual OK
-        contentAsString(result) must include("Validate Bank Details")
+        contentAsString(result) must include("Validate Bank Account")
         contentAsString(result) must include("Sort Code")
-        contentAsString(result) must include("Account Number [Optional]")
+        contentAsString(result) must include("Account Number")
         contentAsString(result) must include("Search")
-      }
-    }
-
-    "show accessibility statement" should {
-      "page" in new Scenario {
-        val request = FakeRequest().withCSRFToken
-        val result = accessibilityStatement()(request)
-
-        status(result) mustEqual OK
-        contentAsString(result) must include("Accessibility statement for Bank Account Reputation Service")
       }
     }
 
@@ -79,7 +69,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("A valid sort code is required")
       }
 
@@ -89,7 +79,7 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("A valid sort code is required")
         contentAsString(result) must include("Invalid account number: should be 8 digits")
       }
@@ -100,13 +90,13 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         val result = validate(request)
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) must include("Please review the following errors:")
+        contentAsString(result) must include("Please review the following errors")
         contentAsString(result) must include("Invalid account number: should be 8 digits")
       }
 
       "show error when sortcode and account does not exist" in new Scenario {
         mockPOSTException(new NotFoundException("Not Found"))
-        mockGETException(new NotFoundException("Not Found"))
+        mockGET(noEiscdEntry)
         val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
         val request = FakeRequest().withJsonBody(json).withCSRFToken
         val result = validate(request)
@@ -129,27 +119,27 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("N/A")
         contentAsString(result) must include("Account Number")
         contentAsString(result) must include("N/A")
-        contentAsString(result) must include("Account Number/Sort Code Valid:")
+        contentAsString(result) must include("Account Number/Sort Code Valid")
         contentAsString(result) must include("N/A")
-        contentAsString(result) must include("Bank Code:")
+        contentAsString(result) must include("Bank Code")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("BIC Bank Code:")
+        contentAsString(result) must include("BIC Bank Code")
         contentAsString(result) must include("HBUK")
-        contentAsString(result) must include("Bank Name:")
+        contentAsString(result) must include("Bank Name")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("Address:")
+        contentAsString(result) must include("Address")
         contentAsString(result) must include("line1")
-        contentAsString(result) must include("Telephone:")
+        contentAsString(result) must include("Telephone")
         contentAsString(result) must include("12121")
-        contentAsString(result) must include("BACS Office Status:")
+        contentAsString(result) must include("BACS Office Status")
         contentAsString(result) must include("BACS member; accepts BACS payments")
-        contentAsString(result) must include("CHAPS Sterling Status:")
+        contentAsString(result) must include("CHAPS Sterling Status")
         contentAsString(result) must include("Indirect")
-        contentAsString(result) must include("Branch Name:")
+        contentAsString(result) must include("Branch Name")
         contentAsString(result) must include("London")
-        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number):")
+        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
         contentAsString(result) must include("no")
-        contentAsString(result) must include("Transaction Types:")
+        contentAsString(result) must include("Transaction Types")
         contentAsString(result) must include("ALLOWED")
       }
 
@@ -167,30 +157,29 @@ class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injectin
         contentAsString(result) must include("GB42ABCD12345612345678")
         contentAsString(result) must include("Account Number")
         contentAsString(result) must include("12345678")
-        contentAsString(result) must include("Account Number/Sort Code Valid:")
+        contentAsString(result) must include("Account Number/Sort Code Valid")
         contentAsString(result) must include("true")
-        contentAsString(result) must include("Bank Code:")
+        contentAsString(result) must include("Bank Code")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("BIC Bank Code:")
+        contentAsString(result) must include("BIC Bank Code")
         contentAsString(result) must include("HBUK")
-        contentAsString(result) must include("Bank Name:")
+        contentAsString(result) must include("Bank Name")
         contentAsString(result) must include("HSBC")
-        contentAsString(result) must include("Address:")
+        contentAsString(result) must include("Address")
         contentAsString(result) must include("line1")
-        contentAsString(result) must include("Telephone:")
+        contentAsString(result) must include("Telephone")
         contentAsString(result) must include("12121")
-        contentAsString(result) must include("BACS Office Status:")
+        contentAsString(result) must include("BACS Office Status")
         contentAsString(result) must include("BACS member; accepts BACS payments")
-        contentAsString(result) must include("CHAPS Sterling Status:")
+        contentAsString(result) must include("CHAPS Sterling Status")
         contentAsString(result) must include("Indirect")
-        contentAsString(result) must include("Branch Name:")
+        contentAsString(result) must include("Branch Name")
         contentAsString(result) must include("London")
-        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number):")
+        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
         contentAsString(result) must include("no")
-        contentAsString(result) must include("Transaction Types:")
+        contentAsString(result) must include("Transaction Types")
         contentAsString(result) must include("ALLOWED")
       }
-
     }
 
     "metadata" should {

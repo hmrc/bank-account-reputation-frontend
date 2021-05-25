@@ -14,20 +14,14 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 
-@this(
-        mainTemplate: views.html.main_template,
-        header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
 
-@(accountForm: AccountForm, modcheckResult: ModCheckResult)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(accountForm: AccountForm, modcheckResult: ModCheckResult)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 
-@defining(play.core.PlayVersion.current) { version =>
-
-    @mainTemplate(title = Messages("bars.modcheckResults.title"), bodyClasses = None) {
+    @mainTemplate(pageTitle = Option(messages("bars.modcheckResults.title"))) {
     <!DOCTYPE html>
         <html>
             <head>
@@ -50,4 +44,3 @@
             </body>
         </html>
     }
-}

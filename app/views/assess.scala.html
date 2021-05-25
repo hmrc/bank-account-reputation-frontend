@@ -1,99 +1,131 @@
 @*
- * Copyright 2021 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *@
-
-@import config.FrontendAppConfig
+* Copyright 2021 HM Revenue & Customs
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*@
+@import config.AppConfig
 @import controllers.routes
 @import helper._
 
-@this(
-        mainTemplate: views.html.main_template,
-        header: views.html.header,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton)
 
-@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@defining(play.core.PlayVersion.current) { version =>
+    @mainTemplate(pageTitle = Option(messages("bars.assess.title"))) {
+        <h1 class="govuk-heading">@messages("bars.assess.title")</h1>
 
-    @mainTemplate(title = Messages("bars.validate.title"), bodyClasses = None) {
-    <!DOCTYPE html>
-        <html>
-            <head>
-            @header()
-            </head>
-            <body>
-                <div id="wrapper" class="panel">
-                    <br/>
+        @errorSummary(Messages("bars.errors"), accountForm)
+        @form(action = routes.BarsController.assess()) {
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.account.sortCode").value,
+                label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.account.sortCode").name,
+                id = accountForm("input.account.sortCode").name,
+                errorMessage = accountForm("input.account.sortCode").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.account.accountNumber").value,
+                label = Label(content = HtmlContent(messages("bars.label.accountNumber"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.account.accountNumber").name,
+                id = accountForm("input.account.accountNumber").name,
+                errorMessage = accountForm("input.account.accountNumber").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
-                    @form(action = routes.BarsController.assess(),
-                        'id -> "validate-form",
-                        'method -> "post",
-                        'class -> "govuk-form",
-                        'autocomplete -> "off",
-                        'style -> "width: 99%") {
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.title").value,
+                label = Label(content = HtmlContent(messages("bars.label.title"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.title").name,
+                id = accountForm("input.subject.title").name,
+                errorMessage = accountForm("input.subject.title").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
-                        <table class="govuk-table">
-                            <tr><td align="center"><label class="govuk-label--l">@messages("bars.validate.header")</label><br/><br/></td></tr>
-                        </table>
-                        <table class="govuk-table">
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.sortCode")</label></td>
-                                <td><b> @inputText(inputForm("input.account.sortCode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.accountNumber")</label></td>
-                                <td><b> @inputText(inputForm("input.account.accountNumber"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.title")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.title"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.name")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.name"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.firstName")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.firstName"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.lastName")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.lastName"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.dob")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.dob"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.line1")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.address.lines[0]"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.line2")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.address.lines[1]"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.town")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.address.town"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td align="right"><label class="govuk-label--l">@messages("bars.label.postcode")</label></td>
-                                <td><b> @inputText(inputForm("input.subject.address.postcode"), '_label -> "", 'class -> "govuk-label") </b></td></tr>
-                            <tr><td /><td align="left"><button type="submit" class="govuk-button">
-                                Search</button></td></tr>
-                        </table>
-                    }
-                </div>
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.name").value,
+                label = Label(content = HtmlContent(messages("bars.label.name"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.name").name,
+                id = accountForm("input.subject.name").name,
+                errorMessage = accountForm("input.subject.name").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
-                @if(inputForm.hasErrors || inputForm.hasGlobalErrors) {
-                    <div id="errors" class="govuk-error-summary" >
-                        <label class="govuk-label--m">@messages("bars.errors")</label>
-                        <ul>
-                        @for(error <- inputForm.errors) {
-                            <li>@error.format</li>
-                        }
-                        </ul>
-                        <ul>
-                        @for(error <- inputForm.globalErrors) {
-                            <li>@error.format</li>
-                        }
-                        </ul>
-                    </div>
-                }
-            </body>
-        </html>
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.firstName").value,
+                label = Label(content = HtmlContent(messages("bars.label.firstName"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.firstName").name,
+                id = accountForm("input.subject.firstName").name,
+                errorMessage = accountForm("input.subject.firstName").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.lastName").value,
+                label = Label(content = HtmlContent(messages("bars.label.lastName"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.lastName").name,
+                id = accountForm("input.subject.lastName").name,
+                errorMessage = accountForm("input.subject.lastName").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.dob").value,
+                label = Label(content = HtmlContent(messages("bars.label.dob"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.dob").name,
+                id = accountForm("input.subject.dob").name,
+                errorMessage = accountForm("input.subject.dob").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.address.lines[0]").value,
+                label = Label(content = HtmlContent(messages("bars.label.line1"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.address.lines[0]").name,
+                id = accountForm("input.subject.address.lines[0]").name,
+                errorMessage = accountForm("input.subject.address.lines[0]").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.address.lines[1]").value,
+                label = Label(content = HtmlContent(messages("bars.label.line2"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.address.lines[1]").name,
+                id = accountForm("input.subject.address.lines[1]").name,
+                errorMessage = accountForm("input.subject.address.lines[1]").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.address.town").value,
+                label = Label(content = HtmlContent(messages("bars.label.town"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.address.town").name,
+                id = accountForm("input.subject.address.town").name,
+                errorMessage = accountForm("input.subject.address.town").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+                value = accountForm("input.subject.address.postcode").value,
+                label = Label(content = HtmlContent(messages("bars.label.postcode"))),
+                formGroupClasses = "form-field-group",
+                name = accountForm("input.subject.address.postcode").name,
+                id = accountForm("input.subject.address.postcode").name,
+                errorMessage = accountForm("input.subject.address.postcode").error.map(fe ⇒
+                    ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+            @button(Button(content = HtmlContent("Search"),
+                inputType = Some("submit")))
+        }
     }
-}

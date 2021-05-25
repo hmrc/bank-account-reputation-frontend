@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.FrontendAppConfig
+import com.google.inject.AbstractModule
+import config.AppConfig
+import connector.BackendConnector
+import play.api.{Configuration, Environment}
+import play.api.libs.concurrent.AkkaGuiceSupport
 
-@this(
-        mainTemplate: views.html.main_template,
-        mainView: views.html.main,
-        form: uk.gov.hmrc.play.views.html.helpers.FormWithCSRF
-)
-
-@()(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
-
-    @mainTemplate(title = Messages("bars.title")) {
-
-        @mainView()
-    }
+class Module(environment: Environment, playConfig: Configuration) extends AbstractModule with AkkaGuiceSupport {
+  override def configure(): Unit = {
+    super.configure()
+    bind(classOf[AppConfig])
+    bind(classOf[BackendConnector])
+  }
+}

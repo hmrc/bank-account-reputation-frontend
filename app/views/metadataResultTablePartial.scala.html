@@ -14,12 +14,12 @@
  * limitations under the License.
  *@
 
-@import config.FrontendAppConfig
+@import config.AppConfig
 @import models._
 
 @this()
 
-@(sortCode: String, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: FrontendAppConfig)
+@(sortCode: String, metadata: EiscdEntry)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
     <tr><td align="right">
         <label class="govuk-label--l">@messages("bars.metadataResults.header")</label></td>
         <td><b> @sortCode </b></td>

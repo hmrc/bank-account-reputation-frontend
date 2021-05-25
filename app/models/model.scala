@@ -16,10 +16,12 @@
 
 package models
 
-import models.BacsStatus.{A, M}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import models.BacsStatus.{M, A}
+import models.ChapsStatus.ChapsStatus
+import models.TransactionType.{AU, CR, DR, TransactionType}
 
 case class AccountDetails(account: Account)
 
@@ -85,15 +87,11 @@ object ChapsStatus extends Enumeration {
   val N = Val("Does not accept")
 }
 
-import models.BacsStatus.BacsStatus
-import models.ChapsStatus.ChapsStatus
-import models.TransactionType._
-
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
                       telephone: Option[String],
-                      bacsOfficeStatus: BacsStatus,
+                      bacsOfficeStatus: BacsStatus.BacsStatus,
                       chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty,
@@ -174,7 +172,7 @@ object Implicits {
 
   implicit val assessmentFormat = Json.format[Assessment]
 
-  implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
+  implicit def bacsOfficeStatus(statusCode: String): BacsStatus.BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
 
   implicit def chapsSterlingStatus(statusCode: Option[String]): ChapsStatus = {
     statusCode match {

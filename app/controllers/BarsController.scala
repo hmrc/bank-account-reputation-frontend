@@ -16,52 +16,50 @@
 
 package controllers
 
-import config.FrontendAppConfig
-import connector.BackendConnector
-import javax.inject._
-import models._
-import play.api.Logger
-import play.api.i18n.I18nSupport
+import play.api.{Configuration, Environment, Logger}
+import play.api.i18n._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
+import config.AppConfig
+import connector.BackendConnector
+import models._
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 
 
 @Singleton
 class BarsController @Inject()(
-                                connector: BackendConnector,
-                                val authConnector: AuthConnector,
-                                mcc: MessagesControllerComponents,
-                                indexView: views.html.index,
-                                accessibilityView: views.html.accessibility,
-                                metadataView: views.html.metadata,
-                                metadataResultTable: views.html.metadataResultTablePartial,
-                                metadataResultView: views.html.metadataResult,
-                                metadataNoResultView: views.html.metadataNoResult,
-                                modckeckView: views.html.modcheck,
-                                modckeckResultView: views.html.modcheckResult,
-                                validateView: views.html.validate,
-                                validationResultView: views.html.validationResult,
-                                validationErrorResultView: views.html.validationErrorResult,
-                                assessmentView: views.html.assess,
-                                assessmentResultView: views.html.assessmentResult,
-                                error: views.html.error_template
-                              )
-                              (implicit ec: ExecutionContext, appConfig: FrontendAppConfig) extends FrontendController(mcc)
-  with AuthorisedFunctions with AuthRedirects with I18nSupport {
+                                  connector: BackendConnector,
+                                  val authConnector: AuthConnector,
+                                  mcc: MessagesControllerComponents,
+                                  mainView: views.html.main,
+                                  accessibilityView: views.html.accessibility,
+                                  metadataView: views.html.metadata,
+                                  metadataResultTable: views.html.metadataResultTablePartial,
+                                  metadataResultView: views.html.metadataResult,
+                                  metadataNoResultView: views.html.metadataNoResult,
+                                  modckeckView: views.html.modcheck,
+                                  modckeckResultView: views.html.modcheckResult,
+                                  validateView: views.html.validate,
+                                  validationResultView: views.html.validationResult,
+                                  validationErrorResultView: views.html.validationErrorResult,
+                                  assessmentView: views.html.assess,
+                                  assessmentResultView: views.html.assessmentResult,
+                                  error: views.html.error_template
+                              )(implicit ec: ExecutionContext, appConfig: AppConfig)
+    extends FrontendController(mcc) with AuthorisedFunctions with AuthRedirects with I18nSupport {
 
-  val config = appConfig.configuration
-  val env = appConfig.environment
+  private val logger = Logger(this.getClass)
 
   def index(): Action[AnyContent] = Action.async { implicit request =>
     strideAuth {
       if (!assessmentEnabled) {
         Future.successful(Ok(validateView(accountForm)))
       } else {
-        Future.successful(Ok(indexView()))
+        Future.successful(Ok(mainView()))
       }
     }
   }
@@ -175,7 +173,7 @@ class BarsController @Inject()(
               case (metadataMaybe, Left(validationError)) => Ok(validationErrorResultView(account, metadataMaybe, validationError))
             } recover {
               case e: uk.gov.hmrc.http.NotFoundException => {
-                Logger.warn("Failed to retrieve bank details: " + e.toString)
+                logger.warn("Failed to retrieve bank details: " + e.toString)
                 BadRequest(validateView(accountForm.withError("sortCode", "Failed to retrieve bank details for sort code " + account.sortCode)))
               }
             }
@@ -187,13 +185,7 @@ class BarsController @Inject()(
   def assessment: Action[AnyContent] = Action {
 
     implicit req =>
-
-      if (!assessmentEnabled) {
-        Logger.warn("Attempted access to assessment but feature is disabled")
-        NotFound
-      } else {
         Ok(assessmentView(inputForm))
-      }
   }
 
   def assess: Action[AnyContent] = Action.async {
@@ -201,7 +193,7 @@ class BarsController @Inject()(
     implicit request =>
 
       if (!assessmentEnabled) {
-        Logger.warn("Attempted access to assessment but feature is disabled")
+        logger.warn("Attempted access to assessment but feature is disabled")
         Future.successful(NotFound)
       } else {
         inputForm.bindFromRequest.fold(
@@ -221,4 +213,7 @@ class BarsController @Inject()(
   private def assessmentEnabled: Boolean = appConfig.isAssessmentEnabled
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled
+
+  val config = appConfig.config
+  val env = appConfig.env
 }
