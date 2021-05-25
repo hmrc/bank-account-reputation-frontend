@@ -52,12 +52,11 @@ class BackendConnector @Inject()(http: HttpClient, bars: AppConfig) {
         .map(r => r -> r.status)
         .map{
           case (response, 200) => response.json.validate[EiscdEntry].asOpt
-          case (_,        404) => None
+          case (_,        _) => None
         }
   }
 
   def assess(account: Input)(implicit hc: HeaderCarrier): Future[Assessment] = {
-
     http.POST(urlAssess, account).map(response => response.json.validate[Assessment].get)
   }
 }

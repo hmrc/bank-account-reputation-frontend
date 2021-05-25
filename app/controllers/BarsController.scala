@@ -38,7 +38,6 @@ class BarsController @Inject()(
                                   mainView: views.html.main,
                                   accessibilityView: views.html.accessibility,
                                   metadataView: views.html.metadata,
-                                  metadataResultTable: views.html.metadataResultTablePartial,
                                   metadataResultView: views.html.metadataResult,
                                   metadataNoResultView: views.html.metadataNoResult,
                                   validateView: views.html.validate,
