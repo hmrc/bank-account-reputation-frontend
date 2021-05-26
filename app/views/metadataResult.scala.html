@@ -35,21 +35,21 @@
 }
 
 @bacsSupport(ddSupported: Boolean, dcSupported: Boolean) = {
-    <span class="nobr">Direct Debit -
+    <div class="nobr">Direct Debit -
         @if(ddSupported) {
             <span class="allowed-colour">ALLOWED</span>
         } else {
             <span class="disallowed-colour">DISALLOWED</span>
         }
-    </span>
+    </div>
 
-    <span class="nobr">Direct Credit -
+    <div class="nobr">Direct Credit -
         @if(dcSupported) {
             <span class="allowed-colour">ALLOWED</span>
         } else {
             <span class="disallowed-colour">DISALLOWED</span>
         }
-    </span>
+    </div>
 }
     
 @mainTemplate(pageTitle = Option(messages("bars.metadataResults.title"))) {
