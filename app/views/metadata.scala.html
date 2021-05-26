@@ -17,15 +17,22 @@
 @import helper._
 @import config.AppConfig
 
-@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary)
 
 @(sortcodeForm: Form[SortCodeForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
     @mainTemplate(pageTitle = Option(messages("bars.metadata.title"))) {
         <h1 class="govuk-heading-l">@messages("bars.metadata.header")</h1>
 
-        @errorSummary(Messages("bars.errors"), sortcodeForm)
-        @form(action = routes.BarsController.metadata()) {
+    @if(sortcodeForm.hasErrors) {
+        @errorSummary(ErrorSummary(title = HtmlContent(messages("bars.errors")),
+            errorList = sortcodeForm.errors.map { error ⇒
+                ErrorLink(href = Some(s"#${error.key}"),
+                    content = HtmlContent(messages(error.message)))
+            }))
+    }
+
+    @form(action = routes.BarsController.metadata()) {
             @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
                 value = sortcodeForm("sortCode").value,
                 label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
