@@ -21,7 +21,7 @@
 @(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @mainTemplate(pageTitle = Option(messages("bars.assessmentResult.title"))) {
- <h1 class="form-title heading-large" id="pageHeading">@messages("bars.assessmentResult.header")</h1>
+ <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.assessmentResult.header")</h1>
 
  @summary(SummaryList(
   rows = Seq(
