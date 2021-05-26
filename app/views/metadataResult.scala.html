@@ -35,20 +35,24 @@
 }
 
 @bacsSupport(ddSupported: Boolean, dcSupported: Boolean) = {
-@if(ddSupported) {
-    Direct Debit - <font color="green">ALLOWED</font>
-} else {
-    Direct Debit - <font color="red">DISALLOWED</font>
-}
+    <span class="nobr">Direct Debit -
+        @if(ddSupported) {
+            <span class="allowed-colour">ALLOWED</span>
+        } else {
+            <span class="disallowed-colour">DISALLOWED</span>
+        }
+    </span>
 
-@if(dcSupported){
-    Direct Credit - <font color="green">ALLOWED</font>
-} else {
-    Direct Credit - <font color="red">DISALLOWED</font>
+    <span class="nobr">Direct Credit -
+        @if(dcSupported) {
+            <span class="allowed-colour">ALLOWED</span>
+        } else {
+            <span class="disallowed-colour">DISALLOWED</span>
+        }
+    </span>
 }
-}
-
-mainTemplate(pageTitle = Option(messages("bars.metadataResults.title"))) {
+    
+@mainTemplate(pageTitle = Option(messages("bars.metadataResults.title"))) {
 <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.metadataResults.header")</h1>
 
 @summary(SummaryList(
