@@ -16,52 +16,70 @@
 
 @import config.AppConfig
 
-@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, summary: GovukSummaryList)
 
 @(inputForm: InputForm, assessment: Assessment)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@*defining(play.core.PlayVersion.current) { version =>*@
+@mainTemplate(pageTitle = Option(messages("bars.assessmentResult.title"))) {
+ <h1 class="form-title heading-large" id="pageHeading">@messages("bars.assessmentResult.header")</h1>
 
-@*    @mainTemplate(title = Messages("bars.assessmentResult.title"), bodyClasses = None) {*@
-@*    <!DOCTYPE html>*@
-@*        <html>*@
-@*            <head>*@
-@*            @header()*@
-@*            </head>*@
-@*            <body>*@
-@*                <div id="wrapper" class="panel">*@
-@*                    <br/>*@
-@*                    <table>*@
-@*                        <tr><td align="right"><label class="govuk-label--l">@messages("bars.assessmentResult.header")</label></td>*@
-@*                            <td><b> @value(inputForm.input.account)  / @value(inputForm.input.subject.name) @value(inputForm.input.subject.firstName)  @value(inputForm.input.subject.lastName) - @value(inputForm.input.subject.address.lines)  @value(inputForm.input.subject.address.postcode)</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.accountNumberWithSortCodeIsValid")</td>*@
-@*                            <td align=""><b>@assessment.accountNumberWithSortCodeIsValid</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.accountExists")</td>*@
-@*                            <td align=""><b>@assessment.accountExists</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.nameMatches")</td>*@
-@*                            <td align=""><b>@assessment.nameMatches</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.addressMatches")</td>*@
-@*                            <td align=""><b>@assessment.addressMatches</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.nonConsented")</td>*@
-@*                            <td align=""><b>@assessment.nonConsented</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.subjectHasDeceased")</td>*@
-@*                            <td align=""><b>@assessment.subjectHasDeceased</b></td></tr>*@
-@*                        <tr><td align="right">@messages("bars.assessmentResult.nonStandardAccountDetailsRequiredForBacs")</td>*@
-@*                            <td align=""><b>@assessment.nonStandardAccountDetailsRequiredForBacs</b></td></tr>*@
-@*                    </table>*@
-@*                </div>*@
-@*                <br />*@
-@*            </body>*@
-@*        </html>*@
-@*    }*@
-@*}*@
+ @summary(SummaryList(
+  rows = Seq(
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.header"))),
+    Value(HtmlContent(headerString))
+   ),
 
-@*@value(obj: Any) = @{*@
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.accountNumberWithSortCodeIsValid"))),
+    Value(HtmlContent(assessment.accountNumberWithSortCodeIsValid.toString))
+   ),
 
-@*    obj match {*@
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.accountExists"))),
+    Value(HtmlContent(assessment.accountExists.toString))
+   ),
 
-@*        case option: Option[String] => option.getOrElse("")*@
-@*        case list: List[String] => if(list.isEmpty) "" else list.map(item => item.trim).mkString(" ")*@
-@*        case obj => obj.toString*@
-@*    }*@
-@*}*@
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.nameMatches"))),
+    Value(HtmlContent(assessment.nameMatches.toString))
+   ),
+
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.addressMatches"))),
+    Value(HtmlContent(assessment.addressMatches.toString))
+   ),
+
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.nonConsented"))),
+    Value(HtmlContent(assessment.nonConsented.toString))
+   ),
+
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.subjectHasDeceased"))),
+    Value(HtmlContent(assessment.subjectHasDeceased.toString))
+   ),
+
+   SummaryListRow(
+    Key(HtmlContent(messages("bars.assessmentResult.nonStandardAccountDetailsRequiredForBacs"))),
+    Value(HtmlContent(assessment.nonStandardAccountDetailsRequiredForBacs.getOrElse("no")))
+   ),
+  )
+ ))
+}
+
+@value(obj: Any) = @{
+    obj match {
+        case option: Option[String] => option.getOrElse("")
+        case list: List[String] => if(list.isEmpty) "" else list.map(item => item.trim).mkString(" ")
+        case obj => obj.toString
+    }
+}
+
+@headerString = @{
+  s"""${value(inputForm.input.account.sortCode)} - ${value(inputForm.input.account.accountNumber)}<br />
+  |${value(inputForm.input.subject.name)}<br />
+  |${value(inputForm.input.subject.firstName)} ${value(inputForm.input.subject.lastName)}<br />
+  |${value(inputForm.input.subject.address.lines)}<br />
+  |${value(inputForm.input.subject.address.postcode)}""".stripMargin
+}
