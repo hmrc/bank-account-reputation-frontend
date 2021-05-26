@@ -18,14 +18,21 @@
 @import helper.Implicits._
 @import config.AppConfig
 
-@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton)
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary)
 
 @(accountForm: Form[AccountForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @mainTemplate(pageTitle = Option(messages("bars.validate.title"))) {
     <h1 class="govuk-heading-l">@messages("bars.validate.title")</h1>
 
-    @errorSummary(Messages("bars.errors"), accountForm)
+    @if(accountForm.hasErrors) {
+        @errorSummary(ErrorSummary(title = HtmlContent(messages("bars.errors")),
+            errorList = accountForm.errors.map { error ⇒
+                ErrorLink(href = Some(s"#${error.key}"),
+                    content = HtmlContent(messages(error.message)))
+            }))
+    }
+
     @form(action = routes.BarsController.validate()) {
 
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(

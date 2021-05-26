@@ -36,12 +36,14 @@
       }
     }
 
-    @govukBackLink(BackLink(
-        href="#",
-        content = HtmlContent(messages("bars.label.back")),
-        classes = "govuk-visually-hidden",
-        attributes = Map("id" -> "back", "onclick" -> "javascript:history.back()")
-    ))
+    @if(appConfig.isAssessmentEnabled) {
+        @govukBackLink(BackLink(
+            href = "#",
+            content = HtmlContent(messages("bars.label.back")),
+            classes = "govuk-visually-hidden",
+            attributes = Map("id" -> "back", "onclick" -> "javascript:history.back()")
+        ))
+    }
 }
 
 @thePageTitle = {
