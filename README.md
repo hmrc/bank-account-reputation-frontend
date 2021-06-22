@@ -8,13 +8,13 @@ This is an internal front end for the [Bank Account Reputation Service (BARS)](h
 
 The default service that is available through this UI is:
 
-*  [Validate Bank Details](#Validate-bank-details)
+*  [Validate bank details](#Validate-bank-details)
 
 Access to the following **BARS** services are in Alpha, and are currently hidden behind a feature flag (Available only in QA):
-  
-*  Metadata Lookup (BARS Metadata)
-*  Mod Check (BARS Modulus Check)
-*  Assess Existence and Reputation (BARS Assess v2)
+
+*  Metadata lookup (BARS Metadata)
+*  Modcheck (BARS Modulus Check)
+*  Personal assess (BARS Assess v2)
 
 **This project has so far been developed as part of a POC to demonstrate capability usable across Government domains**
 
@@ -22,14 +22,14 @@ Access to the following **BARS** services are in Alpha, and are currently hidden
 
 When using validate bank details, you have two available options.
 
- - Enter a sort sode
- - Enter a sort code and account number
+- Enter a sort code
+- Enter a sort code and account number
 
 ### Enter a sort code
 
 This will enable you to obtain information about the branch related to the supplied sort code.  Information of particular interest will be the section titled `Transaction Types`.  This area will show you two useful bits of information:
 
-- If the branch supports the set up/collection of direct debits.  
+- If the branch supports the set up/collection of Direct Debits.
 - If this branch supports the ability to send Direct Credits (otherwise known as Bank Transfers) to credit an account with funds.
 
 ### Enter a sort code and account number
