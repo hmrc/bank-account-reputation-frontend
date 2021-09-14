@@ -132,7 +132,7 @@ class BarsController @Inject()(
               if (!account.accountNumber.isEmpty) {
                 connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
               } else {
-                Future.successful(Right(ValidationResult(false, "N/A", "N/A")))
+                Future.successful(Right(ValidationResult("no", "N/A", "N/A")))
               }
             }
 

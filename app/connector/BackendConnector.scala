@@ -28,7 +28,7 @@ import scala.concurrent.Future
 
 class BackendConnector @Inject()(http: HttpClient, bars: AppConfig) {
 
-  private val urlValidate = s"${bars.baseUrl}/validateBankDetails"
+  private val urlValidate = s"${bars.baseUrl}/v2/validateBankDetails"
   private val urlMetadata = s"${bars.baseUrl}/metadata/"
   private val urlAssess = s"${bars.baseUrl}/assess"
 

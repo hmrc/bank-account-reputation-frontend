@@ -49,7 +49,7 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
 
       response must be(Right(validateResult))
       verify(http, times(1)).POST[AccountDetails, HttpResponse](
-        meq("http://localhost/validateBankDetails"),
+        meq("http://localhost/v2/validateBankDetails"),
         meq(account),
         any()
       )(any(), any(), any(), any())

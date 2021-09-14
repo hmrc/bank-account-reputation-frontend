@@ -118,13 +118,14 @@ case class Subject(title: Option[String],
 case class Input(account: Account,
                  subject: Subject)
 
-case class ValidationResult(accountNumberWithSortCodeIsValid: Boolean,
+case class ValidationResult(accountNumberWithSortCodeIsValid: String,
                             nonStandardAccountDetailsRequiredForBacs: String,
                             sortCodeIsPresentOnEISCD: String,
                             supportsBACS: Option[String] = None,
                             directDebitsDisallowed: Option[String] = None,
                             directDebitInstructionsDisallowed: Option[String] = None,
-                            iban: Option[String] = None)
+                            iban: Option[String] = None,
+                            sortCodeBankName: Option[String] = None)
 
 case class ValidationErrorResult(code: String, desc: String)
 
