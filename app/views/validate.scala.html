@@ -33,7 +33,7 @@
             }))
     }
 
-    @form(action = routes.BarsController.validate()) {
+    @form(action = routes.BarsController.validate) {
 
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
             value = accountForm("sortCode").value,

@@ -16,12 +16,10 @@
 
 package config
 
-import controllers.routes
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Environment}
-import play.api.mvc.Call
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig, val env: Environment) {
