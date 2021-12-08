@@ -32,7 +32,7 @@
             }))
     }
 
-    @form(action = routes.BarsController.metadata()) {
+    @form(action = routes.BarsController.metadata) {
             @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
                 value = sortcodeForm("sortCode").value,
                 label = Label(content = HtmlContent(messages("bars.label.sortCode"))),

@@ -17,7 +17,7 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.govukfrontend.views.html.helpers._",
       "uk.gov.hmrc.hmrcfrontend.views.html.components._"
     ),
-    pipelineStages in Assets := Seq(gzip),
+    Assets / pipelineStages := Seq(gzip),
     // ***************
     // Use the silencer plugin to suppress warnings
     scalacOptions += "-P:silencer:pathFilters=routes",

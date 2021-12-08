@@ -21,10 +21,10 @@
 
     @layout(pageTitle = Option(messages("bars.title"))) {
             <label class="govuk-label--l">@messages("bars.header")</label><br/><br/>
-            <a class="govuk-link" href="@controllers.routes.BarsController.validation()">
+            <a class="govuk-link" href="@controllers.routes.BarsController.validation">
             @messages("bars.options.validate")</a><br/><br/>
-            <a class="govuk-link" href="@controllers.routes.BarsController.metadataLookup()">
+            <a class="govuk-link" href="@controllers.routes.BarsController.metadataLookup">
             @messages("bars.options.metadata")</a><br/><br/>
-            <a class="govuk-link" href="@controllers.routes.BarsController.assessment()">
+            <a class="govuk-link" href="@controllers.routes.BarsController.assessment">
             @messages("bars.options.assess")</a><br/><br/>
     }

@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @import config.AppConfig
 
-@this(govukLayout: GovukLayout, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
+@this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
 
 @(pageTitle: Option[String] = None,
         form: Option[Form[_]] = None,
@@ -44,7 +44,14 @@
             attributes = Map("id" -> "back", "onclick" -> "javascript:history.back()")
         ))
     }
-    <a class="govuk-link govuk-link--home" href="@controllers.routes.BarsController.index()">Home</a><br/>
+    @govukBreadcrumbs(Breadcrumbs(
+        items = Seq(
+            BreadcrumbsItem(
+                content = Text("Home"),
+                href = Some(s"${controllers.routes.BarsController.index}")
+            )
+        )
+    ))
 }
 
 @thePageTitle = {

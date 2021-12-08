@@ -31,7 +31,7 @@
             }))
     }
 
-    @form(action = routes.BarsController.assess()) {
+    @form(action = routes.BarsController.assess) {
             @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
                 value = inputForm("input.account.sortCode").value,
                 label = Label(content = HtmlContent(messages("bars.label.sortCode"))),

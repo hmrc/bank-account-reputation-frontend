@@ -16,13 +16,13 @@
 
 package controllers
 
-import play.api.{Configuration, Environment, Logger}
-import play.api.i18n._
-import play.api.mvc._
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
 import config.AppConfig
 import connector.BackendConnector
 import models._
+import play.api.Logger
+import play.api.i18n._
+import play.api.mvc._
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
@@ -61,7 +61,7 @@ class BarsController @Inject()(
     }
   }
 
-  def accessibilityStatement(): Action[AnyContent] = Action.async { implicit request =>
+  def accessibilityStatement(): Action[AnyContent] = Action.async {
     Future.successful(Ok(accessibilityView()))
   }
 

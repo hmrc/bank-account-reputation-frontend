@@ -50,12 +50,12 @@ trait TestData {
 
   def mockGET[T](data: T)(implicit writes: Writes[T]): Unit = {
     when(http.GET[HttpResponse](any(), any(), any())(any(), any(), any()))
-      .thenReturn(Future.successful(HttpResponse(OK, Some(Json.toJson(data)))))
+      .thenReturn(Future.successful(HttpResponse(OK, Json.toJson(data).toString())))
   }
 
   def mockPOST[T](data: T, status: Int = OK)(implicit writes: Writes[T]): Unit = {
     when(http.POST[String, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-      .thenReturn(Future.successful(HttpResponse(status, Some(Json.toJson(data)))))
+      .thenReturn(Future.successful(HttpResponse(status, Json.toJson(data).toString())))
   }
 
   def mockPOSTException[T](exception: Exception): Unit = {
