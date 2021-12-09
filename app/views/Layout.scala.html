@@ -24,7 +24,8 @@
         theHeaderBlock: Option[Html] = None,
         beforeContentBlock: Option[Html] = None,
         theFooterBlock: Option[Html] = None,
-        theHeadBlock: Option[Html] = None
+        theHeadBlock: Option[Html] = None,
+        breadcrumbContribution: Seq[BreadcrumbsItem] = Seq()
 )(contentBlock: Html)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @defaultBeforeContentBlock = {
@@ -36,21 +37,13 @@
       }
     }
 
-    @if(appConfig.isAssessmentEnabled) {
-        @govukBackLink(BackLink(
-            href = "#",
-            content = HtmlContent(messages("bars.label.back")),
-            classes = "govuk-visually-hidden",
-            attributes = Map("id" -> "back", "onclick" -> "javascript:history.back()")
-        ))
-    }
     @govukBreadcrumbs(Breadcrumbs(
         items = Seq(
             BreadcrumbsItem(
                 content = Text("Home"),
                 href = Some(s"${controllers.routes.BarsController.index}")
             )
-        )
+        ) ++ breadcrumbContribution
     ))
 }
 
