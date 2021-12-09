@@ -28,6 +28,7 @@
         <p>@message</p>
     }
 
-    @layout(pageTitle = Some(pageTitlee)){
+    @layout(pageTitle = Some(pageTitlee),
+        breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Error"), href = Some(s"#")))){
         @mainContent
     }

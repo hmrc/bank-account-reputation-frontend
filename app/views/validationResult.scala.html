@@ -51,7 +51,11 @@
     </div>
 }
 
-@mainTemplate(pageTitle = Option(messages("bars.validateResults.title"))) {
+@mainTemplate(pageTitle = Option(messages("bars.validateResults.title")),
+    breadcrumbContribution = Seq(
+        BreadcrumbsItem(content = Text("Validate"), href = Some(s"${controllers.routes.BarsController.validation}")),
+        BreadcrumbsItem(content = Text("Result"), href = Some(s"#"))
+    )) {
     <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.options.validate")</h1>
     @summary(SummaryList(
         rows = Seq(

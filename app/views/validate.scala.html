@@ -22,14 +22,14 @@
 
 @(accountForm: Form[AccountForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@mainTemplate(pageTitle = Option(messages("bars.validate.title"))) {
+@mainTemplate(pageTitle = Option(messages("bars.validate.title")),
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Validate"), href = Some(s"${controllers.routes.BarsController.validation}")))) {
     <h1 class="govuk-heading-l">@messages("bars.validate.title")</h1>
 
     @if(accountForm.hasErrors) {
         @errorSummary(ErrorSummary(title = HtmlContent(messages("bars.errors")),
             errorList = accountForm.errors.map { error ⇒
-                ErrorLink(href = Some(s"#${error.key}"),
-                    content = HtmlContent(messages(error.message)))
+                ErrorLink(href = Some(s"#${error.key}"), content = HtmlContent(messages(error.message)))
             }))
     }
 

@@ -20,7 +20,8 @@
 @this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary)
 
 @(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-    @mainTemplate(pageTitle = Option(messages("bars.assess.title"))) {
+    @mainTemplate(pageTitle = Option(messages("bars.assess.title")),
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Assess"), href = Some(s"${controllers.routes.BarsController.assessment}")))) {
         <h1 class="govuk-heading-l">@messages("bars.assess.header")</h1>
 
     @if(inputForm.hasErrors) {
