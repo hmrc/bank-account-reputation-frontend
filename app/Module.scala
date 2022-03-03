@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 import com.google.inject.AbstractModule
 import config.AppConfig
-import connector.BackendConnector
 import play.api.{Configuration, Environment}
 import play.api.libs.concurrent.AkkaGuiceSupport
 
@@ -24,6 +23,5 @@ class Module(environment: Environment, playConfig: Configuration) extends Abstra
   override def configure(): Unit = {
     super.configure()
     bind(classOf[AppConfig])
-    bind(classOf[BackendConnector])
   }
 }

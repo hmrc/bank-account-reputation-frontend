@@ -18,11 +18,11 @@
 
 @this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, summary: GovukSummaryList)
 
-@(sortCodeForm: SortCodeForm)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(sortCode: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @mainTemplate(pageTitle = Option(messages("bars.metadataResults.title")),
     breadcrumbContribution = Seq(
-        BreadcrumbsItem(content = Text("Metadata"), href = Some(s"${controllers.routes.BarsController.metadataLookup}")),
+        BreadcrumbsItem(content = Text("Verify"), href = Some(s"${controllers.routes.BarsController.getVerify}")),
         BreadcrumbsItem(content = Text("Result"), href = Some(s"#"))
     )) {
     <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.metadataResults.header")</h1>
@@ -30,7 +30,7 @@
     @summary(SummaryList(
         rows = Seq(
             SummaryListRow(
-                Key(HtmlContent(sortCodeForm.sortCode)),
+                Key(HtmlContent(sortCode)),
                 Value(HtmlContent(messages("bars.metadataResults.notFound")))
             )
         )

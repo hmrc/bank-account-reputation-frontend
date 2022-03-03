@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import models.TransactionType.{AU, CR, DR, TransactionType}
 case class AccountDetails(account: Account)
 
 case class Account(sortCode: String,
-                   accountNumber: String)
+                   accountNumber: Option[String],
+                   accountType: Option[String] = None)
 
 case class EiscdCountry(name: String)
 
@@ -96,6 +97,7 @@ case class EiscdEntry(bankCode: String,
                       branchName: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty,
                       bicBankCode: Option[String] = None) {
+
   def isDirectDebitSupported: Boolean =
     (bacsOfficeStatus == M || bacsOfficeStatus == A) &&
       !(disallowedTransactions.contains(DR) || disallowedTransactions.contains(AU))
@@ -108,26 +110,10 @@ case class Address(lines: List[String],
                    town: Option[String],
                    postcode: Option[String])
 
-case class Subject(title: Option[String],
-                   name: Option[String],
-                   firstName: Option[String],
-                   lastName: Option[String],
-                   dob: Option[String],
-                   address: Address)
+case class Subject(name: Option[String])
 
 case class Input(account: Account,
                  subject: Subject)
-
-case class ValidationResult(accountNumberWithSortCodeIsValid: String,
-                            nonStandardAccountDetailsRequiredForBacs: String,
-                            sortCodeIsPresentOnEISCD: String,
-                            supportsBACS: Option[String] = None,
-                            directDebitsDisallowed: Option[String] = None,
-                            directDebitInstructionsDisallowed: Option[String] = None,
-                            iban: Option[String] = None,
-                            sortCodeBankName: Option[String] = None)
-
-case class ValidationErrorResult(code: String, desc: String)
 
 case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       accountExists: String,
@@ -138,7 +124,7 @@ case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       nonStandardAccountDetailsRequiredForBacs: Option[String] = None)
 
 case class AccountForm(sortCode: String,
-                       accountNumber: String)
+                       accountNumber: Option[String])
 
 case class SortCodeForm(sortCode: String)
 
@@ -161,10 +147,6 @@ object Implicits {
   implicit val subjectFormat = Json.format[Subject]
 
   implicit val inputFormat = Json.format[Input]
-
-  implicit val validationResultFormat = Json.format[ValidationResult]
-
-  implicit val validationErrorResultFormat = Json.format[ValidationErrorResult]
 
   implicit val assessmentFormat = Json.format[Assessment]
 

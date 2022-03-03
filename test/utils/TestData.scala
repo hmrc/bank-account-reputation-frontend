@@ -17,7 +17,7 @@
 package utils
 
 import config.AppConfig
-import connector.BackendConnector
+import connector.BankAccountReputationConnector
 import models._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.when
@@ -34,12 +34,12 @@ trait TestData {
 
   val sortCode = "123456"
   val hmrcSortCode = "201147"
-  val account: AccountDetails = AccountDetails(Account(sortCode, "12345678"))
-  val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, "54697788"))
-  val assessInput: Input = Input(account.account, Subject(Some("Mr"), Some("James"), None, None, None, Address(List("line1"), None, None)))
+  val account: AccountDetails = AccountDetails(Account(sortCode, Some("12345678")))
+  val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, Some("54697788")))
+  val assessInput: Input = Input(account.account, Subject(Some("Mr James")))
   val http = mock[HttpClient]
 
-  val connector = new BackendConnector(http, config);
+  val connector = new BankAccountReputationConnector(http, config);
   val address = EiscdAddress(Seq("line1"), None, None, None, None, None)
   val eiscdEntry = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK")))
   val noEiscdEntry = None
