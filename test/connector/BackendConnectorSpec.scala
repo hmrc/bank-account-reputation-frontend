@@ -22,12 +22,15 @@ import org.mockito.Mockito.{times, verify}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HeaderCarrier
 import utils.TestData
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures {
   import models.Implicits._
+
   implicit val hc = HeaderCarrier()
 
   "connector" should {
@@ -41,45 +44,5 @@ class BackendConnectorSpec extends PlaySpec with MockitoSugar with ScalaFutures 
         meq(s"http://localhost/metadata/$sortCode"), any(), any()
       )(any(), any(), any())
     }
-
-
-    "validate" in new TestData {
-      mockPOST(validateResult)
-      val response = connector.validate(account).futureValue
-
-      response must be(Right(validateResult))
-      verify(http, times(1)).POST[AccountDetails, HttpResponse](
-        meq("http://localhost/v2/validateBankDetails"),
-        meq(account),
-        any()
-      )(any(), any(), any(), any())
-    }
-
-    "validate with 400 response" in new TestData {
-
-      mockPOST(errorValidateResult, 400)
-      val response = connector.validate(hmrcAccount).futureValue
-
-      response must be(Left(errorValidateResult))
-      verify(http, times(1)).POST[AccountDetails, HttpResponse](
-        meq("http://localhost/v2/validateBankDetails"),
-        meq(hmrcAccount),
-        any()
-      )(any(), any(), any(), any())
-    }
-
-    "assess" in new TestData {
-      mockPOST(assessResult)
-      val response = connector.assess(assessInput).futureValue
-
-      response must be(assessResult)
-      verify(http, times(1)).POST[Input, HttpResponse](
-        meq("http://localhost/assess"),
-        meq(assessInput),
-        any()
-      )(any(), any(), any(), any())
-    }
-
   }
-
 }

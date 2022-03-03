@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package controllers
 
 import config.AppConfig
-import connector.BackendConnector
+import connector.{BankAccountReputationConnector, BarsAssessErrorResponse}
 import models._
 import play.api.Logger
 import play.api.i18n._
@@ -28,43 +28,26 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 
 @Singleton
 class BarsController @Inject()(
-                                  connector: BackendConnector,
-                                  val authConnector: AuthConnector,
-                                  mcc: MessagesControllerComponents,
-                                  mainView: views.html.main,
-                                  accessibilityView: views.html.accessibility,
-                                  metadataView: views.html.metadata,
-                                  metadataResultView: views.html.metadataResult,
-                                  metadataNoResultView: views.html.metadataNoResult,
-                                  validateView: views.html.validate,
-                                  validationResultView: views.html.validationResult,
-                                  validationErrorResultView: views.html.validationErrorResult,
-                                  assessmentView: views.html.assess,
-                                  assessmentResultView: views.html.assessmentResult,
-                                  error: views.html.error_template
+                                connector: BankAccountReputationConnector,
+                                val authConnector: AuthConnector,
+                                mcc: MessagesControllerComponents,
+                                accessibilityView: views.html.accessibility,
+                                verifyView: views.html.verify,
+                                verifyResultView: views.html.verifyResult,
+                                error: views.html.error_template
                               )(implicit ec: ExecutionContext, appConfig: AppConfig)
-    extends FrontendController(mcc) with AuthorisedFunctions with AuthRedirects with I18nSupport {
+  extends FrontendController(mcc) with AuthorisedFunctions with AuthRedirects with I18nSupport {
 
   private val logger = Logger(this.getClass)
-
-  def index(): Action[AnyContent] = Action.async { implicit request =>
-    strideAuth {
-      if (!assessmentEnabled) {
-        Future.successful(Ok(validateView(accountForm)))
-      } else {
-        Future.successful(Ok(mainView()))
-      }
-    }
-  }
 
   def accessibilityStatement(): Action[AnyContent] = Action.async {
     Future.successful(Ok(accessibilityView()))
   }
-
 
   private def strideAuth(f: => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {
@@ -87,103 +70,50 @@ class BarsController @Inject()(
     }
   }
 
-  def metadataLookup: Action[AnyContent] = Action {
-
-    implicit request =>
-
-      Ok(metadataView(sortCodeForm))
+  def getVerify: Action[AnyContent] = Action {
+    implicit req =>
+      Ok(verifyView(inputForm))
   }
 
-  def metadata: Action[AnyContent] = Action.async {
-
+  def postVerify: Action[AnyContent] = Action.async {
     implicit request =>
 
-      sortCodeForm.bindFromRequest.fold(
+      inputForm.bindFromRequest.fold(
         formWithErrors => {
-          Future.successful(BadRequest(metadataView(formWithErrors)))
+          Future.successful(BadRequest(verifyView(formWithErrors)))
         },
-        account => {
-          connector.metadata(account.sortCode)
-            .map {
-              case Some(result) => Ok(metadataResultView(account, result))
-              case _            => Ok(metadataNoResultView(account))
+        input => {
+          for {
+            metadata <- connector.metadata(input.input.account.sortCode)
+            assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
+              input.input.account.accountType match {
+                case Some("personal") => connector.assessPersonal(
+                  input.input.subject.name.getOrElse("N/A"),
+                  input.input.account.sortCode,
+                  input.input.account.accountNumber.get, None,
+                  "bank-account-reputation-frontend").map(Some(_))
+                case _ => connector.assessBusiness(
+                  input.input.subject.name.getOrElse("N/A"),
+                  input.input.account.sortCode,
+                  input.input.account.accountNumber.get, None,
+                  "bank-account-reputation-frontend").map(Some(_))
+              }
             }
+            else {
+              Future.successful(None)
+            }
+          }
+          yield {
+            (metadata, assess) match {
+              case (None, None) => Ok(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
+              case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
+              case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
+              case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
+            }
+          }
         }
       )
   }
-
-  def validation: Action[AnyContent] = Action {
-
-    implicit req =>
-
-      Ok(validateView(accountForm))
-  }
-
-  def validate: Action[AnyContent] = Action.async {
-    implicit request =>
-
-      strideAuth {
-        accountForm.bindFromRequest.fold(
-          formWithErrors => {
-            Future.successful(BadRequest(validateView(formWithErrors)))
-          },
-          account => {
-            val validationFuture: Future[Either[ValidationErrorResult, ValidationResult]] = {
-              if (!account.accountNumber.isEmpty) {
-                connector.validate(AccountDetails(Account(account.sortCode, account.accountNumber)))
-              } else {
-                Future.successful(Right(ValidationResult("no", "N/A", "N/A")))
-              }
-            }
-
-            val result = for {
-              metadata <- connector.metadata(account.sortCode)
-              validation <- validationFuture
-            } yield (metadata, validation)
-
-            result.map {
-              case (metadataMaybe, Right(validationResult)) => Ok(validationResultView(account, metadataMaybe, validationResult))
-              case (metadataMaybe, Left(validationError)) => Ok(validationErrorResultView(account, metadataMaybe, validationError))
-            } recover {
-              case e: uk.gov.hmrc.http.NotFoundException => {
-                logger.warn("Failed to retrieve bank details: " + e.toString)
-                BadRequest(validateView(accountForm.withError("sortCode", "Failed to retrieve bank details for sort code " + account.sortCode)))
-              }
-            }
-          }
-        )
-      }
-  }
-
-  def assessment: Action[AnyContent] = Action {
-
-    implicit req =>
-        Ok(assessmentView(inputForm))
-  }
-
-  def assess: Action[AnyContent] = Action.async {
-
-    implicit request =>
-
-      if (!assessmentEnabled) {
-        logger.warn("Attempted access to assessment but feature is disabled")
-        Future.successful(NotFound)
-      } else {
-        inputForm.bindFromRequest.fold(
-          formWithErrors => {
-            Future.successful(BadRequest(assessmentView(formWithErrors)))
-          },
-          input => {
-            connector.assess(input.input)
-              .map(result =>
-                Ok(assessmentResultView(input, result))
-              )
-          }
-        )
-      }
-  }
-
-  private def assessmentEnabled: Boolean = appConfig.isAssessmentEnabled
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled
 

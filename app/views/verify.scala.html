@@ -1,0 +1,85 @@
+@*
+* Copyright 2021 HM Revenue & Customs
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*@
+@import config.AppConfig
+@import controllers.routes
+
+@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary, radios: GovukRadios)
+
+@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@mainTemplate(pageTitle = Option(messages("bars.verify.title")),
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${controllers.routes.BarsController.getVerify}")))) {
+    <h1 class="govuk-heading-l">@messages("bars.verify.header")</h1>
+
+    @if(inputForm.hasErrors) {
+        @errorSummary(ErrorSummary(title = HtmlContent(messages("bars.errors")),
+            errorList = inputForm.errors.map { error ⇒
+                ErrorLink(href = Some(s"#${error.key}"),
+                    content = HtmlContent(messages(error.message)))
+            }))
+    }
+
+    @form(action = routes.BarsController.postVerify) {
+        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+            value = inputForm("input.account.sortCode").value,
+            label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
+            formGroupClasses = "form-field-group",
+            name = inputForm("input.account.sortCode").name,
+            id = inputForm("input.account.sortCode").name,
+            errorMessage = inputForm("input.account.sortCode").error.map(fe ⇒
+                ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+        <hr class="govuk-!-margin-bottom-7"/>
+
+        <div class="govuk-inset-text">@messages("bars.verify.submitInfo")</div>
+
+        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+            value = inputForm("input.account.accountNumber").value,
+            label = Label(content = HtmlContent(messages("bars.label.accountNumber"))),
+            formGroupClasses = "form-field-group",
+            name = inputForm("input.account.accountNumber").name,
+            id = inputForm("input.account.accountNumber").name,
+            errorMessage = inputForm("input.account.accountNumber").error.map(fe ⇒
+                ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
+            value = inputForm("input.subject.name").value,
+            label = Label(content = HtmlContent(messages("bars.label.name"))),
+            formGroupClasses = "form-field-group",
+            name = inputForm("input.subject.name").name,
+            id = inputForm("input.subject.name").name,
+            errorMessage = inputForm("input.subject.name").error.map(fe ⇒
+                ErrorMessage(content = HtmlContent(messages(fe.message))))))
+
+        @radios(Radios(
+            name = "input.account.accountType",
+            fieldset = Some(Fieldset(
+                legend = Some(Legend(content = Text(messages("bars.label.accountType.heading"))))
+            )),
+            items = Seq(
+                RadioItem(content = HtmlContent(messages("bars.label.accountType.business")),
+                    value = Some("business"),
+                    checked = inputForm("input.account.accountType").value == Some("business")),
+                RadioItem(content = HtmlContent(messages("bars.label.accountType.personal")),
+                    value = Some("personal"),
+                    checked = inputForm("input.account.accountType").value == Some("personal"))
+            ),
+            errorMessage = inputForm("input.account.accountType").errors.headOption.map(fe => ErrorMessage(content = HtmlContent(messages(fe.message))))
+        ))
+
+        @button(Button(content = HtmlContent("Search"),
+            inputType = Some("submit")))
+    }
+}

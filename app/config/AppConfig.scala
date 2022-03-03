@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig, val env: Environment) {
   val baseUrl = servicesConfig.baseUrl("bars")
+  val barsPersonalAssessUrl = s"$baseUrl/verify/personal"
+  val barsBusinessAssessUrl = s"$baseUrl/verify/business"
+  val barsMetadataUrl = s"$baseUrl/metadata/"
 
   val footerLinkItems: Seq[String] = config.getOptional[Seq[String]]("footerLinkItems").getOrElse(Seq())
 
