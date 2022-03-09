@@ -79,7 +79,7 @@
             errorMessage = inputForm("input.account.accountType").errors.headOption.map(fe => ErrorMessage(content = HtmlContent(messages(fe.message))))
         ))
 
-        @button(Button(content = HtmlContent("Search"),
+        @button(Button(content = HtmlContent(messages("bars.verify.submit.label")),
             inputType = Some("submit")))
     }
 }
