@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import scala.concurrent.Future
 trait TestData {
   val config = mock[AppConfig]
   when(config.baseUrl).thenReturn("http://localhost")
+  when(config.barsMetadataUrl).thenReturn(s"http://localhost/metadata/")
 
   val sortCode = "123456"
   val hmrcSortCode = "201147"
@@ -40,12 +41,10 @@ trait TestData {
   val http = mock[HttpClient]
 
   val connector = new BankAccountReputationConnector(http, config);
-  val address = EiscdAddress(Seq("line1"), None, None, None, None, None)
-  val eiscdEntry = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK")))
+
   val noEiscdEntry = None
   val yes = "Yes"
-  val validateResult = ValidationResult("yes", yes, yes, Some(yes), Some(yes), Some(yes), Some("GB42ABCD12345612345678"))
-  val errorValidateResult = ValidationErrorResult("SORT_CODE_ON_DENY_LIST", hmrcSortCode + ": sort code is on deny list. This usually means that it is an HMRC sort code.")
+
   val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
 
   def mockGET[T](data: T)(implicit writes: Writes[T]): Unit = {

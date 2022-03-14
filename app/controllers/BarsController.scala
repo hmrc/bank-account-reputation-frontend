@@ -105,7 +105,7 @@ class BarsController @Inject()(
           }
           yield {
             (metadata, assess) match {
-              case (None, None) => Ok(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
+              case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
               case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
               case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
               case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,180 +17,284 @@
 package controllers
 
 import akka.stream.Materializer
-import config.AppConfig
-import models.EiscdEntry
-import models.Implicits.{eiscdWrites, validationResultFormat}
+import com.codahale.metrics.SharedMetricRegistries
+import connector.ReputationResponseEnum.Yes
+import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
+import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.Mockito.{clearInvocations, never, times, verify, when}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.libs.json.Json
-import play.api.mvc.{MessagesControllerComponents, Request}
+import play.api.Application
+import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
+import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
-import play.api.test.{FakeRequest, Injecting}
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.http.NotFoundException
-import utils.TestData
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
+import scala.util.Success
 
-class BarsControllerSpec extends PlaySpec with GuiceOneAppPerSuite with Injecting with MockitoSugar with TestData {
+class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Matchers with MockitoSugar {
   implicit val ec = ExecutionContext.global
-  implicit val appConfig = inject[AppConfig]
-  implicit lazy val materializer: Materializer = app.materializer
+  implicit val timeout: FiniteDuration = 1 second
 
-  class Scenario extends BarsController(connector, inject[AuthConnector], inject[MessagesControllerComponents],
-    inject[views.html.accessibility], inject[views.html.metadata], inject[views.html.metadataResult], inject[views.html.metadataNoResult],
-    inject[views.html.assess], inject[views.html.assessmentResult], inject[views.html.error_template])
+  val mockConnector: BankAccountReputationConnector = mock[BankAccountReputationConnector]
 
-  implicit class CSRFFRequestHeader(request: Request[_]) {
-    def withCSRFToken: Request[_] = addCSRFToken(request)
+  val address: EiscdAddress = EiscdAddress(Seq("line1"), None, None, None, None, None)
+  val eiscdEntry: Option[EiscdEntry] = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK")))
+
+  val barsAssessResponse: Success[BarsAssessSuccessResponse] = Success(BarsAssessSuccessResponse(Yes, Yes, Some("HSBC"), Yes, Yes, Yes, Yes, None, Some("iban")))
+
+  when(mockConnector.metadata(any())(any(), any())).thenReturn(Future.successful(eiscdEntry))
+  when(mockConnector.assessBusiness(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
+  when(mockConnector.assessPersonal(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
+
+  override implicit lazy val app: Application = {
+    SharedMetricRegistries.clear()
+
+    new GuiceApplicationBuilder()
+      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+      .build()
   }
 
-  "BarsController" should {
+  private val injector = app.injector
+  private val controller = injector.instanceOf[BarsController]
 
-//    "show index" should {
-//      "page" in new Scenario {
-//        val request = FakeRequest().withCSRFToken
-//        val result = index()(request)
-//
-//        status(result) mustEqual OK
-//        contentAsString(result) must include("Validate Bank Account")
-//        contentAsString(result) must include("Sort Code")
-//        contentAsString(result) must include("Account Number")
-//        contentAsString(result) must include("Search")
-//      }
-//    }
-//
-//    "validate" should {
-//      "show error when sortcode and account are not passed" in new Scenario {
-//        val json = Json.parse("""{ "sortCode": "", "accountNumber": "" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual BAD_REQUEST
-//        contentAsString(result) must include("Please review the following errors")
-//        contentAsString(result) must include("A valid sort code is required")
-//      }
-//
-//      "show errors when invalid sortcode and account are empty" in new Scenario {
-//        val json = Json.parse("""{ "sortCode": "12345", "accountNumber": "1234567" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual BAD_REQUEST
-//        contentAsString(result) must include("Please review the following errors")
-//        contentAsString(result) must include("A valid sort code is required")
-//        contentAsString(result) must include("Invalid account number: should be 8 digits")
-//      }
-//
-//      "show errors when  sortcode is valid and account is invalid " in new Scenario {
-//        val json = Json.parse("""{ "sortCode": "123456", "accountNumber": "1234567" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual BAD_REQUEST
-//        contentAsString(result) must include("Please review the following errors")
-//        contentAsString(result) must include("Invalid account number: should be 8 digits")
-//      }
-//
-//      "show error when sortcode and account does not exist" in new Scenario {
-//        mockPOSTException(new NotFoundException("Not Found"))
-//        mockGET(noEiscdEntry)
-//        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual BAD_REQUEST
-//        contentAsString(result) must include(s"Failed to retrieve bank details for sort code $sortCode")
-//      }
-//
-//      "show only sortcode data" in new Scenario {
-//        mockPOST(validateResult)
-//        mockGET(eiscdEntry)
-//        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual OK
-//
-//        contentAsString(result) must include("Validate Bank Details")
-//        contentAsString(result) must include("IBAN")
-//        contentAsString(result) must include("N/A")
-//        contentAsString(result) must include("Account Number")
-//        contentAsString(result) must include("N/A")
-//        contentAsString(result) must include("Account Number/Sort Code Valid")
-//        contentAsString(result) must include("N/A")
-//        contentAsString(result) must include("Bank Code")
-//        contentAsString(result) must include("HSBC")
-//        contentAsString(result) must include("BIC Bank Code")
-//        contentAsString(result) must include("HBUK")
-//        contentAsString(result) must include("Bank Name")
-//        contentAsString(result) must include("HSBC")
-//        contentAsString(result) must include("Address")
-//        contentAsString(result) must include("line1")
-//        contentAsString(result) must include("Telephone")
-//        contentAsString(result) must include("12121")
-//        contentAsString(result) must include("BACS Office Status")
-//        contentAsString(result) must include("BACS member; accepts BACS payments")
-//        contentAsString(result) must include("CHAPS Sterling Status")
-//        contentAsString(result) must include("Indirect")
-//        contentAsString(result) must include("Branch Name")
-//        contentAsString(result) must include("London")
-//        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
-//        contentAsString(result) must include("no")
-//        contentAsString(result) must include("Transaction Types")
-//        contentAsString(result) must include("ALLOWED")
-//      }
-//
-//
-//      "show both sortcode and account data" in new Scenario {
-//        mockPOST(validateResult)
-//        mockGET(eiscdEntry)
-//        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
-//        val request = FakeRequest().withJsonBody(json).withCSRFToken
-//        val result = validate(request)
-//
-//        status(result) mustEqual OK
-//        contentAsString(result) must include("Validate Bank Details")
-//        contentAsString(result) must include("IBAN")
-//        contentAsString(result) must include("GB42ABCD12345612345678")
-//        contentAsString(result) must include("Account Number")
-//        contentAsString(result) must include("12345678")
-//        contentAsString(result) must include("Account Number/Sort Code Valid")
-//        contentAsString(result) must include("true")
-//        contentAsString(result) must include("Bank Code")
-//        contentAsString(result) must include("HSBC")
-//        contentAsString(result) must include("BIC Bank Code")
-//        contentAsString(result) must include("HBUK")
-//        contentAsString(result) must include("Bank Name")
-//        contentAsString(result) must include("HSBC")
-//        contentAsString(result) must include("Address")
-//        contentAsString(result) must include("line1")
-//        contentAsString(result) must include("Telephone")
-//        contentAsString(result) must include("12121")
-//        contentAsString(result) must include("BACS Office Status")
-//        contentAsString(result) must include("BACS member; accepts BACS payments")
-//        contentAsString(result) must include("CHAPS Sterling Status")
-//        contentAsString(result) must include("Indirect")
-//        contentAsString(result) must include("Branch Name")
-//        contentAsString(result) must include("London")
-//        contentAsString(result) must include("Non Standard Account Details Required For BACS (e.g. Roll Number)")
-//        contentAsString(result) must include("no")
-//        contentAsString(result) must include("Transaction Types")
-//        contentAsString(result) must include("ALLOWED")
-//      }
-//    }
+  implicit lazy val materializer: Materializer = app.materializer
 
-    "metadata" should {
-      "show message when sortcode not found" in new Scenario {
-        mockGET[Option[EiscdEntry]](None)
-        val json = Json.parse(s"""{ "sortCode": "$sortCode", "accountNumber": "${account.account.accountNumber}" }""")
-        val request = FakeRequest().withJsonBody(json).withCSRFToken
-        val result = metadata(request)
+  "BarsController" when {
+    "verifying account details" should {
+      "show errors when no data is passed in" in {
+        val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
 
-        status(result) mustEqual OK
-        contentAsString(result) must include("Metadata for Bank Sort Code Not Found")
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe BAD_REQUEST
+
+        contentAsString(result) should include("There is a problem")
+        contentAsString(result) should include("input.account.sortCode-error")
+      }
+
+      "show an error when the sort code is not known to EISCD" in {
+        when(mockConnector.metadata(meq("654321"))(any(), any())).thenReturn(Future.successful(None))
+
+        val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe BAD_REQUEST
+
+        contentAsString(result) should include("There is a problem")
+        contentAsString(result) should include("input.account.sortCode-error")
+      }
+
+      "perform a metadata request when a valid sort code is passed in on it's own" in {
+        val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe OK
+
+        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+
+        contentAsString(result) should include("Sort code")
+        contentAsString(result) should include("123456")
+
+        contentAsString(result) should include("Bank code")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Bank identification code (BIC)")
+        contentAsString(result) should include("HBUK")
+
+        contentAsString(result) should include("Bank name")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Address")
+        contentAsString(result) should include("line1")
+
+        contentAsString(result) should include("Telephone")
+        contentAsString(result) should include("12121")
+
+        contentAsString(result) should include("BACS office status")
+        contentAsString(result) should include("BACS member; accepts BACS payments")
+
+        contentAsString(result) should include("CHAPS sterling status")
+        contentAsString(result) should include("Indirect")
+
+        contentAsString(result) should include("Branch name")
+        contentAsString(result) should include("London")
+
+        contentAsString(result) should include("Transaction types")
+        contentAsString(result) should include("ALLOWED")
+      }
+
+      "show an error if account number is entered without a name" in {
+        val request = FakeRequest().withFormUrlEncodedBody(
+          "input.account.sortCode" -> "123456",
+          "input.account.accountNumber" -> "12345678",
+          "input.subject.name" -> "").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe BAD_REQUEST
+
+        contentAsString(result) should include("There is a problem")
+        contentAsString(result) should include("input.subject.name-error")
+      }
+
+      "show an error if account name is entered without a number" in {
+        val request = FakeRequest().withFormUrlEncodedBody(
+          "input.account.sortCode" -> "123456",
+          "input.account.accountNumber" -> "",
+          "input.subject.name" -> "Mr Peter Smith").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe BAD_REQUEST
+
+        contentAsString(result) should include("There is a problem")
+        contentAsString(result) should include("input.account.accountNumber-error")
+      }
+
+      "perform both a metadata request and a business assess request when account name and number are specified" in {
+        clearInvocations(mockConnector)
+
+        val request = FakeRequest().withFormUrlEncodedBody(
+          "input.account.sortCode" -> "123456",
+          "input.account.accountNumber" -> "12345678",
+          "input.subject.name" -> "ACME inc").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe OK
+
+        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, times(1)).assessBusiness(
+          meq("ACME inc"),
+          meq("123456"),
+          meq("12345678"),
+          meq(None),
+          meq("bank-account-reputation-frontend"))(any(), any())
+
+        contentAsString(result) should include("Account number")
+        contentAsString(result) should include("12345678")
+
+        contentAsString(result) should include("Sort code")
+        contentAsString(result) should include("123456")
+
+        contentAsString(result) should include("IBAN")
+        contentAsString(result) should include("iban")
+
+        contentAsString(result) should include("Account number is well formatted")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Non-standard account details required for BACS")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Account number exists")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Name matches")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Bank code")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Bank identification code (BIC)")
+        contentAsString(result) should include("HBUK")
+
+        contentAsString(result) should include("Bank name")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Address")
+        contentAsString(result) should include("line1")
+
+        contentAsString(result) should include("Telephone")
+        contentAsString(result) should include("12121")
+
+        contentAsString(result) should include("BACS office status")
+        contentAsString(result) should include("BACS member; accepts BACS payments")
+
+        contentAsString(result) should include("CHAPS sterling status")
+        contentAsString(result) should include("Indirect")
+
+        contentAsString(result) should include("Branch name")
+        contentAsString(result) should include("London")
+
+        contentAsString(result) should include("Transaction types")
+        contentAsString(result) should include("ALLOWED")
+      }
+
+      "perform both a metadata request and a personal assess request when account name and number are specified" in {
+        clearInvocations(mockConnector)
+
+        val request = FakeRequest().withFormUrlEncodedBody(
+          "input.account.sortCode" -> "123456",
+          "input.account.accountNumber" -> "12345678",
+          "input.subject.name" -> "Mr Peter Smith",
+          "input.account.accountType" -> "personal").withCSRFToken
+
+        val result = controller.postVerify().apply(request)
+        status(result) shouldBe OK
+
+        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+        verify(mockConnector, times(1)).assessPersonal(
+          meq("Mr Peter Smith"),
+          meq("123456"),
+          meq("12345678"),
+          meq(None),
+          meq("bank-account-reputation-frontend"))(any(), any())
+
+        contentAsString(result) should include("Account number")
+        contentAsString(result) should include("12345678")
+
+        contentAsString(result) should include("Sort code")
+        contentAsString(result) should include("123456")
+
+        contentAsString(result) should include("IBAN")
+        contentAsString(result) should include("iban")
+
+        contentAsString(result) should include("Account number is well formatted")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Non-standard account details required for BACS")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Account number exists")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Name matches")
+        contentAsString(result) should include("yes")
+
+        contentAsString(result) should include("Bank code")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Bank identification code (BIC)")
+        contentAsString(result) should include("HBUK")
+
+        contentAsString(result) should include("Bank name")
+        contentAsString(result) should include("HSBC")
+
+        contentAsString(result) should include("Address")
+        contentAsString(result) should include("line1")
+
+        contentAsString(result) should include("Telephone")
+        contentAsString(result) should include("12121")
+
+        contentAsString(result) should include("BACS office status")
+        contentAsString(result) should include("BACS member; accepts BACS payments")
+
+        contentAsString(result) should include("CHAPS sterling status")
+        contentAsString(result) should include("Indirect")
+
+        contentAsString(result) should include("Branch name")
+        contentAsString(result) should include("London")
+
+        contentAsString(result) should include("Transaction types")
+        contentAsString(result) should include("ALLOWED")
       }
     }
   }

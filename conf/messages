@@ -43,5 +43,5 @@ bars.verifyResults.address=Address
 bars.verifyResults.telephone=Telephone
 bars.verifyResults.bacsOfficeStatus=BACS office status
 bars.verifyResults.chapsSterlingStatus=CHAPS sterling status
-bars.verifyResults.branchName=Branch Name
+bars.verifyResults.branchName=Branch name
 bars.verifyResults.transactionTypes=Transaction types
