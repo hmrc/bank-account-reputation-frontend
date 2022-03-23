@@ -70,6 +70,11 @@ class BarsController @Inject()(
     }
   }
 
+  def redirectToVerify: Action[AnyContent] = Action {
+    implicit req =>
+      Redirect(controllers.routes.BarsController.getVerify)
+  }
+
   def getVerify: Action[AnyContent] = Action {
     implicit req =>
       Ok(verifyView(inputForm))
