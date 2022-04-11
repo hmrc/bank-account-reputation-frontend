@@ -94,7 +94,12 @@
                     Key(HtmlContent(messages("bars.verifyResults.nameMatches"))),
                     Value(HtmlContent(barsResponse.nameMatches.toString))
                 )
-            )
+            ) ++ Seq(barsResponse.accountName.map(accountName =>
+                SummaryListRow(
+                    Key(HtmlContent(messages("bars.verifyResults.accountName"))),
+                    Value(HtmlContent(accountName))
+                )
+            )).flatten[SummaryListRow]
         case _ => Seq()
     }) ++
             Seq(

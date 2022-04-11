@@ -18,7 +18,7 @@ package controllers
 
 import akka.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
-import connector.ReputationResponseEnum.Yes
+import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
 import org.mockito.ArgumentMatchers.{any, eq => meq}
@@ -48,7 +48,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
   val address: EiscdAddress = EiscdAddress(Seq("line1"), None, None, None, None, None)
   val eiscdEntry: Option[EiscdEntry] = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK")))
 
-  val barsAssessResponse: Success[BarsAssessSuccessResponse] = Success(BarsAssessSuccessResponse(Yes, Yes, Some("HSBC"), Yes, Yes, Yes, Yes, None, Some("iban")))
+  val barsAssessResponse: Success[BarsAssessSuccessResponse] = Success(BarsAssessSuccessResponse(Yes, Yes, Some("HSBC"), Yes, Partial, Yes, Yes, None, Some("iban"), Some("partial-name")))
 
   when(mockConnector.metadata(any())(any(), any())).thenReturn(Future.successful(eiscdEntry))
   when(mockConnector.assessBusiness(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
@@ -197,7 +197,10 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         contentAsString(result) should include("yes")
 
         contentAsString(result) should include("Name matches")
-        contentAsString(result) should include("yes")
+        contentAsString(result) should include("partial")
+
+        contentAsString(result) should include("Partially matched name")
+        contentAsString(result) should include("partial-name")
 
         contentAsString(result) should include("Bank code")
         contentAsString(result) should include("HSBC")

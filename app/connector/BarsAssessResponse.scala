@@ -32,7 +32,8 @@ case class BarsAssessSuccessResponse(accountNumberIsWellFormatted: ReputationRes
                                              sortCodeSupportsDirectDebit: ReputationResponseEnum,
                                              sortCodeSupportsDirectCredit: ReputationResponseEnum,
                                              nonStandardAccountDetailsRequiredForBacs: Option[ReputationResponseEnum],
-                                             iban: Option[String]) extends BarsAssessResponse
+                                             iban: Option[String],
+                                             accountName: Option[String]) extends BarsAssessResponse
 
 object BarsAssessResponse {
   implicit val reads: Reads[BarsAssessSuccessResponse] = Json.reads[BarsAssessSuccessResponse]

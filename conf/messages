@@ -36,6 +36,7 @@ bars.verifyResults.accountNumberIsWellFormatted=Account number is well formatted
 bars.verifyResults.nonStandardAccountDetailsRequiredForBacs=Non-standard account details required for BACS
 bars.verifyResults.accountExists=Account number exists
 bars.verifyResults.nameMatches=Name matches
+bars.verifyResults.accountName=Partially matched name
 bars.verifyResults.bankCode=Bank code
 bars.verifyResults.bicBankCode=Bank identification code (BIC)
 bars.verifyResults.bankName=Bank name

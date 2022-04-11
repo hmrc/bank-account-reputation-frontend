@@ -23,6 +23,7 @@ sealed trait ReputationResponseEnum
 object ReputationResponseEnum extends Enumerable.Implicits {
 
   case object Yes extends WithName("yes") with ReputationResponseEnum
+  case object Partial extends WithName("partial") with ReputationResponseEnum
   case object No extends WithName("no") with ReputationResponseEnum
   case object Indeterminate extends WithName("indeterminate") with ReputationResponseEnum
   case object Inapplicable extends WithName("inapplicable") with ReputationResponseEnum
