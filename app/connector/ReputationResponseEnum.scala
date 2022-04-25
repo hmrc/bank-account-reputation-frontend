@@ -29,7 +29,7 @@ object ReputationResponseEnum extends Enumerable.Implicits {
   case object Inapplicable extends WithName("inapplicable") with ReputationResponseEnum
   case object Error extends WithName("error") with ReputationResponseEnum
 
-  val values: Seq[ReputationResponseEnum] = Seq(Yes, No, Indeterminate, Inapplicable, Error)
+  val values: Seq[ReputationResponseEnum] = Seq(Yes, No, Partial, Indeterminate, Inapplicable, Error)
 
   implicit val enumerable: Enumerable[ReputationResponseEnum] =
     Enumerable(values.map(v => v.toString -> v): _*)
