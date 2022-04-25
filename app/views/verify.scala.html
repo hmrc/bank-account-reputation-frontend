@@ -38,6 +38,7 @@
             formGroupClasses = "form-field-group",
             name = inputForm("input.account.sortCode").name,
             id = inputForm("input.account.sortCode").name,
+            autocomplete = Some("off"),
             errorMessage = inputForm("input.account.sortCode").error.map(fe ⇒
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
@@ -51,6 +52,7 @@
             formGroupClasses = "form-field-group",
             name = inputForm("input.account.accountNumber").name,
             id = inputForm("input.account.accountNumber").name,
+            autocomplete = Some("off"),
             errorMessage = inputForm("input.account.accountNumber").error.map(fe ⇒
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
@@ -60,6 +62,7 @@
             formGroupClasses = "form-field-group",
             name = inputForm("input.subject.name").name,
             id = inputForm("input.subject.name").name,
+            autocomplete = Some("off"),
             errorMessage = inputForm("input.subject.name").error.map(fe ⇒
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
