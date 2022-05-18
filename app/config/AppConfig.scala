@@ -27,6 +27,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val barsPersonalAssessUrl = s"$baseUrl/verify/personal"
   val barsBusinessAssessUrl = s"$baseUrl/verify/business"
   val barsMetadataUrl = s"$baseUrl/metadata/"
+  val isNonProduction = config.getOptional[Boolean]("microservice.non-production").getOrElse(true)
 
   val footerLinkItems: Seq[String] = config.getOptional[Seq[String]]("footerLinkItems").getOrElse(Seq())
 
