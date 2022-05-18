@@ -35,6 +35,12 @@
             tag = Some(Tag(content = HtmlContent(messages("phaseBanner.tag")))),
             content = HtmlContent(messages("phaseBanner.content"))))
       }
+      if(appConfig.isNonProduction) {
+        govukPhaseBanner(PhaseBanner(
+            tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")))),
+            content = HtmlContent(messages("nonProductionBanner.content")),
+            attributes = Map("class" -> "non-production-banner")))
+      }
     }
 
     @govukBreadcrumbs(Breadcrumbs(
