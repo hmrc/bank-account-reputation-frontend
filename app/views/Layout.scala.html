@@ -38,7 +38,7 @@
       if(appConfig.isNonProduction) {
         govukPhaseBanner(PhaseBanner(
             tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
-            content = HtmlContent(messages("nonProductionBanner.content"))))
+            content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
       }
     }
 
