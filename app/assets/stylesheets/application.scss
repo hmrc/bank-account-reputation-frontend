@@ -58,10 +58,6 @@ ul {
   display: inline-block;
 }
 
-.warning-tag {
+.warning-tag .govuk-tag {
   background-color: #B60001;
-
-  + span {
-    font-weight: bold;
-  }
 }
