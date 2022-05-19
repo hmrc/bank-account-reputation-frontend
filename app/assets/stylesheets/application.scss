@@ -57,3 +57,14 @@ ul {
   margin-bottom: 15px;
   display: inline-block;
 }
+
+.warning-tag {
+  background-color: #B60001;
+
+  + span {
+    font-weight: bold;
+    line-height: 1rem;
+    padding-top: 5px;
+    padding-bottom: 4px;
+  }
+}

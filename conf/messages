@@ -2,7 +2,7 @@ service.name = bank-account-reputation-frontend
 service.text = This is your new service
 
 nonProductionBanner.tag = NON-PRODUCTION
-nonProductionBanner.content = This is a non-Production environment. It should not be used to check real bank accounts
+nonProductionBanner.content = This is a non-Production environment, DO NOT use it to check real bank account information!
 
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options
