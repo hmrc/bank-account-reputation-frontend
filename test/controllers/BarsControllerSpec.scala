@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
 import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito.{clearInvocations, never, times, verify, when}
+import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
@@ -92,7 +92,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       }
 
       "perform a metadata request when a valid sort code is passed in on it's own" in {
-        val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
+        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
 
         val result = controller.postVerify().apply(request)
         status(result) shouldBe OK
@@ -133,7 +133,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       }
 
       "show an error if account number is entered without a name" in {
-        val request = FakeRequest().withFormUrlEncodedBody(
+        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "").withCSRFToken
@@ -146,7 +146,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       }
 
       "show an error if account name is entered without a number" in {
-        val request = FakeRequest().withFormUrlEncodedBody(
+        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "",
           "input.subject.name" -> "Mr Peter Smith").withCSRFToken
@@ -161,7 +161,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       "perform both a metadata request and a business assess request when account name and number are specified" in {
         clearInvocations(mockConnector)
 
-        val request = FakeRequest().withFormUrlEncodedBody(
+        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "ACME inc").withCSRFToken
@@ -233,7 +233,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       "perform both a metadata request and a personal assess request when account name and number are specified" in {
         clearInvocations(mockConnector)
 
-        val request = FakeRequest().withFormUrlEncodedBody(
+        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "Mr Peter Smith",
