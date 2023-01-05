@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *@
+
 @import config.AppConfig
 
-@this(language_selection: views.html.LanguageSelection)
+@this()
 
 @(enableWelshToggle: Boolean = true)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
