@@ -75,49 +75,53 @@ class BarsController @Inject()(
       Redirect(controllers.routes.BarsController.getVerify)
   }
 
-  def getVerify: Action[AnyContent] = Action {
+  def getVerify: Action[AnyContent] = Action.async {
     implicit req =>
-      Ok(verifyView(inputForm))
+      strideAuth {
+        Future.successful(Ok(verifyView(inputForm)))
+      }
   }
 
   def postVerify: Action[AnyContent] = Action.async {
     implicit request =>
 
-      inputForm.bindFromRequest.fold(
-        formWithErrors => {
-          Future.successful(BadRequest(verifyView(formWithErrors)))
-        },
-        input => {
-          for {
-            metadata <- connector.metadata(input.input.account.sortCode)
-            assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
-              input.input.account.accountType match {
-                case Some("personal") => connector.assessPersonal(
-                  input.input.subject.name.getOrElse("N/A"),
-                  input.input.account.sortCode,
-                  input.input.account.accountNumber.get, None,
-                  "bank-account-reputation-frontend").map(Some(_))
-                case _ => connector.assessBusiness(
-                  input.input.subject.name.getOrElse("N/A"),
-                  input.input.account.sortCode,
-                  input.input.account.accountNumber.get, None,
-                  "bank-account-reputation-frontend").map(Some(_))
+      strideAuth {
+        inputForm.bindFromRequest.fold(
+          formWithErrors => {
+            Future.successful(BadRequest(verifyView(formWithErrors)))
+          },
+          input => {
+            for {
+              metadata <- connector.metadata(input.input.account.sortCode)
+              assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
+                input.input.account.accountType match {
+                  case Some("personal") => connector.assessPersonal(
+                    input.input.subject.name.getOrElse("N/A"),
+                    input.input.account.sortCode,
+                    input.input.account.accountNumber.get, None,
+                    "bank-account-reputation-frontend").map(Some(_))
+                  case _ => connector.assessBusiness(
+                    input.input.subject.name.getOrElse("N/A"),
+                    input.input.account.sortCode,
+                    input.input.account.accountNumber.get, None,
+                    "bank-account-reputation-frontend").map(Some(_))
+                }
+              }
+              else {
+                Future.successful(None)
               }
             }
-            else {
-              Future.successful(None)
+            yield {
+              (metadata, assess) match {
+                case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
+                case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
+                case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
+                case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
+              }
             }
           }
-          yield {
-            (metadata, assess) match {
-              case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
-              case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
-              case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
-              case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
-            }
-          }
-        }
-      )
+        )
+      }
   }
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled

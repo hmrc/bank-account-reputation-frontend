@@ -59,6 +59,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
 
     new GuiceApplicationBuilder()
       .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+      .configure("microservice.services.features.stride-auth-enabled" -> false)
       .build()
   }
 
