@@ -21,6 +21,7 @@ import com.codahale.metrics.SharedMetricRegistries
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
@@ -33,6 +34,12 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
+import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, CredentialRole, Enrolments, User}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,33 +61,62 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
   when(mockConnector.assessBusiness(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
   when(mockConnector.assessPersonal(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
 
+  val mockAuditConnector: AuditConnector = mock[AuditConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+
+
   override implicit lazy val app: Application = {
     SharedMetricRegistries.clear()
 
     new GuiceApplicationBuilder()
       .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
-      .configure("microservice.services.features.stride-auth-enabled" -> false)
+      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
+      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+      .configure("microservice.services.features.stride-auth-enabled" -> true)
       .build()
   }
 
   private val injector = app.injector
   private val controller = injector.instanceOf[BarsController]
 
+  // credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
+  val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] =
+    Future.successful(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(
+      Some(Credentials("providerId", "PrivilegedApplication")),
+      Enrolments(Set())),
+      Some(Individual)),
+      Some("internalId")),
+      Some("externalId")),
+      Some("credentialStrength")),
+      Some("agentCode")),
+      Some("profile")),
+      Some("groupProfile")),
+      Some(true)),
+      Some(User)))
+
+  when(mockAuthConnector.authorise(meq(EmptyPredicate), meq(controller.retrievalsToAudit))(any(), any())).thenReturn(retrievalResult)
+
   implicit lazy val materializer: Materializer = app.materializer
 
   "BarsController" when {
     "verifying account details" should {
       "show errors when no data is passed in" in {
+        clearInvocations(mockAuditConnector)
+
         val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
 
         val result = controller.postVerify().apply(request)
         status(result) shouldBe BAD_REQUEST
+
+        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
 
         contentAsString(result) should include("There is a problem")
         contentAsString(result) should include("input.account.sortCode-error")
       }
 
       "show an error when the sort code is not known to EISCD" in {
+        clearInvocations(mockAuditConnector)
+
         when(mockConnector.metadata(meq("654321"))(any(), any())).thenReturn(Future.successful(None))
 
         val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
@@ -93,6 +129,8 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       }
 
       "perform a metadata request when a valid sort code is passed in on it's own" in {
+        clearInvocations(mockAuditConnector)
+
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
 
         val result = controller.postVerify().apply(request)
@@ -101,6 +139,39 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
         verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
         verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+
+        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+
+        val dataEvent = auditCaptor.getValue
+        dataEvent.detail should contain only(
+          "PID" -> "providerId",
+          "DeviceId" -> "",
+          "SortCode" -> "123456",
+          "AccountNumber" -> "",
+          "AccountName" -> "N/A",
+          "AccountType" -> "business",
+          "Retrievals.credentials.providerId" -> "providerId",
+          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.affinityGroup" -> "Individual",
+          "Retrievals.internalId" -> "internalId",
+          "Retrievals.externalId" -> "externalId",
+          "Retrievals.credentialStrength" -> "credentialStrength",
+          "Retrievals.agentCode" -> "agentCode",
+          "Retrievals.profile" -> "profile",
+          "Retrievals.groupProfile" -> "groupProfile",
+          "Retrievals.emailVerified" -> "true",
+          "Retrievals.credentialRole" -> "User",
+          "Response.metadata.bankName" -> "HBSC",
+          "Response.metadata.bankCode" -> "HSBC",
+          "Response.metadata.bicBankCode" -> "HBUK",
+          "Response.metadata.branchName" -> "London",
+          "Response.metadata.address.lines.1" -> "line1",
+          "Response.metadata.telephone" -> "12121",
+          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+          "Response.metadata.chapsSterlingStatus.status" -> "Indirect"
+        )
 
         contentAsString(result) should include("Sort code")
         contentAsString(result) should include("123456")
@@ -134,6 +205,8 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
       }
 
       "show an error if account number is entered without a name" in {
+        clearInvocations(mockAuditConnector)
+
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "12345678",
@@ -142,11 +215,15 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         val result = controller.postVerify().apply(request)
         status(result) shouldBe BAD_REQUEST
 
+        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
+
         contentAsString(result) should include("There is a problem")
         contentAsString(result) should include("input.subject.name-error")
       }
 
       "show an error if account name is entered without a number" in {
+        clearInvocations(mockAuditConnector)
+
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "",
@@ -155,12 +232,15 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         val result = controller.postVerify().apply(request)
         status(result) shouldBe BAD_REQUEST
 
+        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
+
         contentAsString(result) should include("There is a problem")
         contentAsString(result) should include("input.account.accountNumber-error")
       }
 
       "perform both a metadata request and a business assess request when account name and number are specified" in {
         clearInvocations(mockConnector)
+        clearInvocations(mockAuditConnector)
 
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
@@ -178,6 +258,48 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
           meq("12345678"),
           meq(None),
           meq("bank-account-reputation-frontend"))(any(), any())
+
+        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+
+        val dataEvent = auditCaptor.getValue
+        dataEvent.detail should contain only(
+          "PID" -> "providerId",
+          "DeviceId" -> "",
+          "SortCode" -> "123456",
+          "AccountNumber" -> "12345678",
+          "AccountName" -> "ACME inc",
+          "AccountType" -> "business",
+          "Retrievals.credentials.providerId" -> "providerId",
+          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.affinityGroup" -> "Individual",
+          "Retrievals.internalId" -> "internalId",
+          "Retrievals.externalId" -> "externalId",
+          "Retrievals.credentialStrength" -> "credentialStrength",
+          "Retrievals.agentCode" -> "agentCode",
+          "Retrievals.profile" -> "profile",
+          "Retrievals.groupProfile" -> "groupProfile",
+          "Retrievals.emailVerified" -> "true",
+          "Retrievals.credentialRole" -> "User",
+          "Response.metadata.bankName" -> "HBSC",
+          "Response.metadata.bankCode" -> "HSBC",
+          "Response.metadata.bicBankCode" -> "HBUK",
+          "Response.metadata.branchName" -> "London",
+          "Response.metadata.address.lines.1" -> "line1",
+          "Response.metadata.telephone" -> "12121",
+          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+          "Response.assess.accountNumberIsWellFormatted" -> "yes",
+          "Response.assess.accountExists" -> "yes",
+          "Response.assess.nameMatches" -> "partial",
+          "Response.assess.accountName" -> "partial-name",
+          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+          "Response.assess.sortCodeBankName" -> "HSBC",
+          "Response.assess.iban" -> "iban"
+        )
 
         contentAsString(result) should include("Account number")
         contentAsString(result) should include("12345678")
@@ -233,6 +355,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
 
       "perform both a metadata request and a personal assess request when account name and number are specified" in {
         clearInvocations(mockConnector)
+        clearInvocations(mockAuditConnector)
 
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
@@ -251,6 +374,48 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
           meq("12345678"),
           meq(None),
           meq("bank-account-reputation-frontend"))(any(), any())
+
+        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+
+        val dataEvent = auditCaptor.getValue
+        dataEvent.detail should contain only (
+          "PID" -> "providerId",
+          "DeviceId" -> "",
+          "SortCode" -> "123456",
+          "AccountNumber" -> "12345678",
+          "AccountName" -> "Mr Peter Smith",
+          "AccountType" -> "personal",
+          "Retrievals.credentials.providerId" -> "providerId",
+          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.affinityGroup" -> "Individual",
+          "Retrievals.internalId" -> "internalId",
+          "Retrievals.externalId" -> "externalId",
+          "Retrievals.credentialStrength" -> "credentialStrength",
+          "Retrievals.agentCode" -> "agentCode",
+          "Retrievals.profile" -> "profile",
+          "Retrievals.groupProfile" -> "groupProfile",
+          "Retrievals.emailVerified" -> "true",
+          "Retrievals.credentialRole" -> "User",
+          "Response.metadata.bankName" -> "HBSC",
+          "Response.metadata.bankCode" -> "HSBC",
+          "Response.metadata.bicBankCode" -> "HBUK",
+          "Response.metadata.branchName" -> "London",
+          "Response.metadata.address.lines.1" -> "line1",
+          "Response.metadata.telephone" -> "12121",
+          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+          "Response.assess.accountNumberIsWellFormatted" -> "yes",
+          "Response.assess.accountExists" -> "yes",
+          "Response.assess.nameMatches" -> "partial",
+          "Response.assess.accountName" -> "partial-name",
+          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+          "Response.assess.sortCodeBankName" -> "HSBC",
+          "Response.assess.iban" -> "iban"
+        )
 
         contentAsString(result) should include("Account number")
         contentAsString(result) should include("12345678")

@@ -22,20 +22,26 @@ import models._
 import play.api.Logger
 import play.api.i18n._
 import play.api.mvc._
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions, NoActiveSession}
+import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.config.AuthRedirects
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
-
 
 @Singleton
 class BarsController @Inject()(
                                 connector: BankAccountReputationConnector,
                                 val authConnector: AuthConnector,
                                 mcc: MessagesControllerComponents,
+                                auditConnector: AuditConnector,
                                 accessibilityView: views.html.accessibility,
                                 verifyView: views.html.verify,
                                 verifyResultView: views.html.verifyResult,
@@ -45,14 +51,23 @@ class BarsController @Inject()(
 
   private val logger = Logger(this.getClass)
 
+  val retrievalsToAudit = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
+
+  case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
+                               affinityGroup: Option[AffinityGroup], internalId: Option[String],
+                               externalId: Option[String], credentialStrength: Option[String],
+                               agentCode: Option[String], profile: Option[String], groupProfile: Option[String],
+                               emailVerified: Option[Boolean], credentialRole: Option[CredentialRole])
+
   def accessibilityStatement(): Action[AnyContent] = Action.async {
     Future.successful(Ok(accessibilityView()))
   }
 
-  private def strideAuth(f: => Future[Result])(implicit request: Request[_]) = {
+  private def strideAuth(f: Option[RetrievalsToAudit] => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {
-      authorised() {
-        f
+      authorised().retrieve(retrievalsToAudit) {
+        case credentials ~ allEnrolments ~ affinityGroup ~ internalId ~ externalId ~ credentialStrength ~ agentCode ~ profile ~ groupProfile ~ emailVerified ~ credentialRole =>
+          f(Some(RetrievalsToAudit(credentials, allEnrolments, affinityGroup, internalId, externalId, credentialStrength, agentCode, profile, groupProfile, emailVerified, credentialRole)))
       } recover {
         case _: NoActiveSession =>
           toStrideLogin {
@@ -66,7 +81,7 @@ class BarsController @Inject()(
         case _ => Ok(error("Not authorised", "Not authorised", "Sorry, not authorised"))
       }
     } else {
-      f
+      f(None)
     }
   }
 
@@ -77,7 +92,7 @@ class BarsController @Inject()(
 
   def getVerify: Action[AnyContent] = Action.async {
     implicit req =>
-      strideAuth {
+      strideAuth { r =>
         Future.successful(Ok(verifyView(inputForm)))
       }
   }
@@ -85,12 +100,19 @@ class BarsController @Inject()(
   def postVerify: Action[AnyContent] = Action.async {
     implicit request =>
 
-      strideAuth {
+      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+
+      strideAuth { case Some(r) =>
         inputForm.bindFromRequest.fold(
           formWithErrors => {
             Future.successful(BadRequest(verifyView(formWithErrors)))
           },
           input => {
+
+            val pid = r.credentials.collect {
+              case Credentials(pid, "PrivilegedApplication") => pid
+            }
+
             for {
               metadata <- connector.metadata(input.input.account.sortCode)
               assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
@@ -112,6 +134,22 @@ class BarsController @Inject()(
               }
             }
             yield {
+              val dataEvent = DataEvent(
+                appConfig.appName,
+                "BankAccountReputationFrontendLookup",
+                detail = Map[String, String](
+                  "PID" -> pid.getOrElse(""),
+                  "DeviceId" -> hc.deviceID.getOrElse(""),
+                  "SortCode" -> input.input.account.sortCode,
+                  "AccountNumber" -> input.input.account.accountNumber.getOrElse(""),
+                  "AccountName" -> input.input.subject.name.getOrElse("N/A"),
+                  "AccountType" -> input.input.account.accountType.getOrElse("business")
+                ) ++ AuditDetail.from("Retrievals", r)
+                  ++ AuditDetail.from("Response.metadata", metadata)
+                  ++ AuditDetail.from("Response.assess", assess))
+
+              auditConnector.sendEvent(dataEvent)
+
               (metadata, assess) match {
                 case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
                 case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))

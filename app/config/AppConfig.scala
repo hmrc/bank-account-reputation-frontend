@@ -23,6 +23,8 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesConfig, val env: Environment) {
+  val appName: String = config.get[String]("appName")
+
   val baseUrl = servicesConfig.baseUrl("bars")
   val barsPersonalAssessUrl = s"$baseUrl/verify/personal"
   val barsBusinessAssessUrl = s"$baseUrl/verify/business"
