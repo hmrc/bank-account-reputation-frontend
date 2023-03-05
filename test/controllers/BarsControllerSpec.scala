@@ -37,7 +37,7 @@ import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, CredentialRole, Enrolments, User}
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 
@@ -46,7 +46,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 import scala.util.Success
 
-class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Matchers with MockitoSugar {
+
+abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Matchers with MockitoSugar {
   implicit val ec = ExecutionContext.global
   implicit val timeout: FiniteDuration = 1 second
 
@@ -64,24 +65,12 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
-
-  override implicit lazy val app: Application = {
-    SharedMetricRegistries.clear()
-
-    new GuiceApplicationBuilder()
-      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
-      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
-      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
-      .configure("microservice.services.features.stride-auth-enabled" -> true)
-      .build()
-  }
-
-  private val injector = app.injector
-  private val controller = injector.instanceOf[BarsController]
+  val injector = app.injector
+  val controller = injector.instanceOf[BarsController]
 
   // credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
   val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] =
-    Future.successful(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(new ~(
+    Future.successful(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(
       Some(Credentials("providerId", "PrivilegedApplication")),
       Enrolments(Set())),
       Some(Individual)),
@@ -97,8 +86,21 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
   when(mockAuthConnector.authorise(meq(EmptyPredicate), meq(controller.retrievalsToAudit))(any(), any())).thenReturn(retrievalResult)
 
   implicit lazy val materializer: Materializer = app.materializer
+}
 
-  "BarsController" when {
+class StrideAuthBarsControllerSpec extends BarsControllerSpec {
+  override implicit lazy val app: Application = {
+    SharedMetricRegistries.clear()
+
+    new GuiceApplicationBuilder()
+      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
+      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+      .configure("microservice.services.features.stride-auth-enabled" -> true)
+      .build()
+  }
+
+  "BarsController with Stride Auth Enabled" when {
     "verifying account details" should {
       "show errors when no data is passed in" in {
         clearInvocations(mockAuditConnector)
@@ -379,7 +381,7 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
 
         val dataEvent = auditCaptor.getValue
-        dataEvent.detail should contain only (
+        dataEvent.detail should contain only(
           "PID" -> "providerId",
           "DeviceId" -> "",
           "SortCode" -> "123456",
@@ -465,6 +467,74 @@ class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Match
         contentAsString(result) should include("Transaction types")
         contentAsString(result) should include("ALLOWED")
       }
+    }
+  }
+}
+
+class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
+  override implicit lazy val app: Application = {
+    SharedMetricRegistries.clear()
+
+    new GuiceApplicationBuilder()
+      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
+      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+      .configure("microservice.services.features.stride-auth-enabled" -> false)
+      .build()
+  }
+
+  "BarsController with Stride Auth Disabled" should {
+    "audit correctly when stride auth is disabled" in {
+      clearInvocations(mockConnector)
+      clearInvocations(mockAuditConnector)
+
+      val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+        "input.account.sortCode" -> "123456",
+        "input.account.accountNumber" -> "12345678",
+        "input.subject.name" -> "Mr Peter Smith",
+        "input.account.accountType" -> "personal").withCSRFToken
+
+      val result = controller.postVerify().apply(request)
+      status(result) shouldBe OK
+
+      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+      verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+      verify(mockConnector, times(1)).assessPersonal(
+        meq("Mr Peter Smith"),
+        meq("123456"),
+        meq("12345678"),
+        meq(None),
+        meq("bank-account-reputation-frontend"))(any(), any())
+
+      val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+      verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+
+      val dataEvent = auditCaptor.getValue
+      dataEvent.detail should contain only(
+        "PID" -> "",
+        "DeviceId" -> "",
+        "SortCode" -> "123456",
+        "AccountNumber" -> "12345678",
+        "AccountName" -> "Mr Peter Smith",
+        "AccountType" -> "personal",
+        "Response.metadata.bankName" -> "HBSC",
+        "Response.metadata.bankCode" -> "HSBC",
+        "Response.metadata.bicBankCode" -> "HBUK",
+        "Response.metadata.branchName" -> "London",
+        "Response.metadata.address.lines.1" -> "line1",
+        "Response.metadata.telephone" -> "12121",
+        "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+        "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+        "Response.assess.accountNumberIsWellFormatted" -> "yes",
+        "Response.assess.accountExists" -> "yes",
+        "Response.assess.nameMatches" -> "partial",
+        "Response.assess.accountName" -> "partial-name",
+        "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+        "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+        "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+        "Response.assess.sortCodeBankName" -> "HSBC",
+        "Response.assess.iban" -> "iban"
+      )
     }
   }
 }
