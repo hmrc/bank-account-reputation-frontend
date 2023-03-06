@@ -102,16 +102,15 @@ class BarsController @Inject()(
 
       implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-      strideAuth { case Some(r) =>
+      strideAuth { retrievals =>
         inputForm.bindFromRequest.fold(
           formWithErrors => {
             Future.successful(BadRequest(verifyView(formWithErrors)))
           },
           input => {
-
-            val pid = r.credentials.collect {
+            val pid = retrievals.flatMap(r => r.credentials.collect {
               case Credentials(pid, "PrivilegedApplication") => pid
-            }
+            })
 
             for {
               metadata <- connector.metadata(input.input.account.sortCode)
@@ -144,7 +143,7 @@ class BarsController @Inject()(
                   "AccountNumber" -> input.input.account.accountNumber.getOrElse(""),
                   "AccountName" -> input.input.subject.name.getOrElse("N/A"),
                   "AccountType" -> input.input.account.accountType.getOrElse("business")
-                ) ++ AuditDetail.from("Retrievals", r)
+                ) ++ AuditDetail.from("Retrievals", retrievals)
                   ++ AuditDetail.from("Response.metadata", metadata)
                   ++ AuditDetail.from("Response.assess", assess))
 
