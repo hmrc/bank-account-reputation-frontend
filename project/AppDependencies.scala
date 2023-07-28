@@ -1,12 +1,15 @@
 import play.core.PlayVersion
-import play.sbt.PlayImport._
-import sbt._
+import play.sbt.PlayImport.*
+import sbt.*
 
 object AppDependencies {
 
   val compile = Seq(
     "uk.gov.hmrc" %% "bootstrap-frontend-play-28" % "7.12.0",
     "uk.gov.hmrc" %% "play-frontend-hmrc" % "5.2.0-play-28",
+    "org.pac4j" %% "play-pac4j" % "10.0.2",
+    "org.pac4j" % "pac4j-oidc" % "4.5.3" excludeAll (ExclusionRule(organization = "com.fasterxml.jackson.core")),
+    "org.apache.shiro" % "shiro-core" % "1.7.1"
   )
 
   val test = Seq(

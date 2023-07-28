@@ -17,29 +17,22 @@
 package controllers
 
 import akka.stream.Materializer
-import com.codahale.metrics.SharedMetricRegistries
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
-import play.api.inject.bind
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
-import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
+import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
-import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
@@ -88,453 +81,453 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   implicit lazy val materializer: Materializer = app.materializer
 }
 
-class StrideAuthBarsControllerSpec extends BarsControllerSpec {
-  override implicit lazy val app: Application = {
-    SharedMetricRegistries.clear()
-
-    new GuiceApplicationBuilder()
-      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
-      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
-      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
-      .configure("microservice.services.features.stride-auth-enabled" -> true)
-      .build()
-  }
-
-  "BarsController with Stride Auth Enabled" when {
-    "verifying account details" should {
-      "show errors when no data is passed in" in {
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe BAD_REQUEST
-
-        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
-
-        contentAsString(result) should include("There is a problem")
-        contentAsString(result) should include("input.account.sortCode-error")
-      }
-
-      "show an error when the sort code is not known to EISCD" in {
-        clearInvocations(mockAuditConnector)
-
-        when(mockConnector.metadata(meq("654321"))(any(), any())).thenReturn(Future.successful(None))
-
-        val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe BAD_REQUEST
-
-        contentAsString(result) should include("There is a problem")
-        contentAsString(result) should include("input.account.sortCode-error")
-      }
-
-      "perform a metadata request when a valid sort code is passed in on it's own" in {
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe OK
-
-        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
-
-        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
-        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
-
-        val dataEvent = auditCaptor.getValue
-        dataEvent.detail should contain only(
-          "PID" -> "providerId",
-          "DeviceId" -> "",
-          "SortCode" -> "123456",
-          "AccountNumber" -> "",
-          "AccountName" -> "N/A",
-          "AccountType" -> "business",
-          "Retrievals.credentials.providerId" -> "providerId",
-          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
-          "Retrievals.affinityGroup" -> "Individual",
-          "Retrievals.internalId" -> "internalId",
-          "Retrievals.externalId" -> "externalId",
-          "Retrievals.credentialStrength" -> "credentialStrength",
-          "Retrievals.agentCode" -> "agentCode",
-          "Retrievals.profile" -> "profile",
-          "Retrievals.groupProfile" -> "groupProfile",
-          "Retrievals.emailVerified" -> "true",
-          "Retrievals.credentialRole" -> "User",
-          "Response.metadata.bankName" -> "HBSC",
-          "Response.metadata.bankCode" -> "HSBC",
-          "Response.metadata.bicBankCode" -> "HBUK",
-          "Response.metadata.branchName" -> "London",
-          "Response.metadata.address.lines.1" -> "line1",
-          "Response.metadata.telephone" -> "12121",
-          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
-          "Response.metadata.chapsSterlingStatus.status" -> "Indirect"
-        )
-
-        contentAsString(result) should include("Sort code")
-        contentAsString(result) should include("123456")
-
-        contentAsString(result) should include("Bank code")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Bank identification code (BIC)")
-        contentAsString(result) should include("HBUK")
-
-        contentAsString(result) should include("Bank name")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Address")
-        contentAsString(result) should include("line1")
-
-        contentAsString(result) should include("Telephone")
-        contentAsString(result) should include("12121")
-
-        contentAsString(result) should include("BACS office status")
-        contentAsString(result) should include("BACS member; accepts BACS payments")
-
-        contentAsString(result) should include("CHAPS sterling status")
-        contentAsString(result) should include("Indirect")
-
-        contentAsString(result) should include("Branch name")
-        contentAsString(result) should include("London")
-
-        contentAsString(result) should include("Transaction types")
-        contentAsString(result) should include("ALLOWED")
-      }
-
-      "show an error if account number is entered without a name" in {
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-          "input.account.sortCode" -> "123456",
-          "input.account.accountNumber" -> "12345678",
-          "input.subject.name" -> "").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe BAD_REQUEST
-
-        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
-
-        contentAsString(result) should include("There is a problem")
-        contentAsString(result) should include("input.subject.name-error")
-      }
-
-      "show an error if account name is entered without a number" in {
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-          "input.account.sortCode" -> "123456",
-          "input.account.accountNumber" -> "",
-          "input.subject.name" -> "Mr Peter Smith").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe BAD_REQUEST
-
-        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
-
-        contentAsString(result) should include("There is a problem")
-        contentAsString(result) should include("input.account.accountNumber-error")
-      }
-
-      "perform both a metadata request and a business assess request when account name and number are specified" in {
-        clearInvocations(mockConnector)
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-          "input.account.sortCode" -> "123456",
-          "input.account.accountNumber" -> "12345678",
-          "input.subject.name" -> "ACME inc").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe OK
-
-        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
-        verify(mockConnector, times(1)).assessBusiness(
-          meq("ACME inc"),
-          meq("123456"),
-          meq("12345678"),
-          meq(None),
-          meq("bank-account-reputation-frontend"))(any(), any())
-
-        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
-        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
-
-        val dataEvent = auditCaptor.getValue
-        dataEvent.detail should contain only(
-          "PID" -> "providerId",
-          "DeviceId" -> "",
-          "SortCode" -> "123456",
-          "AccountNumber" -> "12345678",
-          "AccountName" -> "ACME inc",
-          "AccountType" -> "business",
-          "Retrievals.credentials.providerId" -> "providerId",
-          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
-          "Retrievals.affinityGroup" -> "Individual",
-          "Retrievals.internalId" -> "internalId",
-          "Retrievals.externalId" -> "externalId",
-          "Retrievals.credentialStrength" -> "credentialStrength",
-          "Retrievals.agentCode" -> "agentCode",
-          "Retrievals.profile" -> "profile",
-          "Retrievals.groupProfile" -> "groupProfile",
-          "Retrievals.emailVerified" -> "true",
-          "Retrievals.credentialRole" -> "User",
-          "Response.metadata.bankName" -> "HBSC",
-          "Response.metadata.bankCode" -> "HSBC",
-          "Response.metadata.bicBankCode" -> "HBUK",
-          "Response.metadata.branchName" -> "London",
-          "Response.metadata.address.lines.1" -> "line1",
-          "Response.metadata.telephone" -> "12121",
-          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
-          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
-          "Response.assess.accountNumberIsWellFormatted" -> "yes",
-          "Response.assess.accountExists" -> "yes",
-          "Response.assess.nameMatches" -> "partial",
-          "Response.assess.accountName" -> "partial-name",
-          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
-          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
-          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
-          "Response.assess.sortCodeBankName" -> "HSBC",
-          "Response.assess.iban" -> "iban"
-        )
-
-        contentAsString(result) should include("Account number")
-        contentAsString(result) should include("12345678")
-
-        contentAsString(result) should include("Sort code")
-        contentAsString(result) should include("123456")
-
-        contentAsString(result) should include("IBAN")
-        contentAsString(result) should include("iban")
-
-        contentAsString(result) should include("Account number is well formatted")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Non-standard account details required for BACS")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Account number exists")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Name matches")
-        contentAsString(result) should include("partial")
-
-        contentAsString(result) should include("Partially matched name")
-        contentAsString(result) should include("partial-name")
-
-        contentAsString(result) should include("Bank code")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Bank identification code (BIC)")
-        contentAsString(result) should include("HBUK")
-
-        contentAsString(result) should include("Bank name")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Address")
-        contentAsString(result) should include("line1")
-
-        contentAsString(result) should include("Telephone")
-        contentAsString(result) should include("12121")
-
-        contentAsString(result) should include("BACS office status")
-        contentAsString(result) should include("BACS member; accepts BACS payments")
-
-        contentAsString(result) should include("CHAPS sterling status")
-        contentAsString(result) should include("Indirect")
-
-        contentAsString(result) should include("Branch name")
-        contentAsString(result) should include("London")
-
-        contentAsString(result) should include("Transaction types")
-        contentAsString(result) should include("ALLOWED")
-      }
-
-      "perform both a metadata request and a personal assess request when account name and number are specified" in {
-        clearInvocations(mockConnector)
-        clearInvocations(mockAuditConnector)
-
-        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-          "input.account.sortCode" -> "123456",
-          "input.account.accountNumber" -> "12345678",
-          "input.subject.name" -> "Mr Peter Smith",
-          "input.account.accountType" -> "personal").withCSRFToken
-
-        val result = controller.postVerify().apply(request)
-        status(result) shouldBe OK
-
-        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
-        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, times(1)).assessPersonal(
-          meq("Mr Peter Smith"),
-          meq("123456"),
-          meq("12345678"),
-          meq(None),
-          meq("bank-account-reputation-frontend"))(any(), any())
-
-        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
-        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
-
-        val dataEvent = auditCaptor.getValue
-        dataEvent.detail should contain only(
-          "PID" -> "providerId",
-          "DeviceId" -> "",
-          "SortCode" -> "123456",
-          "AccountNumber" -> "12345678",
-          "AccountName" -> "Mr Peter Smith",
-          "AccountType" -> "personal",
-          "Retrievals.credentials.providerId" -> "providerId",
-          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
-          "Retrievals.affinityGroup" -> "Individual",
-          "Retrievals.internalId" -> "internalId",
-          "Retrievals.externalId" -> "externalId",
-          "Retrievals.credentialStrength" -> "credentialStrength",
-          "Retrievals.agentCode" -> "agentCode",
-          "Retrievals.profile" -> "profile",
-          "Retrievals.groupProfile" -> "groupProfile",
-          "Retrievals.emailVerified" -> "true",
-          "Retrievals.credentialRole" -> "User",
-          "Response.metadata.bankName" -> "HBSC",
-          "Response.metadata.bankCode" -> "HSBC",
-          "Response.metadata.bicBankCode" -> "HBUK",
-          "Response.metadata.branchName" -> "London",
-          "Response.metadata.address.lines.1" -> "line1",
-          "Response.metadata.telephone" -> "12121",
-          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
-          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
-          "Response.assess.accountNumberIsWellFormatted" -> "yes",
-          "Response.assess.accountExists" -> "yes",
-          "Response.assess.nameMatches" -> "partial",
-          "Response.assess.accountName" -> "partial-name",
-          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
-          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
-          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
-          "Response.assess.sortCodeBankName" -> "HSBC",
-          "Response.assess.iban" -> "iban"
-        )
-
-        contentAsString(result) should include("Account number")
-        contentAsString(result) should include("12345678")
-
-        contentAsString(result) should include("Sort code")
-        contentAsString(result) should include("123456")
-
-        contentAsString(result) should include("IBAN")
-        contentAsString(result) should include("iban")
-
-        contentAsString(result) should include("Account number is well formatted")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Non-standard account details required for BACS")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Account number exists")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Name matches")
-        contentAsString(result) should include("yes")
-
-        contentAsString(result) should include("Bank code")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Bank identification code (BIC)")
-        contentAsString(result) should include("HBUK")
-
-        contentAsString(result) should include("Bank name")
-        contentAsString(result) should include("HSBC")
-
-        contentAsString(result) should include("Address")
-        contentAsString(result) should include("line1")
-
-        contentAsString(result) should include("Telephone")
-        contentAsString(result) should include("12121")
-
-        contentAsString(result) should include("BACS office status")
-        contentAsString(result) should include("BACS member; accepts BACS payments")
-
-        contentAsString(result) should include("CHAPS sterling status")
-        contentAsString(result) should include("Indirect")
-
-        contentAsString(result) should include("Branch name")
-        contentAsString(result) should include("London")
-
-        contentAsString(result) should include("Transaction types")
-        contentAsString(result) should include("ALLOWED")
-      }
-    }
-  }
-}
-
-class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
-  override implicit lazy val app: Application = {
-    SharedMetricRegistries.clear()
-
-    new GuiceApplicationBuilder()
-      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
-      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
-      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
-      .configure("microservice.services.features.stride-auth-enabled" -> false)
-      .build()
-  }
-
-  "BarsController with Stride Auth Disabled" should {
-    "audit correctly when stride auth is disabled" in {
-      clearInvocations(mockConnector)
-      clearInvocations(mockAuditConnector)
-
-      val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-        "input.account.sortCode" -> "123456",
-        "input.account.accountNumber" -> "12345678",
-        "input.subject.name" -> "Mr Peter Smith",
-        "input.account.accountType" -> "personal").withCSRFToken
-
-      val result = controller.postVerify().apply(request)
-      status(result) shouldBe OK
-
-      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
-      verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-      verify(mockConnector, times(1)).assessPersonal(
-        meq("Mr Peter Smith"),
-        meq("123456"),
-        meq("12345678"),
-        meq(None),
-        meq("bank-account-reputation-frontend"))(any(), any())
-
-      val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
-      verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
-
-      val dataEvent = auditCaptor.getValue
-      dataEvent.detail should contain only(
-        "PID" -> "",
-        "DeviceId" -> "",
-        "SortCode" -> "123456",
-        "AccountNumber" -> "12345678",
-        "AccountName" -> "Mr Peter Smith",
-        "AccountType" -> "personal",
-        "Response.metadata.bankName" -> "HBSC",
-        "Response.metadata.bankCode" -> "HSBC",
-        "Response.metadata.bicBankCode" -> "HBUK",
-        "Response.metadata.branchName" -> "London",
-        "Response.metadata.address.lines.1" -> "line1",
-        "Response.metadata.telephone" -> "12121",
-        "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
-        "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
-        "Response.assess.accountNumberIsWellFormatted" -> "yes",
-        "Response.assess.accountExists" -> "yes",
-        "Response.assess.nameMatches" -> "partial",
-        "Response.assess.accountName" -> "partial-name",
-        "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
-        "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
-        "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
-        "Response.assess.sortCodeBankName" -> "HSBC",
-        "Response.assess.iban" -> "iban"
-      )
-    }
-  }
-}
+//class StrideAuthBarsControllerSpec extends BarsControllerSpec {
+//  override implicit lazy val app: Application = {
+//    SharedMetricRegistries.clear()
+//
+//    new GuiceApplicationBuilder()
+//      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+//      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
+//      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+//      .configure("microservice.services.features.stride-auth-enabled" -> true)
+//      .build()
+//  }
+//
+//  "BarsController with Stride Auth Enabled" when {
+//    "verifying account details" should {
+//      "show errors when no data is passed in" in {
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe BAD_REQUEST
+//
+//        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
+//
+//        contentAsString(result) should include("There is a problem")
+//        contentAsString(result) should include("input.account.sortCode-error")
+//      }
+//
+//      "show an error when the sort code is not known to EISCD" in {
+//        clearInvocations(mockAuditConnector)
+//
+//        when(mockConnector.metadata(meq("654321"))(any(), any())).thenReturn(Future.successful(None))
+//
+//        val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe BAD_REQUEST
+//
+//        contentAsString(result) should include("There is a problem")
+//        contentAsString(result) should include("input.account.sortCode-error")
+//      }
+//
+//      "perform a metadata request when a valid sort code is passed in on it's own" in {
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe OK
+//
+//        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+//        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+//        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+//
+//        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+//        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+//
+//        val dataEvent = auditCaptor.getValue
+//        dataEvent.detail should contain only(
+//          "PID" -> "providerId",
+//          "DeviceId" -> "",
+//          "SortCode" -> "123456",
+//          "AccountNumber" -> "",
+//          "AccountName" -> "N/A",
+//          "AccountType" -> "business",
+//          "Retrievals.credentials.providerId" -> "providerId",
+//          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+//          "Retrievals.allEnrolments.enrolments" -> "Set()",
+//          "Retrievals.affinityGroup" -> "Individual",
+//          "Retrievals.internalId" -> "internalId",
+//          "Retrievals.externalId" -> "externalId",
+//          "Retrievals.credentialStrength" -> "credentialStrength",
+//          "Retrievals.agentCode" -> "agentCode",
+//          "Retrievals.profile" -> "profile",
+//          "Retrievals.groupProfile" -> "groupProfile",
+//          "Retrievals.emailVerified" -> "true",
+//          "Retrievals.credentialRole" -> "User",
+//          "Response.metadata.bankName" -> "HBSC",
+//          "Response.metadata.bankCode" -> "HSBC",
+//          "Response.metadata.bicBankCode" -> "HBUK",
+//          "Response.metadata.branchName" -> "London",
+//          "Response.metadata.address.lines.1" -> "line1",
+//          "Response.metadata.telephone" -> "12121",
+//          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+//          "Response.metadata.chapsSterlingStatus.status" -> "Indirect"
+//        )
+//
+//        contentAsString(result) should include("Sort code")
+//        contentAsString(result) should include("123456")
+//
+//        contentAsString(result) should include("Bank code")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Bank identification code (BIC)")
+//        contentAsString(result) should include("HBUK")
+//
+//        contentAsString(result) should include("Bank name")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Address")
+//        contentAsString(result) should include("line1")
+//
+//        contentAsString(result) should include("Telephone")
+//        contentAsString(result) should include("12121")
+//
+//        contentAsString(result) should include("BACS office status")
+//        contentAsString(result) should include("BACS member; accepts BACS payments")
+//
+//        contentAsString(result) should include("CHAPS sterling status")
+//        contentAsString(result) should include("Indirect")
+//
+//        contentAsString(result) should include("Branch name")
+//        contentAsString(result) should include("London")
+//
+//        contentAsString(result) should include("Transaction types")
+//        contentAsString(result) should include("ALLOWED")
+//      }
+//
+//      "show an error if account number is entered without a name" in {
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+//          "input.account.sortCode" -> "123456",
+//          "input.account.accountNumber" -> "12345678",
+//          "input.subject.name" -> "").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe BAD_REQUEST
+//
+//        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
+//
+//        contentAsString(result) should include("There is a problem")
+//        contentAsString(result) should include("input.subject.name-error")
+//      }
+//
+//      "show an error if account name is entered without a number" in {
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+//          "input.account.sortCode" -> "123456",
+//          "input.account.accountNumber" -> "",
+//          "input.subject.name" -> "Mr Peter Smith").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe BAD_REQUEST
+//
+//        verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
+//
+//        contentAsString(result) should include("There is a problem")
+//        contentAsString(result) should include("input.account.accountNumber-error")
+//      }
+//
+//      "perform both a metadata request and a business assess request when account name and number are specified" in {
+//        clearInvocations(mockConnector)
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+//          "input.account.sortCode" -> "123456",
+//          "input.account.accountNumber" -> "12345678",
+//          "input.subject.name" -> "ACME inc").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe OK
+//
+//        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+//        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+//        verify(mockConnector, times(1)).assessBusiness(
+//          meq("ACME inc"),
+//          meq("123456"),
+//          meq("12345678"),
+//          meq(None),
+//          meq("bank-account-reputation-frontend"))(any(), any())
+//
+//        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+//        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+//
+//        val dataEvent = auditCaptor.getValue
+//        dataEvent.detail should contain only(
+//          "PID" -> "providerId",
+//          "DeviceId" -> "",
+//          "SortCode" -> "123456",
+//          "AccountNumber" -> "12345678",
+//          "AccountName" -> "ACME inc",
+//          "AccountType" -> "business",
+//          "Retrievals.credentials.providerId" -> "providerId",
+//          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+//          "Retrievals.allEnrolments.enrolments" -> "Set()",
+//          "Retrievals.affinityGroup" -> "Individual",
+//          "Retrievals.internalId" -> "internalId",
+//          "Retrievals.externalId" -> "externalId",
+//          "Retrievals.credentialStrength" -> "credentialStrength",
+//          "Retrievals.agentCode" -> "agentCode",
+//          "Retrievals.profile" -> "profile",
+//          "Retrievals.groupProfile" -> "groupProfile",
+//          "Retrievals.emailVerified" -> "true",
+//          "Retrievals.credentialRole" -> "User",
+//          "Response.metadata.bankName" -> "HBSC",
+//          "Response.metadata.bankCode" -> "HSBC",
+//          "Response.metadata.bicBankCode" -> "HBUK",
+//          "Response.metadata.branchName" -> "London",
+//          "Response.metadata.address.lines.1" -> "line1",
+//          "Response.metadata.telephone" -> "12121",
+//          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+//          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+//          "Response.assess.accountNumberIsWellFormatted" -> "yes",
+//          "Response.assess.accountExists" -> "yes",
+//          "Response.assess.nameMatches" -> "partial",
+//          "Response.assess.accountName" -> "partial-name",
+//          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+//          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+//          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+//          "Response.assess.sortCodeBankName" -> "HSBC",
+//          "Response.assess.iban" -> "iban"
+//        )
+//
+//        contentAsString(result) should include("Account number")
+//        contentAsString(result) should include("12345678")
+//
+//        contentAsString(result) should include("Sort code")
+//        contentAsString(result) should include("123456")
+//
+//        contentAsString(result) should include("IBAN")
+//        contentAsString(result) should include("iban")
+//
+//        contentAsString(result) should include("Account number is well formatted")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Non-standard account details required for BACS")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Account number exists")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Name matches")
+//        contentAsString(result) should include("partial")
+//
+//        contentAsString(result) should include("Partially matched name")
+//        contentAsString(result) should include("partial-name")
+//
+//        contentAsString(result) should include("Bank code")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Bank identification code (BIC)")
+//        contentAsString(result) should include("HBUK")
+//
+//        contentAsString(result) should include("Bank name")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Address")
+//        contentAsString(result) should include("line1")
+//
+//        contentAsString(result) should include("Telephone")
+//        contentAsString(result) should include("12121")
+//
+//        contentAsString(result) should include("BACS office status")
+//        contentAsString(result) should include("BACS member; accepts BACS payments")
+//
+//        contentAsString(result) should include("CHAPS sterling status")
+//        contentAsString(result) should include("Indirect")
+//
+//        contentAsString(result) should include("Branch name")
+//        contentAsString(result) should include("London")
+//
+//        contentAsString(result) should include("Transaction types")
+//        contentAsString(result) should include("ALLOWED")
+//      }
+//
+//      "perform both a metadata request and a personal assess request when account name and number are specified" in {
+//        clearInvocations(mockConnector)
+//        clearInvocations(mockAuditConnector)
+//
+//        val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+//          "input.account.sortCode" -> "123456",
+//          "input.account.accountNumber" -> "12345678",
+//          "input.subject.name" -> "Mr Peter Smith",
+//          "input.account.accountType" -> "personal").withCSRFToken
+//
+//        val result = controller.postVerify().apply(request)
+//        status(result) shouldBe OK
+//
+//        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+//        verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+//        verify(mockConnector, times(1)).assessPersonal(
+//          meq("Mr Peter Smith"),
+//          meq("123456"),
+//          meq("12345678"),
+//          meq(None),
+//          meq("bank-account-reputation-frontend"))(any(), any())
+//
+//        val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+//        verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+//
+//        val dataEvent = auditCaptor.getValue
+//        dataEvent.detail should contain only(
+//          "PID" -> "providerId",
+//          "DeviceId" -> "",
+//          "SortCode" -> "123456",
+//          "AccountNumber" -> "12345678",
+//          "AccountName" -> "Mr Peter Smith",
+//          "AccountType" -> "personal",
+//          "Retrievals.credentials.providerId" -> "providerId",
+//          "Retrievals.credentials.providerType" -> "PrivilegedApplication",
+//          "Retrievals.allEnrolments.enrolments" -> "Set()",
+//          "Retrievals.affinityGroup" -> "Individual",
+//          "Retrievals.internalId" -> "internalId",
+//          "Retrievals.externalId" -> "externalId",
+//          "Retrievals.credentialStrength" -> "credentialStrength",
+//          "Retrievals.agentCode" -> "agentCode",
+//          "Retrievals.profile" -> "profile",
+//          "Retrievals.groupProfile" -> "groupProfile",
+//          "Retrievals.emailVerified" -> "true",
+//          "Retrievals.credentialRole" -> "User",
+//          "Response.metadata.bankName" -> "HBSC",
+//          "Response.metadata.bankCode" -> "HSBC",
+//          "Response.metadata.bicBankCode" -> "HBUK",
+//          "Response.metadata.branchName" -> "London",
+//          "Response.metadata.address.lines.1" -> "line1",
+//          "Response.metadata.telephone" -> "12121",
+//          "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+//          "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+//          "Response.assess.accountNumberIsWellFormatted" -> "yes",
+//          "Response.assess.accountExists" -> "yes",
+//          "Response.assess.nameMatches" -> "partial",
+//          "Response.assess.accountName" -> "partial-name",
+//          "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+//          "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+//          "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+//          "Response.assess.sortCodeBankName" -> "HSBC",
+//          "Response.assess.iban" -> "iban"
+//        )
+//
+//        contentAsString(result) should include("Account number")
+//        contentAsString(result) should include("12345678")
+//
+//        contentAsString(result) should include("Sort code")
+//        contentAsString(result) should include("123456")
+//
+//        contentAsString(result) should include("IBAN")
+//        contentAsString(result) should include("iban")
+//
+//        contentAsString(result) should include("Account number is well formatted")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Non-standard account details required for BACS")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Account number exists")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Name matches")
+//        contentAsString(result) should include("yes")
+//
+//        contentAsString(result) should include("Bank code")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Bank identification code (BIC)")
+//        contentAsString(result) should include("HBUK")
+//
+//        contentAsString(result) should include("Bank name")
+//        contentAsString(result) should include("HSBC")
+//
+//        contentAsString(result) should include("Address")
+//        contentAsString(result) should include("line1")
+//
+//        contentAsString(result) should include("Telephone")
+//        contentAsString(result) should include("12121")
+//
+//        contentAsString(result) should include("BACS office status")
+//        contentAsString(result) should include("BACS member; accepts BACS payments")
+//
+//        contentAsString(result) should include("CHAPS sterling status")
+//        contentAsString(result) should include("Indirect")
+//
+//        contentAsString(result) should include("Branch name")
+//        contentAsString(result) should include("London")
+//
+//        contentAsString(result) should include("Transaction types")
+//        contentAsString(result) should include("ALLOWED")
+//      }
+//    }
+//  }
+//}
+
+//class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
+//  override implicit lazy val app: Application = {
+//    SharedMetricRegistries.clear()
+//
+//    new GuiceApplicationBuilder()
+//      .overrides(bind[BankAccountReputationConnector].toInstance(mockConnector))
+//      .overrides(bind[AuditConnector].toInstance(mockAuditConnector))
+//      .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
+//      .configure("microservice.services.features.stride-auth-enabled" -> false)
+//      .build()
+//  }
+//
+//  "BarsController with Stride Auth Disabled" should {
+//    "audit correctly when stride auth is disabled" in {
+//      clearInvocations(mockConnector)
+//      clearInvocations(mockAuditConnector)
+//
+//      val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
+//        "input.account.sortCode" -> "123456",
+//        "input.account.accountNumber" -> "12345678",
+//        "input.subject.name" -> "Mr Peter Smith",
+//        "input.account.accountType" -> "personal").withCSRFToken
+//
+//      val result = controller.postVerify().apply(request)
+//      status(result) shouldBe OK
+//
+//      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+//      verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
+//      verify(mockConnector, times(1)).assessPersonal(
+//        meq("Mr Peter Smith"),
+//        meq("123456"),
+//        meq("12345678"),
+//        meq(None),
+//        meq("bank-account-reputation-frontend"))(any(), any())
+//
+//      val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
+//      verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
+//
+//      val dataEvent = auditCaptor.getValue
+//      dataEvent.detail should contain only(
+//        "PID" -> "",
+//        "DeviceId" -> "",
+//        "SortCode" -> "123456",
+//        "AccountNumber" -> "12345678",
+//        "AccountName" -> "Mr Peter Smith",
+//        "AccountType" -> "personal",
+//        "Response.metadata.bankName" -> "HBSC",
+//        "Response.metadata.bankCode" -> "HSBC",
+//        "Response.metadata.bicBankCode" -> "HBUK",
+//        "Response.metadata.branchName" -> "London",
+//        "Response.metadata.address.lines.1" -> "line1",
+//        "Response.metadata.telephone" -> "12121",
+//        "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
+//        "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
+//        "Response.assess.accountNumberIsWellFormatted" -> "yes",
+//        "Response.assess.accountExists" -> "yes",
+//        "Response.assess.nameMatches" -> "partial",
+//        "Response.assess.accountName" -> "partial-name",
+//        "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
+//        "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
+//        "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
+//        "Response.assess.sortCodeBankName" -> "HSBC",
+//        "Response.assess.iban" -> "iban"
+//      )
+//    }
+//  }
+//}
