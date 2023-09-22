@@ -28,6 +28,7 @@ import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 
 import scala.concurrent.Future
 
+@deprecated(message = "Not used anywhere?", since = "v0.0.1")
 trait TestData {
   val config = mock[AppConfig]
   when(config.baseUrl).thenReturn("http://localhost")
@@ -35,8 +36,8 @@ trait TestData {
 
   val sortCode = "123456"
   val hmrcSortCode = "201147"
-  val account: AccountDetails = AccountDetails(Account(sortCode, Some("12345678")))
-  val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, Some("54697788")))
+  val account: AccountDetails = AccountDetails(Account(sortCode, Some("12345678"), None))
+  val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, Some("54697788"), None))
   val assessInput: Input = Input(account.account, Subject(Some("Mr James")))
   val http = mock[HttpClient]
 
