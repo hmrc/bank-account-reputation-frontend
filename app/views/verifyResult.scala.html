@@ -64,6 +64,11 @@
             Value(HtmlContent(a))
         )),
 
+       account.rollNumber.map(a => SummaryListRow(
+            Key(HtmlContent(messages("bars.verifyResults.rollNumber"))),
+            Value(HtmlContent(a))
+        )),
+
         Some(SummaryListRow(
             Key(HtmlContent(messages("bars.verifyResults.sortCode"))),
             Value(HtmlContent(account.sortCode))
