@@ -27,6 +27,7 @@ case class AccountDetails(account: Account)
 
 case class Account(sortCode: String,
                    accountNumber: Option[String],
+                   rollNumber: Option[String],
                    accountType: Option[String] = None)
 
 case class EiscdCountry(name: String)

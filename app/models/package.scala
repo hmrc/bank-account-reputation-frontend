@@ -61,6 +61,7 @@ package object models {
         "account" -> mapping(
           "sortCode" -> text.verifying(pattern(regex = """[0-9]{6}""".r, error = "bars.label.sortCodeInvalid", name = "")),
           "accountNumber" -> mandatoryIfSpecified("input.subject.name", pattern("""[0-9]{8}""".r, error = "bars.label.accountNumberInvalid", name = "input.subject.accountNumber")),
+          "rollNumber" -> optional(nonEmptyText),
           "accountType" -> optional(text)
         )(Account.apply)(Account.unapply),
         "subject" -> mapping(
