@@ -58,16 +58,6 @@
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
-            value = inputForm("input.account.rollNumber").value,
-            label = Label(content = HtmlContent(messages("bars.label.rollNumber"))),
-            formGroupClasses = "form-field-group",
-            name = inputForm("input.account.rollNumber").name,
-            id = inputForm("input.account.rollNumber").name,
-            autocomplete = Some("off"),
-            errorMessage = inputForm("input.account.rollNumber").error.map(fe ⇒
-                ErrorMessage(content = HtmlContent(messages(fe.message))))))
-
-        @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
             value = inputForm("input.subject.name").value,
             label = Label(content = HtmlContent(messages("bars.label.name"))),
             formGroupClasses = "form-field-group",
