@@ -59,8 +59,8 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   val barsAssessResponse: Success[BarsAssessSuccessResponse] = Success(BarsAssessSuccessResponse(Yes, Yes, Some("HSBC"), Yes, Partial, Yes, Yes, None, Some("iban"), Some("partial-name")))
 
   when(mockConnector.metadata(any())(any(), any())).thenReturn(Future.successful(eiscdEntry))
-  when(mockConnector.assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
-  when(mockConnector.assessPersonal(any(), any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
+  when(mockConnector.assessBusiness(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
+  when(mockConnector.assessPersonal(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
 
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -139,8 +139,8 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
 
         val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
         verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
@@ -247,19 +247,17 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
           "input.account.sortCode" -> "123456",
           "input.account.accountNumber" -> "12345678",
-          "input.account.rollNumber" -> "BB/123",
           "input.subject.name" -> "ACME inc").withCSRFToken
 
         val result = controller.postVerify().apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
         verify(mockConnector, times(1)).assessBusiness(
           meq("ACME inc"),
           meq("123456"),
           meq("12345678"),
-          meq(Some("BB/123")),
           meq(None),
           meq("bank-account-reputation-frontend"))(any(), any())
 
@@ -272,7 +270,6 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "DeviceId" -> "",
           "SortCode" -> "123456",
           "AccountNumber" -> "12345678",
-          "RollNumber" -> "BB/123",
           "AccountName" -> "ACME inc",
           "AccountType" -> "business",
           "Retrievals.credentials.providerId" -> "providerId",
@@ -371,13 +368,12 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
         val result = controller.postVerify().apply(request)
         status(result) shouldBe OK
 
-        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
         verify(mockConnector, times(1)).assessPersonal(
           meq("Mr Peter Smith"),
           meq("123456"),
           meq("12345678"),
-          meq(None),
           meq(None),
           meq("bank-account-reputation-frontend"))(any(), any())
 
@@ -495,20 +491,18 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
       val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
         "input.account.sortCode" -> "123456",
         "input.account.accountNumber" -> "12345678",
-        "input.account.rollNumber" -> "AB/123",
         "input.subject.name" -> "Mr Peter Smith",
         "input.account.accountType" -> "personal").withCSRFToken
 
       val result = controller.postVerify().apply(request)
       status(result) shouldBe OK
 
-      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())
+      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
       verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
       verify(mockConnector, times(1)).assessPersonal(
         meq("Mr Peter Smith"),
         meq("123456"),
         meq("12345678"),
-        meq(Some("AB/123")),
         meq(None),
         meq("bank-account-reputation-frontend"))(any(), any())
 
@@ -521,7 +515,6 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
         "DeviceId" -> "",
         "SortCode" -> "123456",
         "AccountNumber" -> "12345678",
-        "RollNumber" -> "AB/123",
         "AccountName" -> "Mr Peter Smith",
         "AccountType" -> "personal",
         "Response.metadata.bankName" -> "HBSC",

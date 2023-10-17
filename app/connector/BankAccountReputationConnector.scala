@@ -40,12 +40,11 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
       }
   }
 
-  def assessPersonal(accountName: String, sortCode: String, accountNumber: String, rollNumber: Option[String],
-                     address: Option[BarsAddress], callingClient: String)
+  def assessPersonal(accountName: String, sortCode: String, accountNumber: String, address: Option[BarsAddress], callingClient: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Try[BarsAssessResponse]] = {
 
     val request = BarsPersonalAssessRequest(
-      BarsAccount(sortCode, accountNumber, rollNumber),
+      BarsAccount(sortCode, accountNumber),
       BarsSubject(None, Some(accountName), None, None, None, address)
     )
 
@@ -75,12 +74,12 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
       }
   }
 
-  def assessBusiness(companyName: String, sortCode: String, accountNumber: String, rollNumber: Option[String],
-                     address: Option[BarsAddress], callingClient: String)
+  def assessBusiness(companyName: String, sortCode: String,
+                     accountNumber: String, address: Option[BarsAddress], callingClient: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Try[BarsAssessResponse]] = {
 
     val request = BarsBusinessAssessRequest(
-      BarsAccount(sortCode, accountNumber, rollNumber),
+      BarsAccount(sortCode = sortCode, accountNumber = accountNumber),
       Some(BarsBusiness(companyName = companyName, address)))
 
     httpClient
