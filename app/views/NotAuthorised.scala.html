@@ -18,8 +18,9 @@
 
 @this(layout: Layout)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-@layout(pageTitle = Some(pageTitle), breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Error"), href = Some(s"#"))), secure = true) {
-    <h1 class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p class="govuk-body">@{Text(message).asHtml}</p>
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@layout(pageTitle = Some(messages("bars.notAuthorisedTitle")), breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Error"), href = Some(s"#"))), secure = true) {
+    <h1 class="govuk-heading-xl">@Text(messages("bars.notAuthorisedTitle")).asHtml</h1>
+    <p class="govuk-body">@{Text(messages("bars.notAuthorisedContent1")).asHtml}</p>
+    <p class="govuk-body">@{Text(messages("bars.notAuthorisedContent2")).asHtml}</p>
 }

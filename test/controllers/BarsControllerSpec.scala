@@ -18,6 +18,7 @@ package controllers
 
 import akka.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
+import config.AppConfig
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
@@ -72,7 +73,7 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] =
     Future.successful(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(
       Some(Credentials("providerId", "PrivilegedApplication")),
-      Enrolments(Set())),
+      Enrolments(Set(Enrolment(AppConfig.srsRoleName)))),
       Some(Individual)),
       Some("internalId")),
       Some("externalId")),
@@ -83,7 +84,7 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
       Some(true)),
       Some(User)))
 
-  when(mockAuthConnector.authorise(meq(EmptyPredicate), meq(controller.retrievalsToAudit))(any(), any())).thenReturn(retrievalResult)
+  when(mockAuthConnector.authorise(meq(Enrolment(AppConfig.srsRoleName)), meq(controller.retrievalsToAudit))(any(), any())).thenReturn(retrievalResult)
 
   implicit lazy val materializer: Materializer = app.materializer
 }
@@ -100,14 +101,14 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
       .build()
   }
 
-  "BarsController with Stride Auth Enabled" when {
+  "BarsController secure endpoints" when {
     "verifying account details" should {
       "show errors when no data is passed in" in {
         clearInvocations(mockAuditConnector)
 
         val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -123,7 +124,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe BAD_REQUEST
 
         contentAsString(result) should include("There is a problem")
@@ -135,7 +136,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
@@ -155,7 +156,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "AccountType" -> "business",
           "Retrievals.credentials.providerId" -> "providerId",
           "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.allEnrolments.enrolments" -> s"Set(Enrolment(${AppConfig.srsRoleName},List(),Activated,None))",
           "Retrievals.affinityGroup" -> "Individual",
           "Retrievals.internalId" -> "internalId",
           "Retrievals.externalId" -> "externalId",
@@ -214,7 +215,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -231,7 +232,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.accountNumber" -> "",
           "input.subject.name" -> "Mr Peter Smith").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -249,7 +250,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "ACME inc").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
@@ -274,7 +275,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "AccountType" -> "business",
           "Retrievals.credentials.providerId" -> "providerId",
           "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.allEnrolments.enrolments" -> s"Set(Enrolment(${AppConfig.srsRoleName},List(),Activated,None))",
           "Retrievals.affinityGroup" -> "Individual",
           "Retrievals.internalId" -> "internalId",
           "Retrievals.externalId" -> "externalId",
@@ -365,7 +366,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.subject.name" -> "Mr Peter Smith",
           "input.account.accountType" -> "personal").withCSRFToken
 
-        val result = controller.postVerify().apply(request)
+        val result = controller.postVerifySecure().apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
@@ -390,7 +391,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "AccountType" -> "personal",
           "Retrievals.credentials.providerId" -> "providerId",
           "Retrievals.credentials.providerType" -> "PrivilegedApplication",
-          "Retrievals.allEnrolments.enrolments" -> "Set()",
+          "Retrievals.allEnrolments.enrolments" -> s"Set(Enrolment(${AppConfig.srsRoleName},List(),Activated,None))",
           "Retrievals.affinityGroup" -> "Individual",
           "Retrievals.internalId" -> "internalId",
           "Retrievals.externalId" -> "externalId",

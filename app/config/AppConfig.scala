@@ -43,3 +43,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   def isStrideAuthEnabled: Boolean = config.get[Boolean]("microservice.services.features.stride-auth-enabled")
 
 }
+
+object AppConfig {
+  val srsRoleName = "RES-BARS_Front_End_Tool_User-US"
+}
