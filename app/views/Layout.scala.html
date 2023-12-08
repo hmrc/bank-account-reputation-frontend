@@ -25,7 +25,8 @@
         beforeContentBlock: Option[Html] = None,
         theFooterBlock: Option[Html] = None,
         theHeadBlock: Option[Html] = None,
-        breadcrumbContribution: Seq[BreadcrumbsItem] = Seq()
+        breadcrumbContribution: Seq[BreadcrumbsItem] = Seq(),
+        secure: Boolean = false
 )(contentBlock: Html)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @defaultBeforeContentBlock = {
@@ -40,13 +41,18 @@
             tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
             content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
       }
+      if(!secure) {
+         govukPhaseBanner(PhaseBanner(
+            tag = Some(Tag(content = HtmlContent(messages("notSecureBanner.tag")), classes = "warning-tag")),
+            content = HtmlContent(s"<marquee>${messages("notSecureBanner.content")}</marquee>")))
+      }
     }
 
     @govukBreadcrumbs(Breadcrumbs(
         items = Seq(
             BreadcrumbsItem(
                 content = Text("Home"),
-                href = Some(s"${controllers.routes.BarsController.getVerify}")
+                href = Some(s"${if (secure) controllers.routes.BarsController.getVerifySecure else controllers.routes.BarsController.getVerify}")
             )
         ) ++ breadcrumbContribution
     ))

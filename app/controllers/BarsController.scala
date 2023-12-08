@@ -45,7 +45,7 @@ class BarsController @Inject()(
                                 accessibilityView: views.html.accessibility,
                                 verifyView: views.html.verify,
                                 verifyResultView: views.html.verifyResult,
-                                error: views.html.error_template
+                                notAuthorised: views.html.NotAuthorised
                               )(implicit ec: ExecutionContext, appConfig: AppConfig)
   extends FrontendController(mcc) with AuthorisedFunctions with AuthRedirects with I18nSupport {
 
@@ -65,7 +65,7 @@ class BarsController @Inject()(
 
   private def strideAuth(f: Option[RetrievalsToAudit] => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {
-      authorised().retrieve(retrievalsToAudit) {
+      authorised(Enrolment(AppConfig.srsRoleName)).retrieve(retrievalsToAudit) {
         case credentials ~ allEnrolments ~ affinityGroup ~ internalId ~ externalId ~ credentialStrength ~ agentCode ~ profile ~ groupProfile ~ emailVerified ~ credentialRole =>
           f(Some(RetrievalsToAudit(credentials, allEnrolments, affinityGroup, internalId, externalId, credentialStrength, agentCode, profile, groupProfile, emailVerified, credentialRole)))
       } recover {
@@ -78,7 +78,7 @@ class BarsController @Inject()(
               s"${request.uri}"
             }
           }
-        case _ => Ok(error("Not authorised", "Not authorised", "Sorry, not authorised"))
+        case _ => Ok(notAuthorised())
       }
     } else {
       f(None)
@@ -86,79 +86,91 @@ class BarsController @Inject()(
   }
 
   def redirectToVerify: Action[AnyContent] = Action {
-    implicit req =>
-      Redirect(controllers.routes.BarsController.getVerify)
+    Redirect(controllers.routes.BarsController.getVerify)
+  }
+
+  def redirectToVerifySecure: Action[AnyContent] = Action {
+    Redirect(controllers.routes.BarsController.getVerifySecure)
   }
 
   def getVerify: Action[AnyContent] = Action.async {
+    implicit req => Future.successful(Ok(verifyView(inputForm, false)))
+  }
+
+  def getVerifySecure: Action[AnyContent] = Action.async {
     implicit req =>
       strideAuth { r =>
-        Future.successful(Ok(verifyView(inputForm)))
+        Future.successful(Ok(verifyView(inputForm, true)))
       }
   }
 
   def postVerify: Action[AnyContent] = Action.async {
+    implicit request => handlePost()
+  }
+
+  def postVerifySecure: Action[AnyContent] = Action.async {
     implicit request =>
-
-      implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
-
       strideAuth { retrievals =>
-        inputForm.bindFromRequest.fold(
-          formWithErrors => {
-            Future.successful(BadRequest(verifyView(formWithErrors)))
-          },
-          input => {
-            val pid = retrievals.flatMap(r => r.credentials.collect {
-              case Credentials(pid, "PrivilegedApplication") => pid
-            })
+        handlePost(true, retrievals)
+      }
+  }
 
-            for {
-              metadata <- connector.metadata(input.input.account.sortCode)
-              assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
-                input.input.account.accountType match {
-                  case Some("personal") => connector.assessPersonal(
-                    input.input.subject.name.getOrElse("N/A"),
-                    input.input.account.sortCode,
-                    input.input.account.accountNumber.get, None,
-                    "bank-account-reputation-frontend").map(Some(_))
-                  case _ => connector.assessBusiness(
-                    input.input.subject.name.getOrElse("N/A"),
-                    input.input.account.sortCode,
-                    input.input.account.accountNumber.get, None,
-                    "bank-account-reputation-frontend").map(Some(_))
-                }
-              }
-              else {
-                Future.successful(None)
-              }
-            }
-            yield {
-              val dataEvent = DataEvent(
-                appConfig.appName,
-                "BankAccountReputationFrontendLookup",
-                detail = Map[String, String](
-                  "PID" -> pid.getOrElse(""),
-                  "DeviceId" -> hc.deviceID.getOrElse(""),
-                  "SortCode" -> input.input.account.sortCode,
-                  "AccountNumber" -> input.input.account.accountNumber.getOrElse(""),
-                  "AccountName" -> input.input.subject.name.getOrElse("N/A"),
-                  "AccountType" -> input.input.account.accountType.getOrElse("business")
-                ) ++ AuditDetail.from("Retrievals", retrievals)
-                  ++ AuditDetail.from("Response.metadata", metadata)
-                  ++ AuditDetail.from("Response.assess", assess))
+  def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
+    inputForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future.successful(BadRequest(verifyView(formWithErrors, secure)))
+      },
+      input => {
+        val pid = retrievals.flatMap(r => r.credentials.collect {
+          case Credentials(pid, "PrivilegedApplication") => pid
+        })
 
-              auditConnector.sendEvent(dataEvent)
-
-              (metadata, assess) match {
-                case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
-                case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
-                case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
-                case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
-              }
+        for {
+          metadata <- connector.metadata(input.input.account.sortCode)
+          assess <- if (input.input.account.accountNumber.isDefined && metadata.isDefined) {
+            input.input.account.accountType match {
+              case Some("personal") => connector.assessPersonal(
+                input.input.subject.name.getOrElse("N/A"),
+                input.input.account.sortCode,
+                input.input.account.accountNumber.get, None,
+                "bank-account-reputation-frontend").map(Some(_))
+              case _ => connector.assessBusiness(
+                input.input.subject.name.getOrElse("N/A"),
+                input.input.account.sortCode,
+                input.input.account.accountNumber.get, None,
+                "bank-account-reputation-frontend").map(Some(_))
             }
           }
-        )
+          else {
+            Future.successful(None)
+          }
+        }
+        yield {
+          val dataEvent = DataEvent(
+            appConfig.appName,
+            "BankAccountReputationFrontendLookup",
+            detail = Map[String, String](
+              "PID" -> pid.getOrElse(""),
+              "DeviceId" -> hc.deviceID.getOrElse(""),
+              "SortCode" -> input.input.account.sortCode,
+              "AccountNumber" -> input.input.account.accountNumber.getOrElse(""),
+              "AccountName" -> input.input.subject.name.getOrElse("N/A"),
+              "AccountType" -> input.input.account.accountType.getOrElse("business")
+            ) ++ AuditDetail.from("Retrievals", retrievals)
+              ++ AuditDetail.from("Response.metadata", metadata)
+              ++ AuditDetail.from("Response.assess", assess))
+
+          auditConnector.sendEvent(dataEvent)
+
+          (metadata, assess) match {
+            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound"), secure))
+            case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None, secure))
+            case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse()), secure))
+            case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a), secure))
+          }
+        }
       }
+    )
   }
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled

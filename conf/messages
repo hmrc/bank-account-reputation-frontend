@@ -4,9 +4,16 @@ service.text = This is your new service
 nonProductionBanner.tag = NON-PRODUCTION
 nonProductionBanner.content = This is a non-Production environment, DO NOT use it to check real bank account information!
 
+notSecureBanner.tag = WARNING
+notSecureBanner.content = This BARS front-end tool will soon require a Stride login to use. Ask your line manager to grant you the "BARS Front End Tool User" SRS role to access the logged-in version of this page.
+
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options
 bars.errors=There is a problem
+
+bars.notAuthorisedTitle=Not authorised
+bars.notAuthorisedContent1=You don't have the necessary permissions to access this page.
+bars.notAuthorisedContent2=Please contact your manager for assistance.
 
 bars.label.back=Back
 bars.label.iban=IBAN
