@@ -44,7 +44,15 @@
       if(!secure) {
          govukPhaseBanner(PhaseBanner(
             tag = Some(Tag(content = HtmlContent(messages("notSecureBanner.tag")), classes = "warning-tag")),
-            content = HtmlContent(s"<marquee>${messages("notSecureBanner.content")}</marquee>")))
+            content = HtmlContent(
+                s"""
+                   |<marquee>${messages("notSecureBanner.content")}</marquee>
+                   |<p>
+                   |    <span class="govuk-body">
+                   |        Required role is 'BARS Front End Tool User'. Once you've been added to this role, <a class="govuk-link" href="${controllers.routes.BarsController.redirectToVerifySecure}">click here</a> to access the secure page.
+                   |    </span>
+                   |</p>
+                   |""".stripMargin)))
       }
     }
 
