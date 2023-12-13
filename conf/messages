@@ -13,7 +13,7 @@ bars.errors=There is a problem
 
 bars.notAuthorisedTitle=Not authorised
 bars.notAuthorisedContent1=You don't have the necessary permissions to access this page.
-bars.notAuthorisedContent2=Please contact your manager for assistance.
+bars.notAuthorisedContent2=Ask your line manager to grant you the "BARS Front End Tool User" SRS role to access this page.
 
 bars.label.back=Back
 bars.label.iban=IBAN

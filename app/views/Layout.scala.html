@@ -41,11 +41,11 @@
             tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
             content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
       }
-      if(!secure) {
-         govukPhaseBanner(PhaseBanner(
-            tag = Some(Tag(content = HtmlContent(messages("notSecureBanner.tag")), classes = "warning-tag")),
-            content = HtmlContent(s"<marquee>${messages("notSecureBanner.content")}</marquee>")))
-      }
+//      if(!secure) {
+//         govukPhaseBanner(PhaseBanner(
+//            tag = Some(Tag(content = HtmlContent(messages("notSecureBanner.tag")), classes = "warning-tag")),
+//            content = HtmlContent(s"<marquee>${messages("notSecureBanner.content")}</marquee>")))
+//      }
     }
 
     @govukBreadcrumbs(Breadcrumbs(
