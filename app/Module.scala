@@ -16,10 +16,10 @@
 
 import com.google.inject.AbstractModule
 import config.AppConfig
+import play.api.libs.concurrent.PekkoGuiceSupport
 import play.api.{Configuration, Environment}
-import play.api.libs.concurrent.AkkaGuiceSupport
 
-class Module(environment: Environment, playConfig: Configuration) extends AbstractModule with AkkaGuiceSupport {
+class Module(environment: Environment, playConfig: Configuration) extends AbstractModule with PekkoGuiceSupport {
   override def configure(): Unit = {
     super.configure()
     bind(classOf[AppConfig])
