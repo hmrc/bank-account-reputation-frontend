@@ -16,7 +16,7 @@
 
 package controllers
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import com.codahale.metrics.SharedMetricRegistries
 import config.AppConfig
 import connector.ReputationResponseEnum.{Partial, Yes}
