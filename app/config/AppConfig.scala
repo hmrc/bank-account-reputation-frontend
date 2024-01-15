@@ -45,5 +45,5 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 }
 
 object AppConfig {
-  val srsRoleName = "RES-BARS_Front_End_Tool_User-US"
+  val srsRoleName = "bars_front_end_tool_user"
 }
