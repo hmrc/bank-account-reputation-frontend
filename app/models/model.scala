@@ -150,6 +150,8 @@ object Implicits {
 
   implicit val assessmentFormat = Json.format[Assessment]
 
+  implicit val inputFormFormat = Json.format[InputForm]
+
   implicit def bacsOfficeStatus(statusCode: String): BacsStatus.BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
 
   implicit def chapsSterlingStatus(statusCode: Option[String]): ChapsStatus = {
