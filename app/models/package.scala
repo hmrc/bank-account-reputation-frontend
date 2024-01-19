@@ -64,7 +64,7 @@ package object models {
           "accountType" -> optional(text)
         )(Account.apply)(Account.unapply),
         "subject" -> mapping(
-          "name" -> mandatoryIfSpecified("input.account.accountNumber", pattern(regex = """\D+""".r, error = "bars.label.nameInvalid", name = "input.subject.name"))
+          "name" -> mandatoryIfSpecified("input.account.accountNumber", pattern(regex = """\p{all}+""".r, error = "bars.label.nameInvalid", name = "input.subject.name"))
         )(Subject.apply)(Subject.unapply)
       )(Input.apply)(Input.unapply)
     )(InputForm.apply)(InputForm.unapply)
