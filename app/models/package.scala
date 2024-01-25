@@ -73,7 +73,7 @@ package object models {
   private def mandatoryIfSpecified(fieldName: String, constraint: Constraint[String]): FieldMapping[Option[String]] =
     Forms.of[Option[String]](formatter(fieldName, constraint))
 
-  def formatter(fieldName: String, constraint: Constraint[String]): Formatter[Option[String]] = new Formatter[Option[String]] {
+  private def formatter(fieldName: String, constraint: Constraint[String]): Formatter[Option[String]] = new Formatter[Option[String]] {
     def bind(key: String, data: Map[String, String]): Either[Seq[FormError],Option[String]] = {
       if (data.getOrElse(fieldName, "").nonEmpty) {
         constraint.apply(data(key)) match {

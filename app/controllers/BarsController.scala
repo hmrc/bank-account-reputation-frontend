@@ -53,11 +53,11 @@ class BarsController @Inject()(
 
   val retrievalsToAudit: Retrieval[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
 
-  case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
-                               affinityGroup: Option[AffinityGroup], internalId: Option[String],
-                               externalId: Option[String], credentialStrength: Option[String],
-                               agentCode: Option[String], profile: Option[String], groupProfile: Option[String],
-                               emailVerified: Option[Boolean], credentialRole: Option[CredentialRole])
+  private case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
+                                       affinityGroup: Option[AffinityGroup], internalId: Option[String],
+                                       externalId: Option[String], credentialStrength: Option[String],
+                                       agentCode: Option[String], profile: Option[String], groupProfile: Option[String],
+                                       emailVerified: Option[Boolean], credentialRole: Option[CredentialRole])
 
   def accessibilityStatement(): Action[AnyContent] = Action.async {
     Future.successful(Ok(accessibilityView()))

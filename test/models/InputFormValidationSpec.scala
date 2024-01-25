@@ -45,7 +45,7 @@ class InputFormValidationSpec extends AnyFlatSpec with Matchers {
   }
   it should "fail with input with empty name" in {
     val validated = inputForm.bind(Json.toJson(InputForm(testValidInput(Some("")))))
-    validated.errors should have length (1)
+    validated.errors should have length 1
     println(validated.errors.head)
   }
 }

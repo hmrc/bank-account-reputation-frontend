@@ -93,10 +93,10 @@ $(document).ready(function() {
           mediaQueryList.addListener(function(mql) {
               if (mql.matches) {
                   beforePrintCall();
-              };
+              }
               if (!mql.matches) {
                   afterPrintCall();
-              };
+              }
           });
       }
 

@@ -30,7 +30,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.inject.bind
+import play.api.inject.{Injector, bind}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
 import play.api.test.FakeRequest
@@ -43,13 +43,13 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.language.postfixOps
 import scala.util.Success
 
 
 abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Matchers with MockitoSugar {
-  implicit val ec = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val timeout: FiniteDuration = 1 second
 
   val mockConnector: BankAccountReputationConnector = mock[BankAccountReputationConnector]
@@ -66,8 +66,8 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
-  val injector = app.injector
-  val controller = injector.instanceOf[BarsController]
+  val injector: Injector = app.injector
+  val controller: BarsController = injector.instanceOf[BarsController]
 
   // credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
   val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] =

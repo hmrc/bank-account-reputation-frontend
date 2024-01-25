@@ -19,7 +19,7 @@ package models
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import models.BacsStatus.{M, A}
+import models.BacsStatus.{A, M}
 import models.ChapsStatus.ChapsStatus
 import models.TransactionType.{AU, CR, DR, TransactionType}
 
@@ -135,26 +135,27 @@ case class SortCodeForm(sortCode: String)
 case class InputForm(input: Input)
 
 object Implicits {
+  import scala.language.implicitConversions
 
   implicit val optionStringFormat: Format[Option[String]] = play.api.libs.json.Format.optionWithNull[String]
 
-  implicit val accountFormat: OFormat[Account] = Json.format[Account]
+  implicit val accountFormat: Format[Account] = Json.format[Account]
 
-  implicit val accountDetailsFormat: OFormat[AccountDetails] = Json.format[AccountDetails]
+  implicit val accountDetailsFormat: Format[AccountDetails] = Json.format[AccountDetails]
 
-  implicit val eiscdCountryFormat: OFormat[EiscdCountry] = Json.format[EiscdCountry]
+  implicit val eiscdCountryFormat: Format[EiscdCountry] = Json.format[EiscdCountry]
 
-  implicit val eiscdAddressFormat: OFormat[EiscdAddress] = Json.format[EiscdAddress]
+  implicit val eiscdAddressFormat: Format[EiscdAddress] = Json.format[EiscdAddress]
 
-  implicit val addressFormat: OFormat[Address] = Json.format[Address]
+  implicit val addressFormat: Format[Address] = Json.format[Address]
 
-  implicit val subjectFormat: OFormat[Subject] = Json.format[Subject]
+  implicit val subjectFormat: Format[Subject] = Json.format[Subject]
 
-  implicit val inputFormat: OFormat[Input] = Json.format[Input]
+  implicit val inputFormat: Format[Input] = Json.format[Input]
 
-  implicit val assessmentFormat: OFormat[Assessment] = Json.format[Assessment]
+  implicit val assessmentFormat: Format[Assessment] = Json.format[Assessment]
 
-  implicit val inputFormFormat: OFormat[InputForm] = Json.format[InputForm]
+  implicit val inputFormFormat: Format[InputForm] = Json.format[InputForm]
 
   implicit def bacsOfficeStatus(statusCode: String): BacsStatus.BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
 

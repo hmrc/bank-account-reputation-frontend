@@ -29,7 +29,7 @@ import uk.gov.hmrc.http.{HttpClient, HttpResponse}
 import scala.concurrent.Future
 
 trait TestData {
-  val config = mock[AppConfig]
+  val config: AppConfig = mock[AppConfig]
   when(config.baseUrl).thenReturn("http://localhost")
   when(config.barsMetadataUrl).thenReturn(s"http://localhost/metadata/")
 
@@ -38,14 +38,14 @@ trait TestData {
   val account: AccountDetails = AccountDetails(Account(sortCode, Some("12345678")))
   val hmrcAccount: AccountDetails = AccountDetails(Account(hmrcSortCode, Some("54697788")))
   val assessInput: Input = Input(account.account, Subject(Some("Mr James")))
-  val http = mock[HttpClient]
+  val http: HttpClient = mock[HttpClient]
 
-  val connector = new BankAccountReputationConnector(http, config);
+  val connector = new BankAccountReputationConnector(http, config)
 
-  val noEiscdEntry = None
+  val noEiscdEntry: None.type = None
   val yes = "Yes"
 
-  val assessResult = Assessment(true, yes, yes, yes, yes, yes, None)
+  val assessResult: Assessment = Assessment(accountNumberWithSortCodeIsValid = true, yes, yes, yes, yes, yes, None)
 
   def mockGET[T](data: T)(implicit writes: Writes[T]): Unit = {
     when(http.GET[HttpResponse](any(), any(), any())(any(), any(), any()))
