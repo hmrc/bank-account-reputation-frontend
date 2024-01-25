@@ -41,13 +41,13 @@ object AuditDetail {
       }
   }
 
-  def fromList(prefix: String, list: Seq[String]) = list.zipWithIndex.map(kv => prefix + (kv._2 + 1).toString -> kv._1).toMap
+  def fromList(prefix: String, list: Seq[String]): Map[String, String] = list.zipWithIndex.map(kv => prefix + (kv._2 + 1).toString -> kv._1).toMap
 
-  def fromMap(prefix: String, m: Map[String, String]) = prefixAllKeys(prefix, m)
+  def fromMap(prefix: String, m: Map[String, String]): Map[String, String] = prefixAllKeys(prefix, m)
 
-  def fromMap(prefix: String, m: Option[Map[String, String]]) = prefixAllKeys(prefix, m getOrElse Map())
+  def fromMap(prefix: String, m: Option[Map[String, String]]): Map[String, String] = prefixAllKeys(prefix, m getOrElse Map())
 
-  def prefixAllKeys(prefix: String, m: Map[String, String]): Map[String, String] =
+  private def prefixAllKeys(prefix: String, m: Map[String, String]): Map[String, String] =
     if (prefix.isEmpty) m
     else m.map(kv => prefix + kv._1 -> kv._2)
 }

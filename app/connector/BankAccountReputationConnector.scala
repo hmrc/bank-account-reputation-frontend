@@ -19,7 +19,8 @@ package connector
 import config.AppConfig
 import models.EiscdEntry
 import models.Implicits._
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess, Json, Reads}
+import play.api.http.Status._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
@@ -40,12 +41,12 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
       }
   }
 
-  def assessPersonal(accountName: String, sortCode: String, accountNumber: String, address: Option[BarsAddress], callingClient: String)
+  def assessPersonal(accountName: String, sortCode: String, accountNumber: String, callingClient: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Try[BarsAssessResponse]] = {
 
     val request = BarsPersonalAssessRequest(
       BarsAccount(sortCode, accountNumber),
-      BarsSubject(None, Some(accountName), None, None, None, address)
+      BarsSubject(None, Some(accountName), None, None)
     )
 
     httpClient
@@ -80,28 +81,26 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
 
     val request = BarsBusinessAssessRequest(
       BarsAccount(sortCode = sortCode, accountNumber = accountNumber),
-      Some(BarsBusiness(companyName = companyName, address)))
+      Some(BarsBusiness(companyName = companyName)))
 
     httpClient
       .POST[BarsBusinessAssessRequest, HttpResponse](url = appConfig.barsBusinessAssessUrl, body = request,
         headers = Seq("True-Calling-Client" -> callingClient))
       .map {
-        case httpResponse if httpResponse.status == 200 =>
-          Json.fromJson[BarsAssessSuccessResponse](httpResponse.json) match {
-            case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
-              Failure(new HttpException("Could not parse Json response from BARs", httpResponse.status))
-          }
-        case httpResponse if httpResponse.status == 400 =>
-          Json.fromJson[BarsAssessBadRequestResponse](httpResponse.json) match {
-            case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
-              Failure(new HttpException("Could not parse Json bad request response from BARs", httpResponse.status))
-          }
+        case httpResponse if httpResponse.status == OK =>
+          processResponse[BarsAssessSuccessResponse](httpResponse, "Could not parse Json response from BARs")
+        case httpResponse if httpResponse.status == BAD_REQUEST =>
+          processResponse[BarsAssessBadRequestResponse](httpResponse, "Could not parse Json bad request response from BARs")
         case httpResponse => Failure(new HttpException(httpResponse.body, httpResponse.status))
       }
       .recoverWith {
         case t: Throwable => Future.successful(Failure(t))
       }
   }
+
+  private def processResponse[T: Reads](httpResponse: HttpResponse, failureMsg: String): Try[T] =
+    Json.fromJson[T](httpResponse.json) match {
+      case JsSuccess(result, _) => Success(result)
+      case JsError(_)           => Failure(new HttpException(failureMsg, httpResponse.status))
+    }
 }

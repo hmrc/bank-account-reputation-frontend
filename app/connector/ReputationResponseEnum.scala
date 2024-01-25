@@ -24,10 +24,10 @@ object ReputationResponseEnum extends Enumerable.Implicits {
 
   case object Yes extends WithName("yes") with ReputationResponseEnum
   case object Partial extends WithName("partial") with ReputationResponseEnum
-  case object No extends WithName("no") with ReputationResponseEnum
-  case object Indeterminate extends WithName("indeterminate") with ReputationResponseEnum
-  case object Inapplicable extends WithName("inapplicable") with ReputationResponseEnum
-  case object Error extends WithName("error") with ReputationResponseEnum
+  private case object No extends WithName("no") with ReputationResponseEnum
+  private case object Indeterminate extends WithName("indeterminate") with ReputationResponseEnum
+  private case object Inapplicable extends WithName("inapplicable") with ReputationResponseEnum
+  private case object Error extends WithName("error") with ReputationResponseEnum
 
   val values: Seq[ReputationResponseEnum] = Seq(Yes, No, Partial, Indeterminate, Inapplicable, Error)
 
@@ -45,10 +45,7 @@ trait Enumerable[A] {
 
 object Enumerable {
   def apply[A](entries: (String, A)*): Enumerable[A] =
-    new Enumerable[A] {
-      override def withName(str: String): Option[A] =
-        entries.toMap.get(str)
-    }
+    (str: String) => entries.toMap.get(str)
 
   trait Implicits {
     implicit def reads[A](implicit ev: Enumerable[A]): Reads[A] =

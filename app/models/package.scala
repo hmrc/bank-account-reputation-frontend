@@ -70,7 +70,7 @@ package object models {
     )(InputForm.apply)(InputForm.unapply)
   )
 
-  def mandatoryIfSpecified(fieldName: String, constraint: Constraint[String]): FieldMapping[Option[String]] =
+  private def mandatoryIfSpecified(fieldName: String, constraint: Constraint[String]): FieldMapping[Option[String]] =
     Forms.of[Option[String]](formatter(fieldName, constraint))
 
   def formatter(fieldName: String, constraint: Constraint[String]): Formatter[Option[String]] = new Formatter[Option[String]] {

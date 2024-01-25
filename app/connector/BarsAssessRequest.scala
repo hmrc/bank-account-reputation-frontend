@@ -16,27 +16,24 @@
 
 package connector
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
 case class BarsPersonalAssessRequest(account: BarsAccount, subject: BarsSubject)
 
 object BarsPersonalAssessRequest {
-  implicit val format: OFormat[BarsPersonalAssessRequest] = Json.format[BarsPersonalAssessRequest]
+  implicit val format: Format[BarsPersonalAssessRequest] = Json.format[BarsPersonalAssessRequest]
 }
 
 case class BarsBusinessAssessRequest(account: BarsAccount, business: Option[BarsBusiness])
 
 object BarsBusinessAssessRequest {
-  implicit val format: OFormat[BarsBusinessAssessRequest] = Json.format[BarsBusinessAssessRequest]
+  implicit val format: Format[BarsBusinessAssessRequest] = Json.format[BarsBusinessAssessRequest]
 }
 
-case class BarsBusiness(
-                         companyName: String, // Must be between 1 and 70 characters long
-                         address: Option[BarsAddress]
-                       )
+case class BarsBusiness(companyName: String /* Must be between 1 and 70 characters long */)
 
 object BarsBusiness {
-  implicit val format: OFormat[BarsBusiness] = Json.format[BarsBusiness]
+  implicit val format: Format[BarsBusiness] = Json.format[BarsBusiness]
 }
 
 case class BarsAccount(
@@ -45,7 +42,7 @@ case class BarsAccount(
                       )
 
 object BarsAccount {
-  implicit val format: OFormat[BarsAccount] = Json.format[BarsAccount]
+  implicit val format: Format[BarsAccount] = Json.format[BarsAccount]
 }
 
 case class BarsAddress(lines: List[String], // One to four lines; cumulative length must be between 1 and 140 characters.
@@ -53,7 +50,7 @@ case class BarsAddress(lines: List[String], // One to four lines; cumulative len
                        postcode: Option[String]) // Must be between 5 and 8 characters long, all uppercase. The internal space character can be omitted.
 
 object BarsAddress {
-  implicit val format: OFormat[BarsAddress] = Json.format[BarsAddress]
+  implicit val format: Format[BarsAddress] = Json.format[BarsAddress]
 
   def apply(lines: List[String], town: Option[String], postcode: Option[String]): BarsAddress = {
     val validLines = if (lines.forall(_.isEmpty)) List(" ") else lines
@@ -76,9 +73,7 @@ case class BarsSubject(
                         title: Option[String], // e.g. "Mr" etc; must >= 2 character and <= 35 characters long
                         name: Option[String], // Must be between 1 and 70 characters long
                         firstName: Option[String], // Must be between 1 and 35 characters long
-                        lastName: Option[String], // Must be between 1 and 35 characters long
-                        dob: Option[String], // date of birth: ISO-8601 YYYY-MM-DD
-                        address: Option[BarsAddress]
+                        lastName: Option[String] // Must be between 1 and 35 characters long
                       ) {
   require(
     (name.isEmpty && firstName.isDefined && lastName.isDefined) ||
@@ -87,6 +82,5 @@ case class BarsSubject(
 }
 
 object BarsSubject {
-  implicit val format: OFormat[BarsSubject] = Json.format[BarsSubject]
+  implicit val format: Format[BarsSubject] = Json.format[BarsSubject]
 }
-

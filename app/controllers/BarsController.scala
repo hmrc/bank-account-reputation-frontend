@@ -19,12 +19,12 @@ package controllers
 import config.AppConfig
 import connector.{BankAccountReputationConnector, BarsAssessErrorResponse}
 import models._
-import play.api.Logger
+import play.api.{Configuration, Environment, Logger}
 import play.api.i18n._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Retrieval, ~}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -51,7 +51,7 @@ class BarsController @Inject()(
 
   private val logger = Logger(this.getClass)
 
-  val retrievalsToAudit = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
+  val retrievalsToAudit: Retrieval[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
 
   case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
                                affinityGroup: Option[AffinityGroup], internalId: Option[String],
@@ -94,13 +94,13 @@ class BarsController @Inject()(
   }
 
   def getVerify: Action[AnyContent] = Action.async {
-    implicit req => Future.successful(Ok(verifyView(inputForm, false)))
+    implicit req => Future.successful(Ok(verifyView(inputForm, secure = false)))
   }
 
   def getVerifySecure: Action[AnyContent] = Action.async {
     implicit req =>
       strideAuth { r =>
-        Future.successful(Ok(verifyView(inputForm, true)))
+        Future.successful(Ok(verifyView(inputForm, secure = true)))
       }
   }
 
@@ -111,11 +111,11 @@ class BarsController @Inject()(
   def postVerifySecure: Action[AnyContent] = Action.async {
     implicit request =>
       strideAuth { retrievals =>
-        handlePost(true, retrievals)
+        handlePost(secure = true, retrievals)
       }
   }
 
-  def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
+  private def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]): Future[Result] = {
     inputForm.bindFromRequest.fold(
       formWithErrors => {
         Future.successful(BadRequest(verifyView(formWithErrors, secure)))
@@ -132,7 +132,7 @@ class BarsController @Inject()(
               case Some("personal") => connector.assessPersonal(
                 input.input.subject.name.getOrElse("N/A"),
                 input.input.account.sortCode,
-                input.input.account.accountNumber.get, None,
+                input.input.account.accountNumber.get,
                 "bank-account-reputation-frontend").map(Some(_))
               case _ => connector.assessBusiness(
                 input.input.subject.name.getOrElse("N/A"),
@@ -175,6 +175,6 @@ class BarsController @Inject()(
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled
 
-  val config = appConfig.config
-  val env = appConfig.env
+  val config: Configuration = appConfig.config
+  val env: Environment = appConfig.env
 }

@@ -61,7 +61,7 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
 
   when(mockConnector.metadata(any())(any(), any())).thenReturn(Future.successful(eiscdEntry))
   when(mockConnector.assessBusiness(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
-  when(mockConnector.assessPersonal(any(), any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
+  when(mockConnector.assessPersonal(any(), any(), any(), any())(any(), any())).thenReturn(Future.successful(barsAssessResponse))
 
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
@@ -141,7 +141,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
         verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any())(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any())(any(), any())
 
         val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
         verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
@@ -254,7 +254,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-        verify(mockConnector, never).assessPersonal(any(), any(), any(), any(), any())(any(), any())
+        verify(mockConnector, never).assessPersonal(any(), any(), any(), any())(any(), any())
         verify(mockConnector, times(1)).assessBusiness(
           meq("ACME inc"),
           meq("123456"),
@@ -375,7 +375,6 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           meq("Mr Peter Smith"),
           meq("123456"),
           meq("12345678"),
-          meq(None),
           meq("bank-account-reputation-frontend"))(any(), any())
 
         val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
@@ -504,7 +503,6 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
         meq("Mr Peter Smith"),
         meq("123456"),
         meq("12345678"),
-        meq(None),
         meq("bank-account-reputation-frontend"))(any(), any())
 
       val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])

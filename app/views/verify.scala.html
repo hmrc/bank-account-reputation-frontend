@@ -75,10 +75,10 @@
             items = Seq(
                 RadioItem(content = HtmlContent(messages("bars.label.accountType.business")),
                     value = Some("business"),
-                    checked = inputForm("input.account.accountType").value == Some("business")),
+                    checked = inputForm("input.account.accountType").value.contains("business")),
                 RadioItem(content = HtmlContent(messages("bars.label.accountType.personal")),
                     value = Some("personal"),
-                    checked = inputForm("input.account.accountType").value == Some("personal"))
+                    checked = inputForm("input.account.accountType").value.contains("personal"))
             ),
             errorMessage = inputForm("input.account.accountType").errors.headOption.map(fe => ErrorMessage(content = HtmlContent(messages(fe.message))))
         ))
