@@ -31,6 +31,9 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
   val barsMetadataUrl = s"$baseUrl/metadata/"
   val isNonProduction = config.getOptional[Boolean]("microservice.non-production").getOrElse(true)
 
+  val authGuideUrl = config.get[String]("authentication-guide-url")
+  val AUTH_GUIDE_URL_PLACEHOLDER = "__AUTH_GUIDE_URL__"
+
   val footerLinkItems: Seq[String] = config.getOptional[Seq[String]]("footerLinkItems").getOrElse(Seq())
 
   lazy val analyticsToken: String = config.get[String]("google-analytics.token")

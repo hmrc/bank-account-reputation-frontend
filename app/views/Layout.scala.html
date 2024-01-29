@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @import config.AppConfig
 
-@this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
+@this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, govukNotificationBanner: GovukNotificationBanner, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
 
 @(pageTitle: Option[String] = None,
         form: Option[Form[_]] = None,
@@ -41,11 +41,11 @@
             tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
             content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
       }
-//      if(!secure) {
-//         govukPhaseBanner(PhaseBanner(
-//            tag = Some(Tag(content = HtmlContent(messages("notSecureBanner.tag")), classes = "warning-tag")),
-//            content = HtmlContent(s"<marquee>${messages("notSecureBanner.content")}</marquee>")))
-//      }
+      if(!secure) {
+         govukNotificationBanner(NotificationBanner(
+            content = HtmlContent(s"${messages("notSecureBanner.content").replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)}")
+         ))
+      }
     }
 
     @govukBreadcrumbs(Breadcrumbs(

@@ -5,7 +5,7 @@ nonProductionBanner.tag = NON-PRODUCTION
 nonProductionBanner.content = This is a non-Production environment, DO NOT use it to check real bank account information!
 
 notSecureBanner.tag = WARNING
-notSecureBanner.content = This BARS front-end tool will soon require a Stride login to use. Ask your line manager to grant you the "BARS Front End Tool User" SRS role to access the logged-in version of this page.
+notSecureBanner.content = We have improved security on this tool by adding authentication. Soon you will require to login using your stride credentials. Ask your line manager to grant you the SRS role. Please follow our guidance for next steps <a href="__AUTH_GUIDE_URL__">here</a>.
 
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options
