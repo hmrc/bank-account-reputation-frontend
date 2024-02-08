@@ -30,36 +30,43 @@
 )(contentBlock: Html)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @defaultBeforeContentBlock = {
-    @{
-      if(messages.isDefinedAt("phaseBanner.tag")) {
+@{
+    if(messages.isDefinedAt("phaseBanner.tag")) {
         govukPhaseBanner(PhaseBanner(
             tag = Some(Tag(content = HtmlContent(messages("phaseBanner.tag")))),
             content = HtmlContent(messages("phaseBanner.content"))))
-      }
-      if(appConfig.isNonProduction) {
+    }
+    if(appConfig.isNonProduction) {
         govukPhaseBanner(PhaseBanner(
             tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
             content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
-      }
-      if(!secure) {
-         govukNotificationBanner(NotificationBanner(
-            content = HtmlContent(s"${messages("notSecureBanner.content").replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)}")
-         ))
-      }
     }
+    if(!secure) {
+        govukNotificationBanner(NotificationBanner(
+            content = HtmlContent(
+                    s"${
+                        messages("notSecureBanner.content")
+                        .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
+                        .replace(appConfig.SECURE_URL_PLACEHOLDER, controllers.routes.BarsController.getVerifySecure.url)
+                    }")
+        ))
+    }
+}
 
-    @govukBreadcrumbs(Breadcrumbs(
-        items = Seq(
-            BreadcrumbsItem(
-                content = Text("Home"),
-                href = Some(s"${if (secure) controllers.routes.BarsController.getVerifySecure else controllers.routes.BarsController.getVerify}")
-            )
-        ) ++ breadcrumbContribution
-    ))
+@govukBreadcrumbs(Breadcrumbs(
+    items = Seq(
+        BreadcrumbsItem(
+            content = Text("Home"),
+            href = Some(s"${if(secure) controllers.routes.BarsController.getVerifySecure else controllers.routes.BarsController.getVerify}")
+        )
+    ) ++ breadcrumbContribution
+))
 }
 
 @thePageTitle = {
-    @{if(form.isDefined && form.get.hasErrors) pageTitle.map(t => s"${messages("error.pageTitle")}: $t").getOrElse(pageTitle) else pageTitle}
+@{
+    if(form.isDefined && form.get.hasErrors) pageTitle.map(t => s"${messages("error.pageTitle")}: $t").getOrElse(pageTitle) else pageTitle
+}
 }
 
 @govukLayout(

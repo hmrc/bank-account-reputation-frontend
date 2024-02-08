@@ -33,6 +33,7 @@ class AppConfig @Inject()(val config: Configuration, servicesConfig: ServicesCon
 
   val authGuideUrl = config.get[String]("authentication-guide-url")
   val AUTH_GUIDE_URL_PLACEHOLDER = "__AUTH_GUIDE_URL__"
+  val SECURE_URL_PLACEHOLDER = "__SECURE_URL__"
 
   val footerLinkItems: Seq[String] = config.getOptional[Seq[String]]("footerLinkItems").getOrElse(Seq())
 
