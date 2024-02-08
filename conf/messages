@@ -5,7 +5,7 @@ nonProductionBanner.tag = NON-PRODUCTION
 nonProductionBanner.content = This is a non-Production environment, DO NOT use it to check real bank account information!
 
 notSecureBanner.tag = WARNING
-notSecureBanner.content = We have improved security on this tool by adding authentication. Soon you will require to login using your stride credentials. Ask your line manager to grant you the SRS role. Please follow our guidance for next steps <a href="__AUTH_GUIDE_URL__">here</a>.
+notSecureBanner.content = We've added authentication to this tool to improve security. The tool is moving to a <a href="https://admin.qa.tax.service.gov.uk/bank-account-reputation-frontend/secure/">new location</a>. To access the new location, ask your line manager to grant you the SRS role “BARS Front End Tool User”. Follow <a href="__AUTH_GUIDE_URL__">these</a> steps to get the role.
 
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options
