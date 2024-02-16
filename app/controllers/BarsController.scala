@@ -24,7 +24,7 @@ import play.api.i18n._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, ~}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -48,13 +48,17 @@ class BarsController @Inject()(
 
   private val logger = Logger(this.getClass)
 
-  val retrievalsToAudit = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
+  val retrievalsToAudit =
+    credentials and allEnrolments and affinityGroup and internalId and externalId and
+      credentialStrength and agentCode and profile and groupProfile and emailVerified and
+      credentialRole and name and clientId
 
   case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
                                affinityGroup: Option[AffinityGroup], internalId: Option[String],
                                externalId: Option[String], credentialStrength: Option[String],
                                agentCode: Option[String], profile: Option[String], groupProfile: Option[String],
-                               emailVerified: Option[Boolean], credentialRole: Option[CredentialRole])
+                               emailVerified: Option[Boolean], credentialRole: Option[CredentialRole],
+                               name: Option[Name], clientId: Option[String])
 
   def accessibilityStatement(): Action[AnyContent] = Action.async {
     Future.successful(Ok(accessibilityView()))
@@ -63,8 +67,8 @@ class BarsController @Inject()(
   private def strideAuth(f: Option[RetrievalsToAudit] => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {
       authorised(Enrolment(AppConfig.srsRoleName)).retrieve(retrievalsToAudit) {
-        case credentials ~ allEnrolments ~ affinityGroup ~ internalId ~ externalId ~ credentialStrength ~ agentCode ~ profile ~ groupProfile ~ emailVerified ~ credentialRole =>
-          f(Some(RetrievalsToAudit(credentials, allEnrolments, affinityGroup, internalId, externalId, credentialStrength, agentCode, profile, groupProfile, emailVerified, credentialRole)))
+        case credentials ~ allEnrolments ~ affinityGroup ~ internalId ~ externalId ~ credentialStrength ~ agentCode ~ profile ~ groupProfile ~ emailVerified ~ credentialRole ~ name ~ clientId =>
+          f(Some(RetrievalsToAudit(credentials, allEnrolments, affinityGroup, internalId, externalId, credentialStrength, agentCode, profile, groupProfile, emailVerified, credentialRole, name, clientId)))
       } recover {
         case _: NoActiveSession =>
           toStrideLogin {

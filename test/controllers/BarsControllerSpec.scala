@@ -37,7 +37,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
-import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
+import uk.gov.hmrc.auth.core.retrieve.{Credentials, Name, ~}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -70,8 +70,8 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   val controller = injector.instanceOf[BarsController]
 
   // credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
-  val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole]] =
-    Future.successful(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(
+  val retrievalResult: Future[Option[Credentials] ~ Enrolments ~ Option[AffinityGroup] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[String] ~ Option[Boolean] ~ Option[CredentialRole] ~ Option[Name] ~ Option[String]] =
+    Future.successful(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(new~(
       Some(Credentials("providerId", "PrivilegedApplication")),
       Enrolments(Set(Enrolment(AppConfig.srsRoleName)))),
       Some(Individual)),
@@ -82,7 +82,9 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
       Some("profile")),
       Some("groupProfile")),
       Some(true)),
-      Some(User)))
+      Some(User)),
+      Some(Name(Some("billy-bob"), None))),
+      Some("clientId")))
 
   when(mockAuthConnector.authorise(meq(Enrolment(AppConfig.srsRoleName)), meq(controller.retrievalsToAudit))(any(), any())).thenReturn(retrievalResult)
 
@@ -166,6 +168,8 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "Retrievals.groupProfile" -> "groupProfile",
           "Retrievals.emailVerified" -> "true",
           "Retrievals.credentialRole" -> "User",
+          "Retrievals.name.name" -> "billy-bob",
+          "Retrievals.clientId" -> "clientId",
           "Response.metadata.bankName" -> "HBSC",
           "Response.metadata.bankCode" -> "HSBC",
           "Response.metadata.bicBankCode" -> "HBUK",
@@ -285,6 +289,8 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "Retrievals.groupProfile" -> "groupProfile",
           "Retrievals.emailVerified" -> "true",
           "Retrievals.credentialRole" -> "User",
+          "Retrievals.name.name" -> "billy-bob",
+          "Retrievals.clientId" -> "clientId",
           "Response.metadata.bankName" -> "HBSC",
           "Response.metadata.bankCode" -> "HSBC",
           "Response.metadata.bicBankCode" -> "HBUK",
@@ -401,6 +407,8 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "Retrievals.groupProfile" -> "groupProfile",
           "Retrievals.emailVerified" -> "true",
           "Retrievals.credentialRole" -> "User",
+          "Retrievals.name.name" -> "billy-bob",
+          "Retrievals.clientId" -> "clientId",
           "Response.metadata.bankName" -> "HBSC",
           "Response.metadata.bankCode" -> "HSBC",
           "Response.metadata.bicBankCode" -> "HBUK",
