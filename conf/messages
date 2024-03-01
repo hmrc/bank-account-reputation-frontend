@@ -18,6 +18,7 @@ bars.notAuthorisedContent2=Ask your line manager to grant you the "BARS Front En
 bars.label.back=Back
 bars.label.iban=IBAN
 bars.label.accountNumber=Account number
+bars.label.rollNumber=Roll number
 bars.label.optional=Optional
 bars.label.accountNumberInvalid=Account number must be 8 digits
 bars.label.sortCode=Sort code
@@ -41,6 +42,7 @@ bars.verifyResults.header=Bank account details
 
 bars.verifyResults.iban=IBAN
 bars.verifyResults.accountNumber=Account number
+bars.verifyResults.rollNumber=Roll number
 bars.verifyResults.sortCode=Sort code
 bars.verifyResults.accountNumberIsWellFormatted=Account number is well formatted
 bars.verifyResults.nonStandardAccountDetailsRequiredForBacs=Non-standard account details required for BACS

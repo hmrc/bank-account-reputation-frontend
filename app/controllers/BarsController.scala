@@ -129,12 +129,14 @@ class BarsController @Inject()(
               case Some("personal") => connector.assessPersonal(
                 input.input.subject.name.getOrElse("N/A"),
                 input.input.account.sortCode,
-                input.input.account.accountNumber.get, None,
+                input.input.account.accountNumber.get,
+                input.input.account.rollNumber, None,
                 "bank-account-reputation-frontend").map(Some(_))
               case _ => connector.assessBusiness(
                 input.input.subject.name.getOrElse("N/A"),
                 input.input.account.sortCode,
-                input.input.account.accountNumber.get, None,
+                input.input.account.accountNumber.get,
+                input.input.account.rollNumber, None,
                 "bank-account-reputation-frontend").map(Some(_))
             }
           }
@@ -152,8 +154,8 @@ class BarsController @Inject()(
               "SortCode" -> input.input.account.sortCode,
               "AccountNumber" -> input.input.account.accountNumber.getOrElse(""),
               "AccountName" -> input.input.subject.name.getOrElse("N/A"),
-              "AccountType" -> input.input.account.accountType.getOrElse("business")
-            ) ++ AuditDetail.from("Retrievals", retrievals)
+              "AccountType" -> input.input.account.accountType.getOrElse("business")) ++ input.input.account.rollNumber.map(rn => Map("RollNumber" -> rn)).getOrElse(Map())
+             ++ AuditDetail.from("Retrievals", retrievals)
               ++ AuditDetail.from("Response.metadata", metadata)
               ++ AuditDetail.from("Response.assess", assess))
 
