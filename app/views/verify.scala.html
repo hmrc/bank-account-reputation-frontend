@@ -19,9 +19,9 @@
 
 @this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary, radios: GovukRadios)
 
-@(inputForm: Form[InputForm], secure: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @mainTemplate(pageTitle = Option(messages("bars.verify.title")),
-    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${if (secure) routes.BarsController.getVerifySecure else routes.BarsController.getVerify}"))), secure = secure) {
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}")))) {
     <h1 class="govuk-heading-l">@messages("bars.verify.header")</h1>
 
     @if(inputForm.hasErrors) {
@@ -32,7 +32,7 @@
             }))
     }
 
-    @form(action = if (secure) routes.BarsController.postVerifySecure else routes.BarsController.postVerify) {
+    @form(action = routes.BarsController.postVerifySecure) {
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
             value = inputForm("input.account.sortCode").value,
             label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
