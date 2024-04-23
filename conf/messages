@@ -5,7 +5,8 @@ nonProductionBanner.tag = NON-PRODUCTION
 nonProductionBanner.content = This is a non-Production environment, DO NOT use it to check real bank account information!
 
 notSecureBanner.tag = WARNING
-notSecureBanner.content = This tool will be deactivated on Friday 3rd May. The tool has moved to a <a href="__SECURE_URL__">new location</a> to improve security. To access the new location, ask your line manager to grant you the SRS role "BARS Front End Tool User". Follow <a href="__AUTH_GUIDE_URL__">these</a> steps to get the role.
+notSecureBanner.preContent = This tool will be deactivated on Friday 3rd May.
+notSecureBanner.content = The tool has moved to a <a href="__SECURE_URL__">new location</a> to improve security. To continue to use the tool at the new location, ask your line manager to grant you the SRS role "BARS Front End Tool User". Follow <a href="__AUTH_GUIDE_URL__">these steps</a> to get the role.
 
 bars.title=Welcome To Bank Account Reputation Service
 bars.header=Please select from the following options

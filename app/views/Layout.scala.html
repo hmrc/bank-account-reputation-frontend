@@ -44,11 +44,13 @@
     if(!secure) {
         govukNotificationBanner(NotificationBanner(
             content = HtmlContent(
-                    s"${
+                    s"""
+                    <h3 class="govuk-heading-s">${messages("notSecureBanner.preContent")}</h3>
+                        ${
                         messages("notSecureBanner.content")
                         .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
                         .replace(appConfig.SECURE_URL_PLACEHOLDER, controllers.routes.BarsController.getVerifySecure.url)
-                    }")
+                    }""")
         ))
     }
 }
