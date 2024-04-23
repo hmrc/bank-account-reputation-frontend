@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @import config.AppConfig
 
-@this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, govukNotificationBanner: GovukNotificationBanner, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
+@this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, govukNotificationBanner: GovukNotificationBanner, govukWarningText: GovukWarningText, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
 
 @(pageTitle: Option[String] = None,
         form: Option[Form[_]] = None,
@@ -45,7 +45,7 @@
         govukNotificationBanner(NotificationBanner(
             content = HtmlContent(
                     s"""
-                    <h3 class="govuk-heading-s">${messages("notSecureBanner.preContent")}</h3>
+                        ${govukWarningText(WarningText(content = Text(messages("notSecureBanner.preContent"))))}
                         ${
                         messages("notSecureBanner.content")
                         .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
