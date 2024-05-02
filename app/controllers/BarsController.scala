@@ -82,40 +82,28 @@ class BarsController @Inject()(
     }
   }
 
-  def redirectToVerify: Action[AnyContent] = Action {
-    Redirect(controllers.routes.BarsController.getVerify)
-  }
-
   def redirectToVerifySecure: Action[AnyContent] = Action {
     Redirect(controllers.routes.BarsController.getVerifySecure)
-  }
-
-  def getVerify: Action[AnyContent] = Action.async {
-    implicit req => Future.successful(Ok(verifyView(inputForm, false)))
   }
 
   def getVerifySecure: Action[AnyContent] = Action.async {
     implicit req =>
       strideAuth { r =>
-        Future.successful(Ok(verifyView(inputForm, true)))
+        Future.successful(Ok(verifyView(inputForm)))
       }
-  }
-
-  def postVerify: Action[AnyContent] = Action.async {
-    implicit request => handlePost()
   }
 
   def postVerifySecure: Action[AnyContent] = Action.async {
     implicit request =>
       strideAuth { retrievals =>
-        handlePost(true, retrievals)
+        handlePost(retrievals)
       }
   }
 
-  def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
+  private def handlePost(retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
     inputForm.bindFromRequest.fold(
       formWithErrors => {
-        Future.successful(BadRequest(verifyView(formWithErrors, secure)))
+        Future.successful(BadRequest(verifyView(formWithErrors)))
       },
       input => {
         val pid = retrievals.flatMap(r => r.credentials.collect {
@@ -162,10 +150,10 @@ class BarsController @Inject()(
           auditConnector.sendEvent(dataEvent)
 
           (metadata, assess) match {
-            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound"), secure))
-            case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None, secure))
-            case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse()), secure))
-            case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a), secure))
+            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
+            case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
+            case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
+            case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
           }
         }
       }
