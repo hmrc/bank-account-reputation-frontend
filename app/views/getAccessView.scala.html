@@ -20,16 +20,20 @@
 @this(layout: Layout, govukNotificationBanner: GovukNotificationBanner, govukWarningText: GovukWarningText)
 
 @()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-@layout(pageTitle = Some(messages("bars.notAuthorisedTitle")), breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Error"), href = Some(s"#"))), secure = true) {
- @govukNotificationBanner(NotificationBanner(
-  content = HtmlContent(
-   s"""
-   ${govukWarningText(WarningText(content = Text(messages("notSecureBanner.preContent"))))}
-   ${
-   messages("notSecureBanner.content")
-   .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
-   .replace(appConfig.SECURE_URL_PLACEHOLDER, controllers.routes.BarsController.getVerifySecure.url)
-   }"""
-  )
- ))
-}
+    @layout(
+        pageTitle = Some(messages("bars.notAuthorisedTitle")),
+        breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Error"), href = Some(s"#"))), secure = true) {
+        @govukNotificationBanner(
+            NotificationBanner(
+                content = HtmlContent(
+                    s"""
+                        ${govukWarningText(WarningText(content = Text(messages("notSecureBanner.preContent"))))}
+                        ${
+                            messages("notSecureBanner.content")
+                            .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
+                            .replace(appConfig.SECURE_URL_PLACEHOLDER, controllers.routes.BarsController.redirectToVerifySecure.url)
+                        }
+                    """
+                )
+            ))
+    }
