@@ -22,6 +22,7 @@ import config.AppConfig
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
+import org.jsoup.Jsoup
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
@@ -489,60 +490,17 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
   }
 
   "BarsController with Stride Auth Disabled" should {
-    "audit correctly when stride auth is disabled" in {
-      clearInvocations(mockConnector)
-      clearInvocations(mockAuditConnector)
+    import scala.jdk.CollectionConverters._
 
-      val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody(
-        "input.account.sortCode" -> "123456",
-        "input.account.accountNumber" -> "12345678",
-        "input.account.rollNumber" -> "AB/123",
-        "input.subject.name" -> "Mr Peter Smith",
-        "input.account.accountType" -> "personal").withCSRFToken
+    "display only an information page" in {
+      val request = FakeRequest().withMethod("GET")
 
-      val result = controller.postVerify().apply(request)
+      val result = controller.getAccess().apply(request)
       status(result) shouldBe OK
 
-      verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())
-      verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
-      verify(mockConnector, times(1)).assessPersonal(
-        meq("Mr Peter Smith"),
-        meq("123456"),
-        meq("12345678"),
-        meq(Some("AB/123")),
-        meq(None),
-        meq("bank-account-reputation-frontend"))(any(), any())
-
-      val auditCaptor: ArgumentCaptor[DataEvent] = ArgumentCaptor.forClass(classOf[DataEvent])
-      verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
-
-      val dataEvent = auditCaptor.getValue
-      dataEvent.detail should contain only(
-        "PID" -> "",
-        "DeviceId" -> "",
-        "SortCode" -> "123456",
-        "AccountNumber" -> "12345678",
-        "RollNumber" -> "AB/123",
-        "AccountName" -> "Mr Peter Smith",
-        "AccountType" -> "personal",
-        "Response.metadata.bankName" -> "HBSC",
-        "Response.metadata.bankCode" -> "HSBC",
-        "Response.metadata.bicBankCode" -> "HBUK",
-        "Response.metadata.branchName" -> "London",
-        "Response.metadata.address.lines.1" -> "line1",
-        "Response.metadata.telephone" -> "12121",
-        "Response.metadata.bacsOfficeStatus.status" -> "BACS member; accepts BACS payments",
-        "Response.metadata.chapsSterlingStatus.status" -> "Indirect",
-        "Response.assess.accountNumberIsWellFormatted" -> "yes",
-        "Response.assess.accountExists" -> "yes",
-        "Response.assess.nameMatches" -> "partial",
-        "Response.assess.accountName" -> "partial-name",
-        "Response.assess.sortCodeSupportsDirectDebit" -> "yes",
-        "Response.assess.sortCodeIsPresentOnEISCD" -> "yes",
-        "Response.assess.sortCodeSupportsDirectCredit" -> "yes",
-        "Response.assess.sortCodeBankName" -> "HSBC",
-        "Response.assess.iban" -> "iban"
-      )
+      val content = contentAsString(result)
+      val contentHtml = Jsoup.parse(content)
+      contentHtml.forms().asScala shouldBe empty
     }
   }
 }

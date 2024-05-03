@@ -5,9 +5,7 @@ GET        /assets/*file             controllers.Assets.versioned(path = "/publi
 
 #GET         /accessibility-statement      controllers.BarsController.accessibilityStatement
 #
-GET         /                        controllers.BarsController.redirectToVerify
-GET         /verify                  controllers.BarsController.getVerify
-POST        /verify                  controllers.BarsController.postVerify
+GET         /                        controllers.BarsController.getAccess
 
 GET         /secure/                 controllers.BarsController.redirectToVerifySecure
 GET         /secure/verify           controllers.BarsController.getVerifySecure

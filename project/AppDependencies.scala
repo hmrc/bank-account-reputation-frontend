@@ -10,6 +10,6 @@ object AppDependencies {
 
   val test = Seq(
     "uk.gov.hmrc" %% "bootstrap-test-play-30" % bootstrapPlayVersion % Test,
-    "org.jsoup" % "jsoup" % "1.15.4" % Test
+    "org.jsoup" % "jsoup" % "1.17.2" % Test
   )
 }

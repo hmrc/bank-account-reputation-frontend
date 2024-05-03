@@ -21,7 +21,7 @@
 
 @(inputForm: Form[InputForm], secure: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @mainTemplate(pageTitle = Option(messages("bars.verify.title")),
-    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${if (secure) routes.BarsController.getVerifySecure else routes.BarsController.getVerify}"))), secure = secure) {
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}"))), secure = secure) {
     <h1 class="govuk-heading-l">@messages("bars.verify.header")</h1>
 
     @if(inputForm.hasErrors) {
@@ -32,7 +32,7 @@
             }))
     }
 
-    @form(action = if (secure) routes.BarsController.postVerifySecure else routes.BarsController.postVerify) {
+    @form(action = routes.BarsController.postVerifySecure) {
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
             value = inputForm("input.account.sortCode").value,
             label = Label(content = HtmlContent(messages("bars.label.sortCode"))),
@@ -74,7 +74,7 @@
             name = inputForm("input.subject.name").name,
             id = inputForm("input.subject.name").name,
             autocomplete = Some("off"),
-            errorMessage = inputForm("input.subject.name").error.map(fe ⇒
+            errorMessage = inputForm("input.subject.name").error.map(fe =>
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         @radios(Radios(
