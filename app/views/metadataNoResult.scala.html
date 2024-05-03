@@ -23,7 +23,7 @@
 
 @mainTemplate(pageTitle = Option(messages("bars.metadataResults.title")),
     breadcrumbContribution = Seq(
-        BreadcrumbsItem(content = Text("Verify"), href = Some(s"${controllers.routes.BarsController.getVerifySecure}")),
+        BreadcrumbsItem(content = Text("Verify"), href = Some(s"${controllers.routes.BarsController.getVerify}")),
         BreadcrumbsItem(content = Text("Result"), href = Some(s"#"))
     )) {
     <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.metadataResults.header")</h1>
