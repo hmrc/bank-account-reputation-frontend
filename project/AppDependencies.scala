@@ -1,7 +1,7 @@
 import sbt.*
 
 object AppDependencies {
-  private val bootstrapPlayVersion = "8.5.0"
+  private val bootstrapPlayVersion = "8.4.0"
 
   val compile = Seq(
     "uk.gov.hmrc" %% "bootstrap-frontend-play-30" % bootstrapPlayVersion,

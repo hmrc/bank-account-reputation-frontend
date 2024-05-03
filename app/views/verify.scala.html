@@ -19,9 +19,9 @@
 
 @this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, input: GovukInput, button: GovukButton, errorSummary: GovukErrorSummary, radios: GovukRadios)
 
-@(inputForm: Form[InputForm])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(inputForm: Form[InputForm], secure: Boolean)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @mainTemplate(pageTitle = Option(messages("bars.verify.title")),
-    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}")))) {
+    breadcrumbContribution = Seq(BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}"))), secure = secure) {
     <h1 class="govuk-heading-l">@messages("bars.verify.header")</h1>
 
     @if(inputForm.hasErrors) {
@@ -74,7 +74,7 @@
             name = inputForm("input.subject.name").name,
             id = inputForm("input.subject.name").name,
             autocomplete = Some("off"),
-            errorMessage = inputForm("input.subject.name").error.map(fe ⇒
+            errorMessage = inputForm("input.subject.name").error.map(fe =>
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         @radios(Radios(

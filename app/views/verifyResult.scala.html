@@ -23,7 +23,7 @@
 
 @this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, summary: GovukSummaryList)
 
-@(account: Account, metadata: EiscdEntry, assess: Option[BarsAssessResponse])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(account: Account, metadata: EiscdEntry, assess: Option[BarsAssessResponse], secure: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @addressLines(address: EiscdAddress) = {
     <ul>
         @for(line <- address.lines) {
@@ -160,7 +160,7 @@
     breadcrumbContribution = Seq(
         BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}")),
         BreadcrumbsItem(content = Text("Result"), href = Some(s"#"))
-    )) {
+    ), secure = secure) {
     <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.verifyResults.header")</h1>
 
     @if(assess.isEmpty) {

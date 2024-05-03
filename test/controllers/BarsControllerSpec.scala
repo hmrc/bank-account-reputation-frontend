@@ -22,6 +22,7 @@ import config.AppConfig
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
+import org.jsoup.Jsoup
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito._
@@ -486,5 +487,20 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
       .overrides(bind[AuthConnector].toInstance(mockAuthConnector))
       .configure("microservice.services.features.stride-auth-enabled" -> false)
       .build()
+  }
+
+  "BarsController with Stride Auth Disabled" should {
+    import scala.jdk.CollectionConverters._
+
+    "display only an information page" in {
+      val request = FakeRequest().withMethod("GET")
+
+      val result = controller.getAccess().apply(request)
+      status(result) shouldBe OK
+
+      val content = contentAsString(result)
+      val contentHtml = Jsoup.parse(content)
+      contentHtml.forms().asScala shouldBe empty
+    }
   }
 }

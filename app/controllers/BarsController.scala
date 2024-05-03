@@ -19,7 +19,7 @@ package controllers
 import config.AppConfig
 import connector.{BankAccountReputationConnector, BarsAssessErrorResponse}
 import models._
-import play.api.Logger
+import play.api.{Configuration, Environment, Logger}
 import play.api.i18n._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
@@ -40,6 +40,7 @@ class BarsController @Inject()(
                                 mcc: MessagesControllerComponents,
                                 auditConnector: AuditConnector,
                                 accessibilityView: views.html.accessibility,
+                                getAccessView: views.html.getAccessView,
                                 verifyView: views.html.verify,
                                 verifyResultView: views.html.verifyResult,
                                 notAuthorised: views.html.NotAuthorised
@@ -82,6 +83,11 @@ class BarsController @Inject()(
     }
   }
 
+  def getAccess: Action[AnyContent] = Action{
+    implicit req =>
+    Ok(getAccessView())
+  }
+
   def redirectToVerifySecure: Action[AnyContent] = Action {
     Redirect(controllers.routes.BarsController.getVerifySecure)
   }
@@ -89,21 +95,21 @@ class BarsController @Inject()(
   def getVerifySecure: Action[AnyContent] = Action.async {
     implicit req =>
       strideAuth { r =>
-        Future.successful(Ok(verifyView(inputForm)))
+        Future.successful(Ok(verifyView(inputForm, secure = true)))
       }
   }
 
   def postVerifySecure: Action[AnyContent] = Action.async {
     implicit request =>
       strideAuth { retrievals =>
-        handlePost(retrievals)
+        handlePost(secure = true, retrievals)
       }
   }
 
-  private def handlePost(retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
+  private def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
     inputForm.bindFromRequest.fold(
       formWithErrors => {
-        Future.successful(BadRequest(verifyView(formWithErrors)))
+        Future.successful(BadRequest(verifyView(formWithErrors, secure)))
       },
       input => {
         val pid = retrievals.flatMap(r => r.credentials.collect {
@@ -150,10 +156,10 @@ class BarsController @Inject()(
           auditConnector.sendEvent(dataEvent)
 
           (metadata, assess) match {
-            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound")))
-            case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None))
-            case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse())))
-            case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a)))
+            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound"), secure))
+            case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None, secure))
+            case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse()), secure))
+            case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a), secure))
           }
         }
       }
@@ -162,6 +168,6 @@ class BarsController @Inject()(
 
   private def strideAuthEnabled: Boolean = appConfig.isStrideAuthEnabled
 
-  val config = appConfig.config
-  val env = appConfig.env
+  val config: Configuration = appConfig.config
+  val env: Environment = appConfig.env
 }
