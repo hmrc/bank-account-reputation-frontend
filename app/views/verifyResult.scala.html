@@ -158,7 +158,7 @@
 
 @mainTemplate(pageTitle = Option(messages("bars.verifyResults.title")),
     breadcrumbContribution = Seq(
-        BreadcrumbsItem(content = Text("Verify"), href = Some(s"${if (secure) routes.BarsController.getVerifySecure else routes.BarsController.getVerify}")),
+        BreadcrumbsItem(content = Text("Verify"), href = Some(s"${routes.BarsController.getVerifySecure}")),
         BreadcrumbsItem(content = Text("Result"), href = Some(s"#"))
     ), secure = secure) {
     <h1 class="govuk-heading-l" id="pageHeading">@messages("bars.verifyResults.header")</h1>

@@ -31,6 +31,8 @@ bars.label.accountType.heading=Bank account type (optional)
 bars.label.accountType.business=Business
 bars.label.accountType.personal=Personal
 
+bars.getaccess.title=Get access
+
 bars.verify.title=Check bank account details
 bars.verify.header=Check bank account details
 bars.verify.submitInfo=You can submit this form with just a sort code, or you can provide further details in the fields below to return more information

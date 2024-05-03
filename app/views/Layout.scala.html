@@ -59,7 +59,7 @@
     items = Seq(
         BreadcrumbsItem(
             content = Text("Home"),
-            href = Some(s"${if(secure) controllers.routes.BarsController.getVerifySecure else controllers.routes.BarsController.getVerify}")
+            href = Some(s"${controllers.routes.BarsController.getVerifySecure}")
         )
     ) ++ breadcrumbContribution
 ))
