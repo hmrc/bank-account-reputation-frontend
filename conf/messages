@@ -61,3 +61,7 @@ bars.verifyResults.bacsOfficeStatus=BACS office status
 bars.verifyResults.chapsSterlingStatus=CHAPS sterling status
 bars.verifyResults.branchName=Branch name
 bars.verifyResults.transactionTypes=Transaction types
+
+bars.featureSwitches.title=Feature switches
+bars.featureSwitches.heading=Choose which features to enable.
+bars.featureSwitches.submit=Save
