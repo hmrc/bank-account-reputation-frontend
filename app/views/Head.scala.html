@@ -14,13 +14,12 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTrackingConsentSnippet
-@import views.html.helper.CSPNonce
 @import config.AppConfig
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTrackingConsentSnippet
 
 @this(hmrcTrackingConsentSnippet: HmrcTrackingConsentSnippet)
 
-@(headBlock: Option[Html] = None)(implicit request: Request[_], appConfig: AppConfig, messages: Messages)
+@(headBlock: Option[Html] = None)(implicit request: RequestHeader, appConfig: AppConfig, messages: Messages)
  @hmrcTrackingConsentSnippet()
  @headBlock
 <!--[if lte IE 8]><script src='@controllers.routes.Assets.versioned("javascripts/html5shiv.min.js")'></script><![endif]-->

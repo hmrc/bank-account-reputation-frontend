@@ -14,7 +14,6 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
 @import config.AppConfig
 
 @this(govukLayout: GovukLayout, govukBreadcrumbs: GovukBreadcrumbs, govukBackLink: GovukBackLink, govukPhaseBanner: GovukPhaseBanner, govukNotificationBanner: GovukNotificationBanner, govukWarningText: GovukWarningText, languageSelect: HmrcLanguageSelect, timeoutDialog: HmrcTimeoutDialog, head: Head, scripts: Scripts)
@@ -27,7 +26,7 @@
         theHeadBlock: Option[Html] = None,
         breadcrumbContribution: Seq[BreadcrumbsItem] = Seq(),
         secure: Boolean = false
-)(contentBlock: Html)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages, appConfig: AppConfig)
 
 @defaultBeforeContentBlock = {
 @{
