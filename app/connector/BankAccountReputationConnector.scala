@@ -20,22 +20,29 @@ import config.AppConfig
 import models.EiscdEntry
 import models.Implicits._
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpReads, HttpResponse, StringContextOps}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig: AppConfig) {
+class BankAccountReputationConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig) {
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[EiscdEntry]] = {
     import HttpReads.Implicits.readRaw
 
-    httpClient.GET[HttpResponse](appConfig.barsMetadataUrl + sortCode)
+    httpClient
+      .get(url"${appConfig.barsMetadataUrl}$sortCode")
+      .execute[HttpResponse]
       .map(r => r -> r.status)
       .map {
-        case (response, 200) => response.json.validate[EiscdEntry].asOpt
+        case (response, 200) => response.json.validate[EiscdEntry] match {
+          case JsSuccess(entry, _) => Some(entry)
+          case JsError(errors) =>
+            throw new HttpException(s"Could not parse Json response from BARs: $errors", response.status)
+        }
         case (_, _) => None
       }
   }
@@ -44,28 +51,27 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
                      address: Option[BarsAddress], callingClient: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Try[BarsAssessResponse]] = {
 
-    val request = BarsPersonalAssessRequest(
+    val request: BarsPersonalAssessRequest = BarsPersonalAssessRequest(
       BarsAccount(sortCode, accountNumber, rollNumber),
       BarsSubject(None, Some(accountName), None, None, None, address)
     )
 
     httpClient
-      .POST[BarsPersonalAssessRequest, HttpResponse](
-        url = appConfig.barsPersonalAssessUrl,
-        body = request,
-        headers = Seq("True-Calling-Client" -> callingClient)
-      )
+      .post(url"${appConfig.barsPersonalAssessUrl}")
+      .withBody(Json.toJson(request))
+      .setHeader("True-Calling-Client" -> callingClient)
+      .execute[HttpResponse]
       .map {
         case httpResponse if httpResponse.status == 200 =>
           Json.fromJson[BarsAssessSuccessResponse](httpResponse.json) match {
             case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
+            case JsError(_) =>
               Failure(new HttpException("Could not parse Json success response from BARs", httpResponse.status))
           }
         case httpResponse if httpResponse.status == 400 =>
           Json.fromJson[BarsAssessBadRequestResponse](httpResponse.json) match {
             case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
+            case JsError(_) =>
               Failure(new HttpException("Could not parse Json bad request response from BARs", httpResponse.status))
           }
         case httpResponse => Failure(new HttpException(httpResponse.body, httpResponse.status))
@@ -79,24 +85,26 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClient, appConfig
                      address: Option[BarsAddress], callingClient: String)
                     (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Try[BarsAssessResponse]] = {
 
-    val request = BarsBusinessAssessRequest(
+    val request: BarsBusinessAssessRequest = BarsBusinessAssessRequest(
       BarsAccount(sortCode, accountNumber, rollNumber),
       Some(BarsBusiness(companyName = companyName, address)))
 
     httpClient
-      .POST[BarsBusinessAssessRequest, HttpResponse](url = appConfig.barsBusinessAssessUrl, body = request,
-        headers = Seq("True-Calling-Client" -> callingClient))
+      .post(url"${appConfig.barsBusinessAssessUrl}")
+      .withBody(Json.toJson(request))
+      .setHeader("True-Calling-Client" -> callingClient)
+      .execute[HttpResponse]
       .map {
         case httpResponse if httpResponse.status == 200 =>
           Json.fromJson[BarsAssessSuccessResponse](httpResponse.json) match {
             case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
+            case JsError(_) =>
               Failure(new HttpException("Could not parse Json response from BARs", httpResponse.status))
           }
         case httpResponse if httpResponse.status == 400 =>
           Json.fromJson[BarsAssessBadRequestResponse](httpResponse.json) match {
             case JsSuccess(result, _) => Success(result)
-            case JsError(errors) =>
+            case JsError(_) =>
               Failure(new HttpException("Could not parse Json bad request response from BARs", httpResponse.status))
           }
         case httpResponse => Failure(new HttpException(httpResponse.body, httpResponse.status))
