@@ -19,9 +19,9 @@ package controllers
 import config.AppConfig
 import connector.{BankAccountReputationConnector, BarsAssessErrorResponse}
 import models._
-import play.api.{Configuration, Environment, Logger}
 import play.api.i18n._
 import play.api.mvc._
+import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals._
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
@@ -39,7 +39,6 @@ class BarsController @Inject()(
                                 val authConnector: AuthConnector,
                                 mcc: MessagesControllerComponents,
                                 auditConnector: AuditConnector,
-                                accessibilityView: views.html.accessibility,
                                 getAccessView: views.html.getAccessView,
                                 verifyView: views.html.verify,
                                 verifyResultView: views.html.verifyResult,
@@ -56,10 +55,6 @@ class BarsController @Inject()(
                                externalId: Option[String], credentialStrength: Option[String],
                                agentCode: Option[String], profile: Option[String], groupProfile: Option[String],
                                emailVerified: Option[Boolean], credentialRole: Option[CredentialRole])
-
-  def accessibilityStatement(): Action[AnyContent] = Action.async {
-    Future.successful(Ok(accessibilityView()))
-  }
 
   private def strideAuth(f: Option[RetrievalsToAudit] => Future[Result])(implicit request: Request[_]) = {
     if (strideAuthEnabled) {

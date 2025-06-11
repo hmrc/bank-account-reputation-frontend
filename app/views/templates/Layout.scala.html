@@ -1,0 +1,121 @@
+@*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.{HmrcAccessibleAutocompleteCss, HmrcAccessibleAutocompleteJavascript, HmrcStandardPage}
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcReportTechnicalIssueHelper
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcTimeoutDialogHelper
+
+@this(
+        hmrcStandardPage: HmrcStandardPage,
+        standardBetaBanner: StandardBetaBanner,
+        autocompleteCss: HmrcAccessibleAutocompleteCss,
+        autocompleteJavascript: HmrcAccessibleAutocompleteJavascript,
+        hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
+        hmrcTimeoutDialogHelper: HmrcTimeoutDialogHelper,
+        govukPhaseBanner: GovukPhaseBanner,
+        govukNotificationBanner: GovukNotificationBanner,
+        govukWarningText: GovukWarningText,
+        govukBreadcrumbs: GovukBreadcrumbs
+)
+
+@(
+        pageTitle: Option[String] = None,
+        form: Option[Form[_]] = None,
+        theHeaderBlock: Option[Html] = None,
+        beforeContentBlock: Option[Html] = None,
+        theFooterBlock: Option[Html] = None,
+        theHeadBlock: Option[Html] = None,
+        breadcrumbContribution: Seq[BreadcrumbsItem] = Seq(),
+        secure: Boolean = false
+)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages, appConfig: AppConfig)
+
+
+@content = {
+@contentBlock
+@hmrcReportTechnicalIssueHelper()
+}
+
+@fullTitle = @{
+    if (messages.isDefinedAt("navTitle")) s"$pageTitle - ${messages("navTitle")} - GOV.UK"
+    else pageTitle
+}
+
+@combinedAdditionalHead = {
+}
+
+@autocompleteCss() = {
+}
+
+@defaultContentBlock = {
+@{
+    if(messages.isDefinedAt("phaseBanner.tag")) {
+        govukPhaseBanner(PhaseBanner(
+            tag = Some(Tag(content = HtmlContent(messages("phaseBanner.tag")))),
+            content = HtmlContent(messages("phaseBanner.content"))))
+    }
+    if(appConfig.isNonProduction) {
+        govukPhaseBanner(PhaseBanner(
+            tag = Some(Tag(content = HtmlContent(messages("nonProductionBanner.tag")), classes = "warning-tag")),
+            content = HtmlContent(s"<marquee>${messages("nonProductionBanner.content")}</marquee>")))
+    }
+    if(!secure) {
+        govukNotificationBanner(NotificationBanner(
+            content = HtmlContent(
+                s"""
+                            ${govukWarningText(WarningText(content = Text(messages("notSecureBanner.preContent"))))}
+                            ${
+                    messages("notSecureBanner.content")
+                    .replace(appConfig.AUTH_GUIDE_URL_PLACEHOLDER, appConfig.authGuideUrl)
+                    .replace(appConfig.SECURE_URL_PLACEHOLDER, controllers.routes.BarsController.getVerifySecure.url)
+                }""")
+        ))
+    }
+}
+
+@govukBreadcrumbs(Breadcrumbs(
+    items = Seq(
+        BreadcrumbsItem(
+            content = Text("Home"),
+            href = Some(s"${controllers.routes.BarsController.getVerifySecure}")
+        )
+    ) ++ breadcrumbContribution
+))
+
+@content
+}
+
+
+@thePageTitle = {
+@{
+    if(form.isDefined && form.get.hasErrors) pageTitle.map(t => s"${messages("error.pageTitle")}: $t").getOrElse(pageTitle) else pageTitle
+}
+}
+
+@hmrcStandardPage(
+    HmrcStandardPageParams(
+        pageTitle = Some(s"$thePageTitle - ${messages("service.name")} - GOV.UK"),
+        serviceName = if(messages.isDefinedAt("navTitle")) Some(messages("navTitle")) else None,
+        banners = Banners(displayHmrcBanner = false),
+        templateOverrides = TemplateOverrides(
+            additionalHeadBlock = Some(combinedAdditionalHead),
+            additionalScriptsBlock = Some(autocompleteJavascript())
+        ),
+        isWelshTranslationAvailable = false,
+        backLink = None
+    )
+)(defaultContentBlock)

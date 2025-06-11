@@ -21,7 +21,7 @@
 
 @import scala.language.postfixOps
 
-@this(mainTemplate: views.html.Layout, header: views.html.header, form: FormWithCSRF, summary: GovukSummaryList)
+@this(mainTemplate: views.html.templates.Layout, header: views.html.header, form: FormWithCSRF, summary: GovukSummaryList)
 
 @(account: Account, metadata: EiscdEntry, assess: Option[BarsAssessResponse], secure: Boolean = false)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @addressLines(address: EiscdAddress) = {
