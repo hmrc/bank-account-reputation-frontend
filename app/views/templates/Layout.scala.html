@@ -55,12 +55,6 @@
     else pageTitle
 }
 
-@combinedAdditionalHead = {
-}
-
-@autocompleteCss() = {
-}
-
 @defaultContentBlock = {
 @{
     if(messages.isDefinedAt("phaseBanner.tag")) {
@@ -112,7 +106,6 @@
         serviceName = if(messages.isDefinedAt("navTitle")) Some(messages("navTitle")) else None,
         banners = Banners(displayHmrcBanner = false),
         templateOverrides = TemplateOverrides(
-            additionalHeadBlock = Some(combinedAdditionalHead),
             additionalScriptsBlock = Some(autocompleteJavascript())
         ),
         isWelshTranslationAvailable = false,

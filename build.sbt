@@ -15,8 +15,7 @@ lazy val microservice = Project(appName, file("."))
       "uk.gov.hmrc.govukfrontend.views.html.components._"
     ),
     scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s",
-    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s",
-    Assets / pipelineStages := Seq(gzip),
+    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
   )
   .settings(PlayKeys.playDefaultPort := 9786)
 
