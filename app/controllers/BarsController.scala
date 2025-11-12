@@ -46,8 +46,6 @@ class BarsController @Inject()(
                               )(implicit ec: ExecutionContext, appConfig: AppConfig)
   extends FrontendController(mcc) with AuthorisedFunctions with AuthRedirects with I18nSupport {
 
-  private val logger = Logger(this.getClass)
-
   val retrievalsToAudit = credentials and allEnrolments and affinityGroup and internalId and externalId and credentialStrength and agentCode and profile and groupProfile and emailVerified and credentialRole
 
   case class RetrievalsToAudit(credentials: Option[Credentials], allEnrolments: Enrolments,
@@ -102,7 +100,7 @@ class BarsController @Inject()(
   }
 
   private def handlePost(secure: Boolean = false, retrievals: Option[RetrievalsToAudit] = None)(implicit req: MessagesRequest[AnyContent]) = {
-    inputForm.bindFromRequest.fold(
+    inputForm.bindFromRequest().fold(
       formWithErrors => {
         Future.successful(BadRequest(verifyView(formWithErrors, secure)))
       },
@@ -151,7 +149,7 @@ class BarsController @Inject()(
           auditConnector.sendEvent(dataEvent)
 
           (metadata, assess) match {
-            case (None, None) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound"), secure))
+            case (None, _) => BadRequest(verifyView(inputForm.fill(input).withError("input.account.sortCode", "bars.label.sortCodeNotFound"), secure))
             case (Some(m), None) => Ok(verifyResultView(input.input.account, m, None, secure))
             case (Some(m), Some(Failure(_))) => Ok(verifyResultView(input.input.account, m, Some(BarsAssessErrorResponse()), secure))
             case (Some(m), Some(Success(a))) => Ok(verifyResultView(input.input.account, m, Some(a), secure))

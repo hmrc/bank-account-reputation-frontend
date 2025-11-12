@@ -26,16 +26,16 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpReads, HttpResponse, 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 @Singleton
 class BankAccountReputationConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig) {
 
   def metadata(sortCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[EiscdEntry]] = {
-    import HttpReads.Implicits.readRaw
-
     httpClient
       .get(url"${appConfig.barsMetadataUrl}$sortCode")
-      .execute[HttpResponse]
+      .execute[HttpResponse]()
       .map(r => r -> r.status)
       .map {
         case (response, 200) => response.json.validate[EiscdEntry] match {
@@ -60,7 +60,7 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClientV2, appConf
       .post(url"${appConfig.barsPersonalAssessUrl}")
       .withBody(Json.toJson(request))
       .setHeader("True-Calling-Client" -> callingClient)
-      .execute[HttpResponse]
+      .execute[HttpResponse]()
       .map {
         case httpResponse if httpResponse.status == 200 =>
           Json.fromJson[BarsAssessSuccessResponse](httpResponse.json) match {
@@ -93,7 +93,7 @@ class BankAccountReputationConnector @Inject()(httpClient: HttpClientV2, appConf
       .post(url"${appConfig.barsBusinessAssessUrl}")
       .withBody(Json.toJson(request))
       .setHeader("True-Calling-Client" -> callingClient)
-      .execute[HttpResponse]
+      .execute[HttpResponse]()
       .map {
         case httpResponse if httpResponse.status == 200 =>
           Json.fromJson[BarsAssessSuccessResponse](httpResponse.json) match {

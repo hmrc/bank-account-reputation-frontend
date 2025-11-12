@@ -24,13 +24,15 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 class FeatureSwitchApiConnector @Inject()(httpClient: HttpClientV2)(implicit ec: ExecutionContext) {
 
   def retrieveFeatureSwitches(featureSwitchProviderUrl: String
                              )(implicit reads: Reads[Seq[FeatureSwitchSetting]],
                                hc: HeaderCarrier): Future[Seq[FeatureSwitchSetting]] = {
-    httpClient.get(url"$featureSwitchProviderUrl").execute.map(
+    httpClient.get(url"$featureSwitchProviderUrl").execute().map(
       response =>
         response.status match {
           case OK =>
@@ -47,7 +49,7 @@ class FeatureSwitchApiConnector @Inject()(httpClient: HttpClientV2)(implicit ec:
   def updateFeatureSwitches(featureSwitchProviderUrl: String,
                             featureSwitchSettings: Seq[FeatureSwitchSetting]
                            )(implicit hc: HeaderCarrier): Future[Seq[FeatureSwitchSetting]] = {
-    httpClient.post(url"$featureSwitchProviderUrl").withBody(Json.toJson(featureSwitchSettings)).execute.map {
+    httpClient.post(url"$featureSwitchProviderUrl").withBody(Json.toJson(featureSwitchSettings)).execute().map {
       response =>
         response.status match {
           case OK =>

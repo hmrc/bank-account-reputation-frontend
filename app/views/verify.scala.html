@@ -27,7 +27,7 @@
 
     @if(inputForm.hasErrors) {
         @errorSummary(ErrorSummary(title = HtmlContent(messages("bars.errors")),
-            errorList = inputForm.errors.map { error ⇒
+            errorList = inputForm.errors.map { error =>
                 ErrorLink(href = Some(s"#${error.key}"),
                     content = HtmlContent(messages(error.message)))
             }))
@@ -41,7 +41,7 @@
             name = inputForm("input.account.sortCode").name,
             id = inputForm("input.account.sortCode").name,
             autocomplete = Some("off"),
-            errorMessage = inputForm("input.account.sortCode").error.map(fe ⇒
+            errorMessage = inputForm("input.account.sortCode").error.map(fe =>
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         <hr class="govuk-!-margin-bottom-7"/>
@@ -55,7 +55,7 @@
             name = inputForm("input.account.accountNumber").name,
             id = inputForm("input.account.accountNumber").name,
             autocomplete = Some("off"),
-            errorMessage = inputForm("input.account.accountNumber").error.map(fe ⇒
+            errorMessage = inputForm("input.account.accountNumber").error.map(fe =>
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(
@@ -65,7 +65,7 @@
             name = inputForm("input.account.rollNumber").name,
             id = inputForm("input.account.rollNumber").name,
             autocomplete = Some("off"),
-            errorMessage = inputForm("input.account.rollNumber").error.map(fe ⇒
+            errorMessage = inputForm("input.account.rollNumber").error.map(fe =>
                 ErrorMessage(content = HtmlContent(messages(fe.message))))))
 
         @input(uk.gov.hmrc.govukfrontend.views.html.components.Input(

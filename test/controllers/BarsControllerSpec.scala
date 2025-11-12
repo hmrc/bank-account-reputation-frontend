@@ -24,8 +24,8 @@ import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
 import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.*
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar
@@ -33,24 +33,23 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.test.CSRFTokenHelper._
+import play.api.test.CSRFTokenHelper.*
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{status, _}
+import play.api.test.Helpers.{status, *}
 import uk.gov.hmrc.auth.core.AffinityGroup.Individual
 import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
 import uk.gov.hmrc.auth.core.retrieve.{Credentials, ~}
-import uk.gov.hmrc.auth.core._
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.DataEvent
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.language.postfixOps
 import scala.util.Success
 
-
 abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite with Matchers with MockitoSugar {
-  implicit val ec = ExecutionContext.global
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   implicit val timeout: FiniteDuration = 1 second
 
   val mockConnector: BankAccountReputationConnector = mock[BankAccountReputationConnector]
@@ -109,7 +108,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         val request = FakeRequest().withFormUrlEncodedBody().withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -125,7 +124,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         val request = FakeRequest().withFormUrlEncodedBody("input.account.sortCode" -> "654321").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe BAD_REQUEST
 
         contentAsString(result) should include("There is a problem")
@@ -137,7 +136,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
 
         val request = FakeRequest().withMethod("POST").withFormUrlEncodedBody("input.account.sortCode" -> "123456").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
@@ -148,6 +147,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
         verify(mockAuditConnector, times(1)).sendEvent(auditCaptor.capture())(any(), any())
 
         val dataEvent = auditCaptor.getValue
+        
         dataEvent.detail should contain only(
           "PID" -> "providerId",
           "DeviceId" -> "",
@@ -216,7 +216,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.accountNumber" -> "12345678",
           "input.subject.name" -> "").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -233,7 +233,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.accountNumber" -> "",
           "input.subject.name" -> "Mr Peter Smith").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe BAD_REQUEST
 
         verify(mockAuditConnector, never()).sendEvent(any())(any(), any())
@@ -252,7 +252,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.account.rollNumber" -> "BB/123",
           "input.subject.name" -> "ACME inc").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, times(1)).metadata(meq("123456"))(any(), any())
@@ -370,7 +370,7 @@ class StrideAuthBarsControllerSpec extends BarsControllerSpec {
           "input.subject.name" -> "Mr Peter Smith",
           "input.account.accountType" -> "personal").withCSRFToken
 
-        val result = controller.postVerifySecure().apply(request)
+        val result = controller.postVerifySecure.apply(request)
         status(result) shouldBe OK
 
         verify(mockConnector, never).assessBusiness(any(), any(), any(), any(), any(), any())(any(), any())
@@ -495,7 +495,7 @@ class StrideAuthDisabledBarsControllerSpec extends BarsControllerSpec {
     "display only an information page" in {
       val request = FakeRequest().withMethod("GET")
 
-      val result = controller.getAccess().apply(request)
+      val result = controller.getAccess.apply(request)
       status(result) shouldBe OK
 
       val content = contentAsString(result)

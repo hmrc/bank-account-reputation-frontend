@@ -16,12 +16,14 @@
 
 package models
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.Reads._
-import play.api.libs.json._
-import models.BacsStatus.{M, A}
+import models.BacsStatus.{A, BacsStatus, M}
 import models.ChapsStatus.ChapsStatus
 import models.TransactionType.{AU, CR, DR, TransactionType}
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
+import play.api.libs.json.Reads.*
+
+import scala.language.implicitConversions
 
 case class AccountDetails(account: Account)
 
@@ -29,6 +31,15 @@ case class Account(sortCode: String,
                    accountNumber: Option[String],
                    rollNumber: Option[String] = None,
                    accountType: Option[String] = None)
+
+object Account {
+  def unapply(account: Account): Option[(String, Option[String], Option[String], Option[String])] = Some((
+    account.sortCode,
+    account.accountNumber,
+    account.rollNumber,
+    account.accountType
+  ))
+}
 
 case class EiscdCountry(name: String)
 
@@ -39,61 +50,59 @@ case class EiscdAddress(lines: Seq[String],
                         postCode: Option[String],
                         zipCode: Option[String])
 
+//TODO These need updating to use Scala 3 enumeration. Using out-the-box Scala 3 enums breaks how the data event keys are structured.
 object BacsStatus extends Enumeration {
 
-  type BacsStatus = Value
+  type BacsStatus = BacsVal
 
-  protected case class Val(status: String) extends super.Val
+  case class BacsVal(status: String) extends super.Val
 
   import scala.language.implicitConversions
 
-  implicit def valueToBacsStatusVal(x: Value): Val = x.asInstanceOf[Val]
+  implicit def valueToBacsStatusVal(x: Value): BacsVal = x.asInstanceOf[BacsVal]
 
-  val NA = Val("!!! Unknown BACS Office Status !!!")
-
-  val M = Val("BACS member; accepts BACS payments")
-
-  val A = Val("Agency bank; accepts BACS payments")
-
-  val N = Val("Does not accept BACS payments")
+  val NA = BacsVal("!!! Unknown BACS Office Status !!!")
+  val M = BacsVal("BACS member; accepts BACS payments")
+  val A = BacsVal("Agency bank; accepts BACS payments")
+  val N = BacsVal("Does not accept BACS payments")
 }
 
 object TransactionType extends Enumeration {
-  type TransactionType = Value
-  protected case class Val(name: String) extends super.Val
+  type TransactionType = TransactionVal
+  case class TransactionVal(name: String) extends super.Val
 
   import scala.language.implicitConversions
-  implicit def valueToTransactionTypeVal(x: Value): Val = x.asInstanceOf[Val]
+  implicit def valueToTransactionTypeVal(x: Value): TransactionVal = x.asInstanceOf[TransactionVal]
 
-  val NA = Val("!!! Unknown Transaction Type !!!")
-  val DR = Val("Direct Debits")
-  val CR = Val("BACS Credits")
-  val CU = Val("Claims for unpaid cheques")
-  val PR = Val("Life office debit")
-  val BS = Val("Building society credits")
-  val DV = Val("Dividend interest payments")
-  val AU = Val("AUDDIS")
+  val NA = TransactionVal("!!! Unknown Transaction Type !!!")
+  val DR = TransactionVal("Direct Debits")
+  val CR = TransactionVal("BACS Credits")
+  val CU = TransactionVal("Claims for unpaid cheques")
+  val PR = TransactionVal("Life office debit")
+  val BS = TransactionVal("Building society credits")
+  val DV = TransactionVal("Dividend interest payments")
+  val AU = TransactionVal("AUDDIS")
 }
 
 object ChapsStatus extends Enumeration {
 
   type ChapsStatus = Value
-  protected case class Val(status: String) extends super.Val
+  protected case class ChapsVal(status: String) extends super.Val
   import scala.language.implicitConversions
 
-  implicit def valueToChapsStatusVal(x: Value): Val = x.asInstanceOf[Val]
+  implicit def valueToChapsStatusVal(x: Value): ChapsVal = x.asInstanceOf[ChapsVal]
 
-  val NA = Val("!!! Unknown CHAPS Sterling Status !!!")
-  val D = Val("Direct")
-  val I = Val("Indirect")
-  val N = Val("Does not accept")
+  val NA = ChapsVal("!!! Unknown CHAPS Sterling Status !!!")
+  val D  = ChapsVal("Direct")
+  val I  = ChapsVal("Indirect")
+  val N  = ChapsVal("Does not accept")
 }
 
 case class EiscdEntry(bankCode: String,
                       bankName: String,
                       address: EiscdAddress,
                       telephone: Option[String],
-                      bacsOfficeStatus: BacsStatus.BacsStatus,
+                      bacsOfficeStatus: BacsStatus,
                       chapsSterlingStatus: ChapsStatus,
                       branchName: Option[String] = None,
                       disallowedTransactions: Seq[TransactionType] = Seq.empty,
@@ -113,8 +122,15 @@ case class Address(lines: List[String],
 
 case class Subject(name: Option[String])
 
-case class Input(account: Account,
-                 subject: Subject)
+object Subject {
+  def unapply(subject: Subject): Option[Option[String]] = Some(subject.name)
+}
+
+case class Input(account: Account, subject: Subject)
+
+object Input {
+  def unapply(input: Input): Option[(Account, Subject)] = Some((input.account, input.subject))
+}
 
 case class Assessment(accountNumberWithSortCodeIsValid: Boolean,
                       accountExists: String,
@@ -131,29 +147,33 @@ case class SortCodeForm(sortCode: String)
 
 case class InputForm(input: Input)
 
+object InputForm {
+  def unapply(inputForm: InputForm): Option[Input] = Some(inputForm.input)
+}
+
 object Implicits {
 
-  implicit val optionStringFormat = play.api.libs.json.Format.optionWithNull[String]
+  implicit val optionStringFormat: Format[Option[String]] = play.api.libs.json.Format.optionWithNull[String]
 
-  implicit val accountFormat = Json.format[Account]
+  implicit val accountFormat: OFormat[Account] = Json.format[Account]
 
-  implicit val accountDetailsFormat = Json.format[AccountDetails]
+  implicit val accountDetailsFormat: OFormat[AccountDetails] = Json.format[AccountDetails]
 
-  implicit val eiscdCountryFormat = Json.format[EiscdCountry]
+  implicit val eiscdCountryFormat: OFormat[EiscdCountry] = Json.format[EiscdCountry]
 
-  implicit val eiscdAddressFormat = Json.format[EiscdAddress]
+  implicit val eiscdAddressFormat: OFormat[EiscdAddress] = Json.format[EiscdAddress]
 
-  implicit val addressFormat = Json.format[Address]
+  implicit val addressFormat: OFormat[Address] = Json.format[Address]
 
-  implicit val subjectFormat = Json.format[Subject]
+  implicit val subjectFormat: OFormat[Subject] = Json.format[Subject]
 
-  implicit val inputFormat = Json.format[Input]
+  implicit val inputFormat: OFormat[Input] = Json.format[Input]
 
-  implicit val assessmentFormat = Json.format[Assessment]
+  implicit val assessmentFormat: OFormat[Assessment] = Json.format[Assessment]
 
-  implicit val inputFormFormat = Json.format[InputForm]
+  implicit val inputFormFormat: OFormat[InputForm] = Json.format[InputForm]
 
-  implicit def bacsOfficeStatus(statusCode: String): BacsStatus.BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
+  implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
 
   implicit def chapsSterlingStatus(statusCode: Option[String]): ChapsStatus = {
     statusCode match {
@@ -171,17 +191,14 @@ object Implicits {
       (JsPath \ "bankName").read[String] and
       (JsPath \ "address").read[EiscdAddress] and
       (JsPath \ "telephone").readNullable[String] and
-      (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus _) and
-      (JsPath \ "chapsSterlingStatus").readNullable[String].map(chapsSterlingStatus _) and
+      (JsPath \ "bacsOfficeStatus").read[String].map(bacsOfficeStatus) and
+      (JsPath \ "chapsSterlingStatus").readNullable[String].map(chapsSterlingStatus) and
       (JsPath \ "branchName").readNullable[String] and
-      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes _) and
+      (JsPath \ "disallowedTransactions").readNullable[Seq[String]].map(transactionTypes) and
       (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
 
-  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
+//  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
 
-  def opt(str: String): Option[String] = str.isEmpty match {
-    case true => None
-    case false => Some(str)
-  }
+  def opt(str: String): Option[String] = if (str.isEmpty) None else Some(str)
 }
