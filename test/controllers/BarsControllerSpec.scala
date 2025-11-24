@@ -21,7 +21,7 @@ import com.codahale.metrics.SharedMetricRegistries
 import config.AppConfig
 import connector.ReputationResponseEnum.{Partial, Yes}
 import connector.{BankAccountReputationConnector, BarsAssessSuccessResponse}
-import models.{BacsStatus, ChapsStatus, EiscdAddress, EiscdEntry}
+import models.{BacsStatus, BacsStatusEnum, ChapsStatus, ChapsStatusEnum, EiscdAddress, EiscdEntry}
 import org.jsoup.Jsoup
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq as meq}
@@ -55,7 +55,7 @@ abstract class BarsControllerSpec extends AnyWordSpec with GuiceOneAppPerSuite w
   val mockConnector: BankAccountReputationConnector = mock[BankAccountReputationConnector]
 
   val address: EiscdAddress = EiscdAddress(Seq("line1"), None, None, None, None, None)
-  val eiscdEntry: Option[EiscdEntry] = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatus.M, ChapsStatus.I, Some("London"), bicBankCode = Some("HBUK")))
+  val eiscdEntry: Option[EiscdEntry] = Some(EiscdEntry("HSBC", "HBSC", address, Some("12121"), BacsStatusEnum.M.toCaseClass, ChapsStatusEnum.I.toCaseClass, Some("London"), bicBankCode = Some("HBUK")))
 
   val barsAssessResponse: Success[BarsAssessSuccessResponse] = Success(BarsAssessSuccessResponse(Yes, Yes, Some("HSBC"), Yes, Partial, Yes, Yes, None, Some("iban"), Some("partial-name")))
 

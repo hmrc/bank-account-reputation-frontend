@@ -16,9 +16,8 @@
 
 package models
 
-import models.BacsStatus.{A, BacsStatus, M}
-import models.ChapsStatus.ChapsStatus
-import models.TransactionType.{AU, CR, DR, TransactionType}
+import models.BacsStatusEnum.{A, M}
+import models.TransactionTypeEnum.{AU, CR, DR}
 import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 import play.api.libs.json.Reads.*
@@ -50,53 +49,69 @@ case class EiscdAddress(lines: Seq[String],
                         postCode: Option[String],
                         zipCode: Option[String])
 
-//TODO These need updating to use Scala 3 enumeration. Using out-the-box Scala 3 enums breaks how the data event keys are structured.
-object BacsStatus extends Enumeration {
+// BacsStatus, TransactionType, ChapsStatus case classes are used in the EiscdEntry to produce the audit detail in the required shape.
 
-  type BacsStatus = BacsVal
+case class BacsStatus(status: String)
+enum BacsStatusEnum(val status: String):
+  case NA extends BacsStatusEnum("!!! Unknown BACS Office Status !!!")
+  case M extends BacsStatusEnum("BACS member; accepts BACS payments")
+  case A extends BacsStatusEnum("Agency bank; accepts BACS payments")
+  case N extends BacsStatusEnum("Does not accept BACS payments")
+  implicit def toCaseClass: BacsStatus = BacsStatus(status)
 
-  case class BacsVal(status: String) extends super.Val
+object BacsStatusEnum:
+  implicit val bacsStatusFormat: Format[BacsStatusEnum] = Format(
+    Reads {
+      case JsString(value) =>
+        BacsStatusEnum.values.find(_.toString == value).map(JsSuccess(_)).getOrElse(JsError(s"Unknown BacsStatus $value"))
+      case _ => JsError(s"Expected string for BacsStatus")
+    },
+    Writes(status => JsString(status.toString))
+  )
 
-  import scala.language.implicitConversions
+  implicit def toCaseClass(arg: BacsStatusEnum): BacsStatus = BacsStatus(arg.status)
 
-  implicit def valueToBacsStatusVal(x: Value): BacsVal = x.asInstanceOf[BacsVal]
+case class TransactionType(name: String)
+enum TransactionTypeEnum(val name: String):
+  case NA extends TransactionTypeEnum("!!! Unknown Transaction Type !!!")
+  case DR extends TransactionTypeEnum("Direct Debits")
+  case CR extends TransactionTypeEnum("BACS Credits")
+  case CU extends TransactionTypeEnum("Claims for unpaid cheques")
+  case PR extends TransactionTypeEnum("Life office debit")
+  case BS extends TransactionTypeEnum("Building society credits")
+  case DV extends TransactionTypeEnum("Dividend interest payments")
+  case AU extends TransactionTypeEnum("AUDDIS")
+  implicit def toCaseClass: TransactionType = TransactionType(name)
 
-  val NA = BacsVal("!!! Unknown BACS Office Status !!!")
-  val M = BacsVal("BACS member; accepts BACS payments")
-  val A = BacsVal("Agency bank; accepts BACS payments")
-  val N = BacsVal("Does not accept BACS payments")
-}
+object TransactionTypeEnum:
+  implicit val transactionTypeFormat: Format[TransactionTypeEnum] = Format(
+    Reads {
+      case JsString(value) =>
+        TransactionTypeEnum.values.find(_.toString == value).map(JsSuccess(_)).getOrElse(JsError(s"Unknown TransactionType $value"))
+      case _ => JsError(s"Expected string for TransactionType")
+    },
+    Writes(status => JsString(status.toString))
+  )
+  implicit def toCaseClass(arg: TransactionTypeEnum): TransactionType = TransactionType(arg.name)
 
-object TransactionType extends Enumeration {
-  type TransactionType = TransactionVal
-  case class TransactionVal(name: String) extends super.Val
+case class ChapsStatus(status: String)
+enum ChapsStatusEnum(val status: String):
+  case NA extends ChapsStatusEnum("!!! Unknown CHAPS Sterling Status !!!")
+  case D extends ChapsStatusEnum("Direct")
+  case I extends ChapsStatusEnum("Indirect")
+  case N extends ChapsStatusEnum("Does not accept")
+  implicit def toCaseClass: ChapsStatus = ChapsStatus(status)
 
-  import scala.language.implicitConversions
-  implicit def valueToTransactionTypeVal(x: Value): TransactionVal = x.asInstanceOf[TransactionVal]
-
-  val NA = TransactionVal("!!! Unknown Transaction Type !!!")
-  val DR = TransactionVal("Direct Debits")
-  val CR = TransactionVal("BACS Credits")
-  val CU = TransactionVal("Claims for unpaid cheques")
-  val PR = TransactionVal("Life office debit")
-  val BS = TransactionVal("Building society credits")
-  val DV = TransactionVal("Dividend interest payments")
-  val AU = TransactionVal("AUDDIS")
-}
-
-object ChapsStatus extends Enumeration {
-
-  type ChapsStatus = Value
-  protected case class ChapsVal(status: String) extends super.Val
-  import scala.language.implicitConversions
-
-  implicit def valueToChapsStatusVal(x: Value): ChapsVal = x.asInstanceOf[ChapsVal]
-
-  val NA = ChapsVal("!!! Unknown CHAPS Sterling Status !!!")
-  val D  = ChapsVal("Direct")
-  val I  = ChapsVal("Indirect")
-  val N  = ChapsVal("Does not accept")
-}
+object ChapsStatusEnum:
+  implicit val chapsStatusFormat: Format[ChapsStatusEnum] = Format(
+    Reads {
+      case JsString(value) =>
+        ChapsStatusEnum.values.find(_.toString == value).map(JsSuccess(_)).getOrElse(JsError(s"Unknown ChapsStatus $value"))
+      case _ => JsError(s"Expected string for ChapsStatus")
+    },
+    Writes(status => JsString(status.toString))
+  )
+  implicit def toCaseClass(arg: ChapsStatusEnum): ChapsStatus = ChapsStatus(arg.status)
 
 case class EiscdEntry(bankCode: String,
                       bankName: String,
@@ -109,11 +124,11 @@ case class EiscdEntry(bankCode: String,
                       bicBankCode: Option[String] = None) {
 
   def isDirectDebitSupported: Boolean =
-    (bacsOfficeStatus == M || bacsOfficeStatus == A) &&
-      !(disallowedTransactions.contains(DR) || disallowedTransactions.contains(AU))
+    (bacsOfficeStatus == M.toCaseClass || bacsOfficeStatus == A.toCaseClass) &&
+      !(disallowedTransactions.contains(DR.toCaseClass) || disallowedTransactions.contains(AU.toCaseClass))
 
   def isDirectCreditSupported: Boolean =
-    (bacsOfficeStatus == M || bacsOfficeStatus == A) && !disallowedTransactions.contains(CR)
+    (bacsOfficeStatus == M.toCaseClass || bacsOfficeStatus == A.toCaseClass) && !disallowedTransactions.contains(CR.toCaseClass)
 }
 
 case class Address(lines: List[String],
@@ -173,16 +188,23 @@ object Implicits {
 
   implicit val inputFormFormat: OFormat[InputForm] = Json.format[InputForm]
 
-  implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatus.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatus.NA)
+  implicit val bacsStatusFormat: OFormat[BacsStatus] = Json.format[BacsStatus]
+
+  implicit val transactionTypeFormat: OFormat[TransactionType] = Json.format[TransactionType]
+
+  implicit val chapsStatusFormat: OFormat[ChapsStatus] = Json.format[ChapsStatus]
+
+  implicit def bacsOfficeStatus(statusCode: String): BacsStatus = BacsStatusEnum.values.find(_.toString.matches(statusCode)).getOrElse(BacsStatusEnum.NA)
 
   implicit def chapsSterlingStatus(statusCode: Option[String]): ChapsStatus = {
     statusCode match {
-      case None => ChapsStatus.NA
-      case Some(x) => ChapsStatus.values.find(_.toString.matches(x)).getOrElse(ChapsStatus.NA)
+      case None => ChapsStatusEnum.NA
+      case Some(x) => ChapsStatusEnum.values.find(_.toString.matches(x)).getOrElse(ChapsStatusEnum.NA)
     }
   }
 
-  implicit def transactionType(transactionTypeCode: String): TransactionType = TransactionType.values.find(_.toString.matches(transactionTypeCode)).getOrElse(TransactionType.NA)
+  implicit def transactionType(transactionTypeCode: String): TransactionType =
+    TransactionTypeEnum.values.find(_.toString.matches(transactionTypeCode)).getOrElse(TransactionTypeEnum.NA)
 
   implicit def transactionTypes(transactionTypeCodes: Option[Seq[String]]): Seq[TransactionType] = transactionTypeCodes.getOrElse(Seq.empty).map(code => transactionType(code))
 
@@ -198,7 +220,7 @@ object Implicits {
       (JsPath \ "bicBankCode").readNullable[String]
       ) (EiscdEntry.apply _)
 
-//  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
+  implicit val eiscdWrites: Writes[EiscdEntry] = Json.writes[EiscdEntry]
 
   def opt(str: String): Option[String] = if (str.isEmpty) None else Some(str)
 }
