@@ -16,19 +16,18 @@
 
 package models
 
+import models.TransactionTypeEnum._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class EiscdEntryTest extends AnyWordSpec with Matchers {
-
-  import TransactionType._
 
   "EiscdEntryTest" when {
     val address = EiscdAddress(Seq("1 High Street"), Some("some-town"), None, Some(EiscdCountry("UK")), Some("EC1 " +
       "2BD"), None)
 
     "show bacs transaction support if bacs office status is M or N" should {
-      val eiscdEntry = EiscdEntry("bank-code", "bank-name", address, None, BacsStatus.M, ChapsStatus.D, None, Seq(CR))
+      val eiscdEntry = EiscdEntry("bank-code", "bank-name", address, None, BacsStatusEnum.M, ChapsStatusEnum.D, None, Seq(CR))
 
       "indicate dd support and no dr support when CR is disallowed" in {
         eiscdEntry.isDirectDebitSupported shouldBe true
@@ -49,7 +48,7 @@ class EiscdEntryTest extends AnyWordSpec with Matchers {
     }
 
     "show no bacs transaction support if bacs office status is NOT M or N" should {
-      val eiscdEntry = EiscdEntry("bank-code", "bank-name", address, None, BacsStatus.NA, ChapsStatus.D, None, Seq(CR))
+      val eiscdEntry = EiscdEntry("bank-code", "bank-name", address, None, BacsStatusEnum.NA, ChapsStatusEnum.D, None, Seq(CR))
 
       "indicate dd support and no dr support when CR is disallowed" in {
         eiscdEntry.isDirectDebitSupported shouldBe false

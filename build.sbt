@@ -1,6 +1,6 @@
 import uk.gov.hmrc.DefaultBuildSettings
 
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "3.3.6"
 ThisBuild / majorVersion := 0
 
 val appName = "bank-account-reputation-frontend"

@@ -19,7 +19,7 @@ import config.AppConfig
 import play.api.libs.concurrent.PekkoGuiceSupport
 import play.api.{Configuration, Environment}
 
-class Module(environment: Environment, playConfig: Configuration) extends AbstractModule with PekkoGuiceSupport {
+class Module extends AbstractModule with PekkoGuiceSupport {
   override def configure(): Unit = {
     super.configure()
     bind(classOf[AppConfig])
