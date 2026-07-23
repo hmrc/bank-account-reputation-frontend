@@ -18,6 +18,20 @@ Access to the following **BARS** services are in Alpha, and are currently hidden
 
 **This project has so far been developed as part of a POC to demonstrate capability usable across Government domains**
 
+## Authentication
+
+This frontend uses **Stride** as its sole authentication mechanism. Access is restricted to internal HMRC users who hold the `bars_front_end_tool_user` SRS role. Unauthenticated users are redirected to the Stride login page. There is no Government Gateway or other external authentication method in use.
+
+Stride authentication can be disabled via the `stride-auth-enabled` feature flag. This is intended for local development only — it should always remain enabled in production environments.
+
+## Pre-production Environments Access
+
+| Environment | URL |
+|-------------|-----|
+| QA | https://admin.qa.tax.service.gov.uk/bank-account-reputation-frontend/secure/verify |
+| Staging | https://admin.staging.tax.service.gov.uk/bank-account-reputation-frontend/secure/verify |
+
+
 ## Validate bank details
 
 When using validate bank details, you have two available options.
